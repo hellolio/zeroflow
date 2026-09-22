@@ -725,36 +725,60 @@ final class DockHoverPreviewController {
         lock.lock()
         let gen = showGen
         lock.unlock()
+        // 乐观更新：立即从面板剔除该卡片（缩略图走持久缓存预填，无闪烁）；
+        // 单窗口 → 直接收起面板。随后校验刷新同步真实状态。
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.lock.lock()
+            let alive = gen == self.showGen && self.phase == .visible
+            self.lock.unlock()
+            guard alive else { return }
+            let remaining = self.currentWindows.filter { $0.id != windowID }
+            if remaining.isEmpty {
+                self.hidePanel(reason: "last window closed")
+            } else {
+                self.currentWindows = remaining
+                self.model.items = self.makeItems(remaining)
+            }
+        }
         WindowOps.perform(.close, on: window) { [weak self] in
             self?.refreshAfterClose(showGen: gen)
         }
     }
 
     /// 关闭后刷新：重新枚举目标窗口；最后一个窗口被关掉时整个面板撤掉
+    /// 关闭后的校验刷新（延时 400ms，等关窗动画结束）：只「剔除确认消失的窗口」，
+    /// 不回加——枚举在关窗动画期间可能仍列出旧窗口，回加会让卡片闪回。
     private func refreshAfterClose(showGen generation: Int) {
-        DispatchQueue.main.async { [weak self] in
+        workQueue.asyncAfter(deadline: .now() + 0.4) { [weak self] in
             guard let self else { return }
-            self.lock.lock()
-            guard self.phase == .visible, let target = self.currentTarget, generation == self.showGen else {
-                self.lock.unlock()
-                return
-            }
-            self.lock.unlock()
-            self.workQueue.async { [weak self] in
-                let windows = self?.windows(for: target) ?? []
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    self.lock.lock()
-                    let alive = generation == self.showGen && self.phase == .visible
+            DispatchQueue.main.async {
+                self.lock.lock()
+                guard self.phase == .visible, let target = self.currentTarget, generation == self.showGen else {
                     self.lock.unlock()
-                    guard alive else { return }
-                    if windows.isEmpty {
-                        self.hidePanel(reason: "last window closed")
-                    } else {
-                        self.currentWindows = windows
-                        self.model.items = self.makeItems(windows)
-                        WindowThumbnailer.shared.fetchThumbnails(for: windows) { [weak self] images in
-                            self?.applyThumbnails(images, showGen: generation)
+                    return
+                }
+                self.lock.unlock()
+                self.workQueue.async { [weak self] in
+                    let windows = self?.windows(for: target) ?? []
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self else { return }
+                        self.lock.lock()
+                        let alive = generation == self.showGen && self.phase == .visible
+                        self.lock.unlock()
+                        guard alive else { return }
+                        let remaining = self.currentWindows.filter { window in
+                            windows.contains(where: { $0.id == window.id })
+                        }
+                        guard remaining.count != self.currentWindows.count else { return }
+                        if remaining.isEmpty {
+                            self.hidePanel(reason: "last window closed")
+                        } else {
+                            self.currentWindows = remaining
+                            self.model.items = self.makeItems(remaining)
+                            WindowThumbnailer.shared.fetchThumbnails(for: remaining) { [weak self] images in
+                                self?.applyThumbnails(images, showGen: generation)
+                            }
                         }
                     }
                 }
