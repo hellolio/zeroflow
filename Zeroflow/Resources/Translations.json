@@ -99,5 +99,13 @@
   "恢复默认": { "zh-Hans": "恢复默认", "en": "Restore Default", "ja": "デフォルトに戻す" },
   "请至少按下一个修饰键（⌘/⌃/⌥/⇧）": { "zh-Hans": "请至少按下一个修饰键（⌘/⌃/⌥/⇧）", "en": "Press at least one modifier key (⌘/⌃/⌥/⇧)", "ja": "少なくとも1つの修飾キーを押してください（⌘/⌃/⌥/⇧）" },
 
-  "辅助功能权限已开启": { "zh-Hans": "辅助功能权限已开启", "en": "Accessibility Permission Enabled", "ja": "アクセシビリティ権限が有効です" }
+  "辅助功能权限已开启": { "zh-Hans": "辅助功能权限已开启", "en": "Accessibility Permission Enabled", "ja": "アクセシビリティ権限が有効です" },
+
+  "Dock 预览": { "zh-Hans": "Dock 预览", "en": "Dock Preview", "ja": "Dockプレビュー" },
+  "悬停 Dock 图标显示窗口缩略图": { "zh-Hans": "悬停 Dock 图标显示窗口缩略图", "en": "Show window thumbnails when hovering Dock icons", "ja": "Dockアイコンにカーソルを合わせるとウィンドウのサムネイルを表示" },
+  "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。": { "zh-Hans": "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。", "en": "Hovering a Dock icon shows thumbnails of all its windows. Click a card to switch to that window, or hover it to reveal a close button. Works on minimized-window tiles too.", "ja": "Dockアイコンにカーソルを合わせると、そのアプリの全ウィンドウのサムネイルを表示します。クリックでウィンドウを切り替え、カードにカーソルを合わせると閉じるボタンが出ます。最小化ウィンドウのタイルでも有効です。" },
+  "悬停延时": { "zh-Hans": "悬停延时", "en": "Hover delay", "ja": "ホバー遅延" },
+  "鼠标停留在 Dock 图标上多久后弹出预览。": { "zh-Hans": "鼠标停留在 Dock 图标上多久后弹出预览。", "en": "How long the mouse must stay on a Dock icon before the preview appears.", "ja": "マウスがDockアイコン上に留まってからプレビューが表示されるまでの時間。" },
+  "需要「辅助功能」权限才能监测 Dock 悬停": { "zh-Hans": "需要「辅助功能」权限才能监测 Dock 悬停", "en": "Accessibility permission is required to detect Dock hovering", "ja": "Dockのホバー検出には「アクセシビリティ」権限が必要です" },
+  "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。": { "zh-Hans": "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。", "en": "Screen Recording permission is needed to capture thumbnails; without it, cards show window titles only.", "ja": "サムネイルの取得には「画面収録」権限が必要です。未許可の場合、カードにはウィンドウタイトルのみ表示されます。" }
 }

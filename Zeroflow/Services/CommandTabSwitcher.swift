@@ -372,15 +372,17 @@ final class CommandTabSwitcher {
         }
     }
 
-    /// 全屏 Space 下面板偶发不显示（FR-20.5 复检）：orderFront 后延迟复检，
-    /// 不可见则重新 orderFront（避开全屏过渡未完成时的窗口服务器竞态）。
+    /// 全屏 Space 下面板偶发不显示（FR-20.5 复检）：orderFront 后延迟复检。仅 `orderFront` 无法把
+    /// 窗口从旧 Space 挪到当前 Space，因此不可见 / 不在活跃 Space 时直接重建面板（新窗口落在当前 Space）。
     private func assertPanelVisible(_ panel: WindowSwitcherPanel, generation: Int) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) { [weak self] in
             guard let self, self.isSessionLive(generation) else { return }
-            if !panel.isVisible {
-                ZSLog("CommandTabSwitcher: panel not visible after orderFront, re-ordering")
-                panel.orderFront(nil)
-                panel.order(.above, relativeTo: 0)
+            if !panel.isVisible || !panel.isOnActiveSpace {
+                ZSLog("CommandTabSwitcher: panel not visible / not on active space, re-creating")
+                let fresh = self.ensurePanel()
+                fresh.centerOnMouseScreen()
+                fresh.orderFront(nil)
+                fresh.order(.above, relativeTo: 0)
             }
         }
     }
@@ -527,8 +529,12 @@ final class CommandTabSwitcher {
         return model
     }
 
+    /// 每次会话重建面板：旧面板复用会保留过期的 Space 归属（全屏 Space 创建后旧面板可能仍挂在
+    /// 已隐藏的旧 Space 上，orderFront 只重排 z 序、不纠正 Space 归属）。新窗口创建时一定落在当前
+    /// 活跃 Space 上，`.canJoinAllSpaces + .fullScreenAuxiliary` 保证在所有 Space（含全屏）可见。
+    /// 缩略图在 `model.tiles`（`ensureModel()` 仍复用），重建面板零副作用、不重新抓图。
     private func ensurePanel() -> WindowSwitcherPanel {
-        if let panel { return panel }
+        panel?.orderOut(nil)
         let panel = WindowSwitcherPanel(
             model: ensureModel(),
             onSelect: { [weak self] id in

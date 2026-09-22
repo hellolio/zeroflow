@@ -8,6 +8,7 @@ enum SettingsTab: String, CaseIterable {
     case screenshot = "截图"
     case switcher = "切换"
     case dock = "Dock"
+    case dockPreview = "Dock 预览"
     case finder = "右键菜单"
 
     var title: String { L10n.tr(rawValue) }
@@ -37,6 +38,8 @@ struct SettingsView: View {
                 switcherTab
             case .dock:
                 dockTab
+            case .dockPreview:
+                dockPreviewTab
             case .finder:
                 finderTab
             }
@@ -175,6 +178,65 @@ struct SettingsView: View {
 
                 Section {
                     ScreenRecordingPermissionRow()
+                } header: {
+                    Text(L10n.tr("屏幕录制权限"))
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    // MARK: - Dock 预览
+
+    private var dockPreviewTab: some View {
+        Form {
+            Section {
+                Toggle(L10n.tr("悬停 Dock 图标显示窗口缩略图"), isOn: $store.dockPreviewEnabled)
+                    .onChange(of: store.dockPreviewEnabled) { enabled in
+                        guard enabled else { return }
+                        if !AccessibilityPermission.isGranted {
+                            AccessibilityPermission.requestAuthorization()
+                        }
+                    }
+            } header: {
+                Text(L10n.tr("启用"))
+            } footer: {
+                Text(L10n.tr("悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。"))
+            }
+
+            if store.dockPreviewEnabled {
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("悬停延时")) {
+                            Text("\(store.dockPreviewHoverDelayMs) ms")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.dockPreviewHoverDelayMs) },
+                            set: { store.dockPreviewHoverDelayMs = Int($0) }
+                        ), in: 100...1000, step: 50)
+                    }
+                } header: {
+                    Text(L10n.tr("选项"))
+                } footer: {
+                    Text(L10n.tr("鼠标停留在 Dock 图标上多久后弹出预览。"))
+                }
+
+                Section {
+                    AccessibilityPermissionRow(message: L10n.tr("需要「辅助功能」权限才能监测 Dock 悬停"))
+                    Text(L10n.tr("该权限与 Dock 单击最小化共用，若已开启则此处直接显示绿色。"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } header: {
+                    Text(L10n.tr("权限"))
+                }
+
+                Section {
+                    ScreenRecordingPermissionRow()
+                    Text(L10n.tr("缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 } header: {
                     Text(L10n.tr("屏幕录制权限"))
                 }

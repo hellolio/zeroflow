@@ -27,6 +27,21 @@ enum AXWindow {
         return nil
     }
 
+    /// 返回 app 当前聚焦窗口的 CGWindowID（kAXFocusedWindowAttribute）。
+    /// 同 app 多窗口切换时用它确定「当前窗口」：CGWindowListCopyWindowInfo 的顺序不会随
+    /// 窗口间激活而刷新（实测：SLS 真 z-序已变化但 CGWindowList 顺序保持旧序），用 AX 聚焦
+    /// 窗口比「CGWindowList 第一个 onscreen 窗口」可靠；AX 取不到时调用方回退 CGWindowList 兜底。
+    static func focusedWindowID(for pid: pid_t) -> CGWindowID? {
+        let appElement = AXUIElementCreateApplication(pid)
+        var raw: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(appElement, kAXFocusedWindowAttribute as CFString, &raw) == .success,
+              let raw, CFGetTypeID(raw) == AXUIElementGetTypeID() else { return nil }
+        let focused = raw as! AXUIElement
+        var wid: CGWindowID = 0
+        guard _AXUIElementGetWindow(focused, &wid) == .success, wid != 0 else { return nil }
+        return wid
+    }
+
     /// 读取窗口的 AX subrole（对齐 AltTab WindowDiscriminator：真窗口 subrole 应为
     /// AXStandardWindow 或 AXDialog；返回 nil = 没有可匹配的 AX 窗口实体 → 视为幽灵）。
     static func subrole(for wid: CGWindowID, pid: pid_t) -> String? {

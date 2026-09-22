@@ -269,8 +269,16 @@ final class WindowList {
         // 前台窗口强制记最新活跃：对齐 AltTab「聚焦窗口永远是最近激活」。这是确定性的 index0 = 当前窗口
         // 修复——若某窗口带着旧日期（全屏/跨 Space 下 noteFocus 曾遗漏等），日期比较会压过前台性，
         // 导致当前窗口排不到第一张卡。此处直接把它升为最新，从根上消除。
-        if let frontmostPID, let currentID = frontWindowByPid[frontmostPID] {
-            tracker.noteFocus(wid: currentID)
+        // 当前窗口优先用 AX 聚焦窗口：CGWindowListCopyWindowInfo 的顺序不会随同 app 窗口间激活刷新
+        // （实测 SLS 真 z-序已更新、CGWindowList 仍保持旧序，曾导致「最后一个激活窗口排不到第一张卡」），
+        // kAXFocusedWindowAttribute 语义上就是「当前窗口」，取不到时回退 CGWindowList 顶层 onscreen 窗口。
+        if let frontmostPID {
+            let currentID = AXWindow.focusedWindowID(for: frontmostPID) ?? frontWindowByPid[frontmostPID]
+            // 同步兜底表，让下面 sort 的 aIsFront/bIsFront tiebreak 与调试日志的 current 判定保持一致。
+            if currentID != nil { frontWindowByPid[frontmostPID] = currentID }
+            if let currentID {
+                tracker.noteFocus(wid: currentID)
+            }
         }
 
         result.sort { a, b in

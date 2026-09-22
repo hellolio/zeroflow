@@ -44,6 +44,7 @@ open build/Build/Products/Release/Zeroflow.app
   - `CaptureCoordinator`: 权限→遮罩→捕获→编辑页 的协调器,`isActive` 防重入。
   - `DockClickMinimizer`: Dock 单击最小化(CGEventTap + AX),受 `dockClickMinimize` 开关控制。
   - `CommandTabSwitcher`: 内置 ⌘⇥ 窗口缩略图切换器(CGEventTap + AX),受 `cmdTabSwitcherEnabled` 开关控制; 会话中 ⇥/⇧⇥/方向键移动选择, 悬停卡片可退出/关闭/最小化/全屏(`WindowOps`, 本 app 窗口走主线程 NSWindow)。
+  - `DockHoverPreviewController` + `Views/DockPreviewPanel`: Dock 悬停窗口预览(listen-only CGEventTap + Dock AX 探测独立拷贝自 DockClickMinimizer,受 `dockPreviewEnabled` 开关控制); 窗口来源与切换器同源(`WindowList.enumerate()` 按 bundleID 过滤, 含最小化瓦片), idle→pending→visible 状态机 + generation 作废, 面板非激活 NSPanel, 卡片点击激活(`WindowActivator`)/悬停关闭(`WindowOps`)。
   - `WindowList`: 窗口枚举(CGWindowList 公开 API)+ 幽灵窗口过滤 + 窗口级 MRU 排序 + 无窗口 app 占位卡(开关 `windowSwitcherShowWindowlessApps`, 排最后); `CGSWindowServer`: SkyLight/CGS 私有 API dlsym 桥(SLS 批量枚举 + 可见/全量成员列表 + Space 拓扑, 符号缺失退回公开 API); `PhantomWindowDetector`: 幽灵判定(对齐 AltTab cgsVerdict, 含 AX subrole 兜底); `WindowActivityTracker`: AX 焦点通知维护窗口级 MRU; `WindowThumbnailer`: SkyLight 私有 API(dlsym)抓缩略图 + 缓存/节流/降级; `WindowActivator`: AX 还原/前置/激活(本 app 窗口走主线程 makeKeyAndOrderFront, AX 后台线程会崩)。切换器模块完整需求见 `需求文档.md` 第 12 章。
   - `AccessibilityPermission` / `ScreenRecordingPermission`: 辅助功能 / 屏幕录制权限检测与申请。
   - `ZSLog`: 统一日志(stderr + `/tmp/zeroflow.log`)。
@@ -71,7 +72,7 @@ open build/Build/Products/Release/Zeroflow.app
 
 ### 设置(`Models/SettingsStore.swift` + `Views/SettingsView.swift`)
 
-- 三个标签页: 通用(开机自启)/ 截图(启用截图功能、快捷键、屏幕录制权限、保存)/ Dock(单击最小化开关 + 辅助功能权限引导)。
+- 三个标签页: 通用(开机自启)/ 截图(启用截图功能、快捷键、屏幕录制权限、保存)/ Dock(单击最小化开关 + 辅助功能权限引导)/ 切换(⌘⇥ 切换器)/ Dock 预览(悬停预览开关 + 悬停延时)/ 右键菜单(FinderSync)。
 - `screenshotEnabled`(默认关)是总开关: 关闭时全局热键不注册、菜单「立即截图」置灰、`CaptureCoordinator.startCapture` 直接忽略。
 - `dockClickMinimize` 开关变化由 `DockClickMinimizer` 监听通知启停 CGEventTap; `launchAtLogin` 变化经 `SMAppService.mainApp` 注册/注销(带防重入 + 注册失败回滚)。
 - 所有 UserDefaults key 与默认值见 `需求文档.md` FR-12.9。
@@ -84,4 +85,5 @@ open build/Build/Products/Release/Zeroflow.app
 | `ZEROFLOW_EDITOR_DEBUG=1` | 启动 1.5s 后直接打开编辑页(合成网格图),绕过截图 |
 | `ZEROFLOW_DOCK_PROBE=1` | 启动 1s 后 dump Dock 的 AX 布局到日志 |
 | `ZEROFLOW_SWITCHER_DEBUG=1` | 启动 1s 后 dump 一次窗口列表（数量、按 app 分组、是否含最小化窗口）+ 打印「⌘⇥ tap 是否已安装」到日志 |
+| `ZEROFLOW_DOCKPREVIEW_DEBUG=1` | 打印 Dock 悬停预览的命中/展示/隐藏决策与 Dock 项缓存重建日志 |
 | `ZEROFLOW_FAKE_PERMISSION=1` | 跳过真实权限检测(视为已授权) |

@@ -19,6 +19,8 @@ final class SettingsStore: ObservableObject {
         static let askSaveLocation = "askSaveLocation"
         static let screenshotEnabled = "screenshotEnabled"
         static let dockClickMinimize = "dockClickMinimize"
+        static let dockPreviewEnabled = "dockPreviewEnabled"
+        static let dockPreviewHoverDelayMs = "dockPreviewHoverDelayMs"
         static let cmdTabSwitcherEnabled = "cmdTabSwitcherEnabled"
         static let windowSwitcherShowWindowlessApps = "windowSwitcherShowWindowlessApps"
         static let cmdTabShortcutKeyCode = "cmdTabShortcut.keyCode"
@@ -68,6 +70,8 @@ final class SettingsStore: ObservableObject {
             Keys.askSaveLocation: false,
             Keys.screenshotEnabled: false,
             Keys.dockClickMinimize: false,
+            Keys.dockPreviewEnabled: false,
+            Keys.dockPreviewHoverDelayMs: 300,
             Keys.cmdTabSwitcherEnabled: false,
             Keys.windowSwitcherShowWindowlessApps: true,
             Keys.cmdTabShortcutKeyCode: Int(ShortcutKey.cmdTabDefault.keyCode),
@@ -80,6 +84,8 @@ final class SettingsStore: ObservableObject {
         _askSaveLocation = Published(initialValue: defaults.bool(forKey: Keys.askSaveLocation))
         _screenshotEnabled = Published(initialValue: defaults.bool(forKey: Keys.screenshotEnabled))
         _dockClickMinimize = Published(initialValue: defaults.bool(forKey: Keys.dockClickMinimize))
+        _dockPreviewEnabled = Published(initialValue: defaults.bool(forKey: Keys.dockPreviewEnabled))
+        _dockPreviewHoverDelayMs = Published(initialValue: defaults.integer(forKey: Keys.dockPreviewHoverDelayMs))
         _cmdTabSwitcherEnabled = Published(initialValue: defaults.bool(forKey: Keys.cmdTabSwitcherEnabled))
         _windowSwitcherShowWindowlessApps = Published(initialValue: defaults.bool(forKey: Keys.windowSwitcherShowWindowlessApps))
         _finderNewFileEnabled = Published(initialValue: defaults.bool(forKey: Keys.finderNewFileEnabled))
@@ -260,6 +266,26 @@ final class SettingsStore: ObservableObject {
                 object: nil,
                 userInfo: ["enabled": dockClickMinimize]
             )
+        }
+    }
+
+    // MARK: - Dock 预览
+
+    @Published var dockPreviewEnabled: Bool {
+        didSet {
+            defaults.set(dockPreviewEnabled, forKey: Keys.dockPreviewEnabled)
+            NotificationCenter.default.post(
+                name: DockHoverPreviewController.didChangeNotification,
+                object: nil,
+                userInfo: ["enabled": dockPreviewEnabled]
+            )
+        }
+    }
+
+    /// 悬停多久后弹出预览（毫秒）
+    @Published var dockPreviewHoverDelayMs: Int {
+        didSet {
+            defaults.set(dockPreviewHoverDelayMs, forKey: Keys.dockPreviewHoverDelayMs)
         }
     }
 
