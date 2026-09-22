@@ -185,15 +185,15 @@ final class DockPreviewPanel: NSPanel {
             case .above:
                 let x = Self.clamp(anchorCocoa.midX - size.width / 2,
                                    screen.frame.minX + 8, screen.frame.maxX - size.width - 8)
-                origin = NSPoint(x: x, y: anchorCocoa.maxY + 8)
+                origin = NSPoint(x: x, y: anchorCocoa.maxY + 2)
             case .rightOf:
                 let y = Self.clamp(anchorCocoa.midY - size.height / 2,
                                    screen.frame.minY + 8, screen.frame.maxY - size.height - 8)
-                origin = NSPoint(x: anchorCocoa.maxX + 8, y: y)
+                origin = NSPoint(x: anchorCocoa.maxX + 2, y: y)
             case .leftOf:
                 let y = Self.clamp(anchorCocoa.midY - size.height / 2,
                                    screen.frame.minY + 8, screen.frame.maxY - size.height - 8)
-                origin = NSPoint(x: anchorCocoa.minX - 8 - size.width, y: y)
+                origin = NSPoint(x: anchorCocoa.minX - 2 - size.width, y: y)
             }
             setFrameOrigin(origin)
         }

@@ -36,6 +36,10 @@ final class DockHoverPreviewController {
     private static let stripGateMargin: CGFloat = 16
     /// 条带不可用时的边缘兜底触发宽度
     private static let edgeFallbackMargin: CGFloat = 150
+    /// visible 后移出 图标∪面板(外扩) 的隐藏宽限（s）：给鼠标移向面板留时间
+    private static let hideGrace: TimeInterval = 0.2
+    /// 保活判定对 图标/面板 的外扩：吞掉两者之间的缝隙，慢速移动不掉出保活区
+    private static let keepAliveInset: CGFloat = 6
     /// 兜底命中测试时向上找 dock 项的父级深度上限
     private static let parentWalkDepth = 8
     /// move 事件处理节流间隔（s）：几何判定足够快，但没必要每个 HID 事件都跑
@@ -68,10 +72,11 @@ final class DockHoverPreviewController {
 
     private let lock = NSLock()
     private var phase: Phase = .idle
-    /// show 工作代数：scheduleShow 递增使旧 show 作废；hidePanel/failResolve 也递增。
-    /// 没有独立的「隐藏代数」：移出保活区不再走宽限隐藏，而是直接挂一次重定位 show，
-    /// 由到期时的位置闸门/AX 命中决定弹新目标还是收尾，避免 show/hide 互相误杀。
+    /// show 工作代数：scheduleShow 递增使旧 show 作废；hidePanel/failResolve 也递增
     private var showGen = 0
+    /// 宽限隐藏代数：移出 图标∪面板 后挂 200ms 宽限隐藏（给「移向面板」留时间），
+    /// 回到区域内即取消；与 showGen 分开避免互相误杀
+    private var hideGen = 0
     /// 当前悬停候选（缓存项 id；缓存重建后可能错位，仅作优化信号）
     private var hoverItemID: Int?
     /// 已调度、尚未触发的 show 工作代数（防同一停留重复调度）
@@ -366,21 +371,26 @@ final class DockHoverPreviewController {
         case .visible:
             if let entry = hit, entry.id != hoverID {
                 setHoverItem(entry.id)
+                bumpHideGen() // 取消可能挂着的宽限隐藏，避免它杀掉在途 show
                 softHidePanel() // 换目标：旧面板立刻消失，避免残留与「扫过旧面板区域取消重弹」
                 scheduleShow(after: hoverDelay()) // 相邻图标：延时后原位换内容
                 return
             }
-            // 面板显示中：仍在 图标∪面板 内 → 保活（锚点冻结，图标缩放不跟随）
+            // 面板显示中：仍在 (图标∪面板)±6pt 内 → 保活（外扩吞掉两者间缝隙，慢速移动不掉出）
             var inside = false
-            if let anchorFrame, anchorFrame.contains(point) { inside = true }
-            if let panelFrame, panelFrame.contains(point) { inside = true }
+            if let anchorFrame, anchorFrame.insetBy(dx: Self.keepAliveInset, dy: Self.keepAliveInset).contains(point) { inside = true }
+            if let panelFrame, panelFrame.insetBy(dx: Self.keepAliveInset, dy: Self.keepAliveInset).contains(point) { inside = true }
             if inside {
-                reshowPanelIfSoftHidden() // 宽限期内回来：把软隐藏的面板重新弹出
+                bumpHideGen() // 取消已调度的宽限隐藏
             } else {
-                // 移出 图标∪面板：面板立刻消失，并直接挂一次重定位 show——
-                // 到期时指针仍在 Dock 条带附近就原位换目标，已离开则位置闸门拦截后自动收尾
-                softHidePanel()
-                scheduleShow(after: hoverDelay())
+                // 移出保活区：不立即隐藏，挂 200ms 宽限隐藏——
+                // 给「移向面板」留时间；在途 show（换目标重弹）时则交给 show 自行收尾
+                lock.lock()
+                let hasPendingShow = pendingShowGen != nil
+                lock.unlock()
+                if !hasPendingShow {
+                    scheduleHideAfterGrace()
+                }
             }
         }
     }
@@ -402,6 +412,30 @@ final class DockHoverPreviewController {
     }
 
     // MARK: - 调度
+
+    /// 保活：取消待触发的宽限隐藏（不动在途 show）
+    private func bumpHideGen() {
+        lock.lock()
+        hideGen += 1
+        lock.unlock()
+    }
+
+    /// 宽限隐藏：移出 图标∪面板(外扩) 200ms 后仍在 visible 且无在途 show 才真正隐藏。
+    /// 期间回到保活区（bumpHideGen）或调度了新 show（pendingShowGen 置位/作废本 hide）都会取消。
+    private func scheduleHideAfterGrace() {
+        lock.lock()
+        hideGen += 1
+        let h = hideGen
+        lock.unlock()
+        workQueue.asyncAfter(deadline: .now() + Self.hideGrace) { [weak self] in
+            guard let self else { return }
+            self.lock.lock()
+            let live = h == self.hideGen && self.phase == .visible && self.pendingShowGen == nil
+            self.lock.unlock()
+            guard live else { return }
+            self.hidePanel(reason: "left icon+panel region")
+        }
+    }
 
     private func scheduleShow(after delay: TimeInterval) {
         lock.lock()
@@ -440,25 +474,6 @@ final class DockHoverPreviewController {
             self.lock.lock()
             self.panelFrameTL = nil
             self.lock.unlock()
-        }
-    }
-
-    /// 保活时若面板之前被软隐藏过，重新显示（同图标/同面板区域内的回移）
-    private func reshowPanelIfSoftHidden() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.lock.lock()
-            let stillVisible = self.phase == .visible
-            let anchor = self.currentItemTL
-            self.lock.unlock()
-            guard stillVisible, !self.panelShown, let panel = self.panel else { return }
-            panel.orderFront(nil)
-            self.panelShown = true
-            if let anchor {
-                self.lock.lock()
-                self.panelFrameTL = self.toTopLeftCoords(panel.frame)
-                self.lock.unlock()
-            }
         }
     }
 
