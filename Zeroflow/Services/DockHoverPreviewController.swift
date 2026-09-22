@@ -31,12 +31,13 @@ final class DockHoverPreviewController {
 
     private static let dockBundleID = "com.apple.dock"
     private static let dockItemRole = "AXApplicationDockItem"
-    /// 事件路径预筛：点距屏幕边缘该宽度内才可能落在 Dock 上
-    private static let edgeMargin: CGFloat = 200
+    /// 触发/闸门对 Dock 条带 bbox 的外扩：触发稍早于进入，闸门拦截条带外的误命中（如放大图标的「空气区」）
+    private static let stripTriggerMargin: CGFloat = 30
+    private static let stripGateMargin: CGFloat = 16
+    /// 条带不可用时的边缘兜底触发宽度
+    private static let edgeFallbackMargin: CGFloat = 150
     /// 兜底命中测试时向上找 dock 项的父级深度上限
     private static let parentWalkDepth = 8
-    /// visible 后移出 图标∪面板 的隐藏宽限（s）
-    private static let hideGrace: TimeInterval = 0.2
     /// move 事件处理节流间隔（s）：几何判定足够快，但没必要每个 HID 事件都跑
     private static let moveThrottle: CFTimeInterval = 0.016
 
@@ -67,7 +68,10 @@ final class DockHoverPreviewController {
 
     private let lock = NSLock()
     private var phase: Phase = .idle
-    private var generation = 0
+    /// show 工作代数：scheduleShow 递增使旧 show 作废；hidePanel/failResolve 也递增。
+    /// 没有独立的「隐藏代数」：移出保活区不再走宽限隐藏，而是直接挂一次重定位 show，
+    /// 由到期时的位置闸门/AX 命中决定弹新目标还是收尾，避免 show/hide 互相误杀。
+    private var showGen = 0
     /// 当前悬停候选（缓存项 id；缓存重建后可能错位，仅作优化信号）
     private var hoverItemID: Int?
     /// 已调度、尚未触发的 show 工作代数（防同一停留重复调度）
@@ -286,19 +290,6 @@ final class DockHoverPreviewController {
 
     // MARK: - 状态机（tap 线程决策，workQueue/主线程执行）
 
-    private func bumpGeneration() -> Int {
-        lock.lock()
-        generation += 1
-        let g = generation
-        lock.unlock()
-        return g
-    }
-
-    private func isLive(_ g: Int) -> Bool {
-        lock.lock(); defer { lock.unlock() }
-        return g == generation && phase != .idle
-    }
-
     private func isVisible() -> Bool {
         lock.lock(); defer { lock.unlock() }
         return phase == .visible
@@ -359,8 +350,8 @@ final class DockHoverPreviewController {
                     scheduleShow(after: hoverDelay())
                 }
                 // 同一图标内移动不重置计时
-            } else if isNearDockEdge(point) {
-                // 缓存未命中（无效/过期/放大中）：仍在 Dock 边缘区就挂一次延时，
+            } else if isNearDockStrip(point) {
+                // 缓存未命中（无效/过期/放大中图标横移）：指针在 Dock 条带附近才挂延时，
                 // 到期后由 AX 权威命中判定真正目标
                 scheduleShowIfNone(after: hoverDelay())
             }
@@ -384,10 +375,12 @@ final class DockHoverPreviewController {
             if let anchorFrame, anchorFrame.contains(point) { inside = true }
             if let panelFrame, panelFrame.contains(point) { inside = true }
             if inside {
-                bumpGeneration() // 取消已调度的隐藏
+                reshowPanelIfSoftHidden() // 宽限期内回来：把软隐藏的面板重新弹出
             } else {
-                softHidePanel() // 移出保活区：面板立刻消失，宽限期内回来会重新走弹出流程
-                scheduleHideAfterGrace()
+                // 移出 图标∪面板：面板立刻消失，并直接挂一次重定位 show——
+                // 到期时指针仍在 Dock 条带附近就原位换目标，已离开则位置闸门拦截后自动收尾
+                softHidePanel()
+                scheduleShow(after: hoverDelay())
             }
         }
     }
@@ -411,8 +404,9 @@ final class DockHoverPreviewController {
     // MARK: - 调度
 
     private func scheduleShow(after delay: TimeInterval) {
-        let g = bumpGeneration()
         lock.lock()
+        showGen += 1
+        let g = showGen
         pendingShowGen = g
         if phase == .idle { phase = .pending }
         lock.unlock()
@@ -420,10 +414,10 @@ final class DockHoverPreviewController {
             guard let self else { return }
             self.lock.lock()
             if self.pendingShowGen == g { self.pendingShowGen = nil }
-            let live = g == self.generation && (self.phase == .pending || self.phase == .visible)
+            let live = g == self.showGen && (self.phase == .pending || self.phase == .visible)
             self.lock.unlock()
             guard live else { return }
-            self.resolveAndShow(generation: g)
+            self.resolveAndShow(showGen: g)
         }
     }
 
@@ -434,14 +428,6 @@ final class DockHoverPreviewController {
         lock.unlock()
         guard none else { return }
         scheduleShow(after: delay)
-    }
-
-    private func scheduleHideAfterGrace() {
-        let g = bumpGeneration()
-        workQueue.asyncAfter(deadline: .now() + Self.hideGrace) { [weak self] in
-            guard let self, self.isLive(g) else { return }
-            self.hidePanel(reason: "left icon+panel region")
-        }
     }
 
     /// 视觉上立刻收起面板（换目标/移出时），状态保持不变以便正常重弹。
@@ -457,6 +443,25 @@ final class DockHoverPreviewController {
         }
     }
 
+    /// 保活时若面板之前被软隐藏过，重新显示（同图标/同面板区域内的回移）
+    private func reshowPanelIfSoftHidden() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.lock.lock()
+            let stillVisible = self.phase == .visible
+            let anchor = self.currentItemTL
+            self.lock.unlock()
+            guard stillVisible, !self.panelShown, let panel = self.panel else { return }
+            panel.orderFront(nil)
+            self.panelShown = true
+            if let anchor {
+                self.lock.lock()
+                self.panelFrameTL = self.toTopLeftCoords(panel.frame)
+                self.lock.unlock()
+            }
+        }
+    }
+
     private func hidePanel(reason: String) {
         lock.lock()
         phase = .idle
@@ -466,10 +471,9 @@ final class DockHoverPreviewController {
         panelFrameTL = nil
         suppressKey = nil
         suppressRegionTL = nil
-        generation += 1
-        let g = generation
+        showGen += 1
         lock.unlock()
-        if Self.debug { ZSLog("DockHoverPreview: hide (\(reason)) gen=\(g)") }
+        ZSLog("DockHoverPreview: hide (\(reason))")
         let dismiss = { [weak self] in
             guard let self else { return }
             self.panel?.orderOut(nil)
@@ -504,7 +508,7 @@ final class DockHoverPreviewController {
 
     /// 延时到期：AX 权威命中 → 过滤窗口 → 主线程展示。
     /// 失败（不在 Dock 项上/命中右键菜单/目标无窗口）时回到 idle；面板已开则收起。
-    private func resolveAndShow(generation: Int) {
+    private func resolveAndShow(showGen g: Int) {
         let point: CGPoint = {
             lock.lock(); defer { lock.unlock() }
             return lastMousePoint
@@ -523,15 +527,22 @@ final class DockHoverPreviewController {
                 } else if !entry.item.title.isEmpty {
                     target = .tile(title: entry.item.title, frameTL: entry.item.frame)
                 } else {
-                    failResolve(generation: generation, reason: "no dock item at point")
+                    failResolve(showGen: g, reason: "no dock item at point")
                     return
                 }
             } else {
-                failResolve(generation: generation, reason: "no dock item at point")
+                failResolve(showGen: g, reason: "no dock item at point")
                 return
             }
         case .notDockElement:
-            failResolve(generation: generation, reason: "point is not a dock item")
+            failResolve(showGen: g, reason: "point is not a dock item")
+            return
+        }
+        // 位置闸门：指针必须确实在 Dock 条带附近，防止放大图标的「空气区」/远处误命中导致过早弹出
+        if let gate = dockBarFrameTL() ?? dockStripTL(),
+           !gate.insetBy(dx: -Self.stripGateMargin, dy: -Self.stripGateMargin).contains(point) {
+            ZSLog("DockHoverPreview: gate reject pt=\(point) strip=\(gate)")
+            failResolve(showGen: g, reason: "pointer outside dock strip")
             return
         }
         // 点击卡片激活后的防重弹：同一目标且指针仍在原图标区域内 → 不弹
@@ -542,33 +553,35 @@ final class DockHoverPreviewController {
         }
         lock.unlock()
         if suppressed {
-            failResolve(generation: generation, reason: "suppressed after activate")
+            failResolve(showGen: g, reason: "suppressed after activate")
             return
         }
         let windows = windows(for: target)
         guard !windows.isEmpty else {
-            failResolve(generation: generation, reason: "target has no windows")
+            failResolve(showGen: g, reason: "target has no windows")
             return
         }
         DispatchQueue.main.async { [weak self] in
-            self?.present(windows: windows, target: target, generation: generation)
+            self?.present(windows: windows, target: target, showGen: g, pointer: point)
         }
     }
 
     /// 权威命中失败/无窗口：回到 idle；面板已开着则收起
-    private func failResolve(generation: Int, reason: String) {
+    private func failResolve(showGen g: Int, reason: String) {
         lock.lock()
         let wasVisible = phase == .visible
-        if generation == self.generation {
+        if g == self.showGen {
             phase = .idle
             hoverItemID = nil
             currentItemTL = nil
             panelFrameTL = nil
+            showGen += 1
+            pendingShowGen = nil
         }
         lock.unlock()
         if wasVisible {
             hidePanel(reason: reason)
-        } else if Self.debug {
+        } else {
             ZSLog("DockHoverPreview: resolve failed (\(reason))")
         }
     }
@@ -604,15 +617,19 @@ final class DockHoverPreviewController {
     }
 
     /// 主线程：更新模型并弹出/刷新面板（复用同一面板实例，换图标仅换内容不闪烁）
-    private func present(windows: [SwitcherWindow], target: HoverTarget, generation: Int) {
+    private func present(windows: [SwitcherWindow], target: HoverTarget, showGen generation: Int, pointer: CGPoint) {
+        // 先在锁外取锚点图标缓存 id（cachedItem 内部会加锁，NSLock 不可重入，
+        // 持锁调用会主线程死锁——面板永远弹不出来）
+        let anchorItemID = cachedItem(at: pointer)?.id
         lock.lock()
-        guard generation == self.generation, phase == .pending || phase == .visible else {
+        guard generation == self.showGen, phase == .pending || phase == .visible else {
             lock.unlock()
             return
         }
         phase = .visible
         currentItemTL = target.frameTL
-        hoverItemID = nil
+        // 同图标内移动走保活，不再误判为换目标；缓存无效时为 nil，靠 anchorFrame 保活
+        hoverItemID = anchorItemID
         lock.unlock()
 
         currentTarget = target
@@ -631,17 +648,17 @@ final class DockHoverPreviewController {
         panelFrameTL = toTopLeftCoords(panel.frame)
         lock.unlock()
         if Self.debug {
-            ZSLog("DockHoverPreview: show gen=\(generation) windows=\(windows.count) anchor=\(target.frameTL) placement=\(placement)")
+            ZSLog("DockHoverPreview: show gen=\(generation) windows=\(windows.count) anchor=\(target.frameTL)")
         }
 
         WindowThumbnailer.shared.fetchThumbnails(for: windows) { [weak self] images in
-            self?.applyThumbnails(images, generation: generation)
+            self?.applyThumbnails(images, showGen: generation)
         }
     }
 
-    private func applyThumbnails(_ images: [CGWindowID: NSImage], generation: Int) {
+    private func applyThumbnails(_ images: [CGWindowID: NSImage], showGen generation: Int) {
         lock.lock()
-        let live = generation == self.generation && phase == .visible
+        let live = generation == self.showGen && phase == .visible
         lock.unlock()
         guard live else { return }
         // 新图先入持久缓存：即使下次抓取失败/被节流，卡片也不会变回空占位
@@ -691,19 +708,19 @@ final class DockHoverPreviewController {
     private func close(windowID: CGWindowID) {
         guard let window = currentWindows.first(where: { $0.id == windowID }) else { return }
         lock.lock()
-        let gen = generation
+        let gen = showGen
         lock.unlock()
         WindowOps.perform(.close, on: window) { [weak self] in
-            self?.refreshAfterClose(generation: gen)
+            self?.refreshAfterClose(showGen: gen)
         }
     }
 
     /// 关闭后刷新：重新枚举目标窗口；最后一个窗口被关掉时整个面板撤掉
-    private func refreshAfterClose(generation: Int) {
+    private func refreshAfterClose(showGen generation: Int) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.lock.lock()
-            guard self.phase == .visible, let target = self.currentTarget, generation == self.generation else {
+            guard self.phase == .visible, let target = self.currentTarget, generation == self.showGen else {
                 self.lock.unlock()
                 return
             }
@@ -713,7 +730,7 @@ final class DockHoverPreviewController {
                 DispatchQueue.main.async { [weak self] in
                     guard let self else { return }
                     self.lock.lock()
-                    let alive = generation == self.generation && self.phase == .visible
+                    let alive = generation == self.showGen && self.phase == .visible
                     self.lock.unlock()
                     guard alive else { return }
                     if windows.isEmpty {
@@ -722,7 +739,7 @@ final class DockHoverPreviewController {
                         self.currentWindows = windows
                         self.model.items = self.makeItems(windows)
                         WindowThumbnailer.shared.fetchThumbnails(for: windows) { [weak self] images in
-                            self?.applyThumbnails(images, generation: generation)
+                            self?.applyThumbnails(images, showGen: generation)
                         }
                     }
                 }
@@ -840,7 +857,7 @@ final class DockHoverPreviewController {
     }
 
     /// trailing-edge 防抖：布局事件爆发时合并为一次重建
-    private func scheduleCacheRebuild() {
+    private func scheduleCacheRebuild(delay: TimeInterval = 0.3) {
         let work = DispatchWorkItem { [weak self] in
             self?.rebuildDockCache()
         }
@@ -848,7 +865,7 @@ final class DockHoverPreviewController {
         pendingCacheRebuild?.cancel()
         pendingCacheRebuild = work
         lock.unlock()
-        cacheQueue.asyncAfter(deadline: .now() + 0.3, execute: work)
+        cacheQueue.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
     private func rebuildDockCache() {
@@ -857,23 +874,36 @@ final class DockHoverPreviewController {
         lock.unlock()
         guard enabled else { return }
 
-        guard let dock = NSRunningApplication.runningApplications(withBundleIdentifier: Self.dockBundleID).first else { return }
+        guard let dock = NSRunningApplication.runningApplications(withBundleIdentifier: Self.dockBundleID).first else {
+            scheduleCacheRebuild(delay: 2)
+            return
+        }
         let dockElement = AXUIElementCreateApplication(dock.processIdentifier)
-        guard let windows = copyAXElements(dockElement, kAXWindowsAttribute) else { return }
+        // 注意:Dock 不通过 kAXWindowsAttribute 公开图标(实测返回空数组),
+        // 必须从应用元素的直接子元素开始递归(与 DockClickMinimizer 的命中目标同源)
+        guard let roots = copyAXElements(dockElement, kAXChildrenAttribute), !roots.isEmpty else {
+            ZSLog("DockHoverPreview: cache rebuild retry (dock children unreadable)")
+            scheduleCacheRebuild(delay: 2)
+            return
+        }
 
         var nextID = 0
         var items: [DockItem] = []
-        for window in windows {
-            collectDockItems(in: window, into: &items, nextID: &nextID)
+        var roles: [String: Int] = [:]
+        for root in roots {
+            collectDockItems(in: root, into: &items, nextID: &nextID, roles: &roles)
         }
         lock.lock()
         dockItems = items
         cacheInvalid = false
         lock.unlock()
-        if Self.debug { ZSLog("DockHoverPreview: cache rebuilt, items=\(items.count)") }
+        let top = roles.sorted { $0.value > $1.value }.prefix(6).map { "\($0.key)=\($0.value)" }.joined(separator: ",")
+        ZSLog("DockHoverPreview: cache rebuilt items=\(items.count) strip=\(bboxOfItems(items).map{"\($0)"} ?? "nil") roles=[\(top)]")
     }
 
-    private func collectDockItems(in element: AXUIElement, into items: inout [DockItem], nextID: inout Int) {
+    private func collectDockItems(in element: AXUIElement, into items: inout [DockItem], nextID: inout Int, roles: inout [String: Int]) {
+        let roleName = copyAXValue(element, kAXRoleAttribute, as: CFString.self) as String? ?? "?"
+        roles[roleName, default: 0] += 1
         if isDockItemElement(element),
            let point = axPoint(element, kAXPositionAttribute),
            let size = axSize(element, kAXSizeAttribute) {
@@ -884,7 +914,7 @@ final class DockHoverPreviewController {
         }
         if let children = copyAXElements(element, kAXChildrenAttribute) {
             for child in children {
-                collectDockItems(in: child, into: &items, nextID: &nextID)
+                collectDockItems(in: child, into: &items, nextID: &nextID, roles: &roles)
             }
         }
     }
@@ -1002,13 +1032,66 @@ final class DockHoverPreviewController {
         )
     }
 
-    private func isNearDockEdge(_ point: CGPoint) -> Bool {
+    /// Dock 条带 bbox（缓存项整体范围，AX 左上原点全局坐标）；缓存无效时 nil
+    private func dockStripTL() -> CGRect? {
+        lock.lock(); defer { lock.unlock() }
+        guard !cacheInvalid else { return nil }
+        return bboxOfItems(dockItems)
+    }
+
+    private func bboxOfItems(_ items: [DockItem]) -> CGRect? {
+        var bbox = CGRect.null
+        for item in items { bbox = bbox.union(item.frame) }
+        return bbox.isNull ? nil : bbox
+    }
+
+    /// 指针是否在 Dock 条带附近（外扩 stripTriggerMargin）：作为挂起权威命中的触发条件。
+    /// 对齐 DockClickMinimizer 的思路：只有真正接近 Dock 本体才参与判定，
+    /// 而不是「靠近屏幕任意边缘」——后者会导致从上方接近时过早触发、在屏幕中部误触发。
+    private func isNearDockStrip(_ point: CGPoint) -> Bool {
+        if let zone = (dockBarFrameTL() ?? dockStripTL())?.insetBy(dx: -Self.stripTriggerMargin, dy: -Self.stripTriggerMargin) {
+            return zone.contains(point)
+        }
+        return isNearDockEdgeFallback(point)
+    }
+
+    /// 兕底触发区：屏幕底/左/右边缘 150pt（不含顶部，避免菜单栏区参与判定）。
+    /// 仅当 Dock 条带信息完全不可用时短暂使用；「没到 Dock 就弹」由到期闸门拦截。
+    private func isNearDockEdgeFallback(_ point: CGPoint) -> Bool {
         for frame in NSScreen.screens.map({ topLeftFrame(of: $0) }) where frame.contains(point) {
-            if point.x < frame.minX + Self.edgeMargin || point.x > frame.maxX - Self.edgeMargin { return true }
-            if point.y < frame.minY + Self.edgeMargin || point.y > frame.maxY - Self.edgeMargin { return true }
+            let m = Self.edgeFallbackMargin
+            if point.x < frame.minX + m || point.x > frame.maxX - m { return true }
+            if point.y > frame.maxY - m { return true }
             return false
         }
         return false
+    }
+
+    /// Dock 主窗口框（AX 左上原点全局坐标，1s TTL）。直接向 Dock 进程要窗口框，
+    /// 不依赖 Dock 项层级缓存——缓存未建好/失效时触发与闸门仍然可用。
+    private var dockBarFrameCache: (frame: CGRect, at: Date)?
+    private func dockBarFrameTL() -> CGRect? {
+        lock.lock()
+        if let c = dockBarFrameCache, Date().timeIntervalSince(c.at) < 1 {
+            lock.unlock()
+            return c.frame
+        }
+        lock.unlock()
+        guard let dock = NSRunningApplication.runningApplications(withBundleIdentifier: Self.dockBundleID).first else { return nil }
+        let dockElement = AXUIElementCreateApplication(dock.processIdentifier)
+        guard let windows = copyAXElements(dockElement, kAXWindowsAttribute) else { return nil }
+        var best: CGRect?
+        for w in windows {
+            guard let pt = axPoint(w, kAXPositionAttribute), let sz = axSize(w, kAXSizeAttribute) else { continue }
+            let f = CGRect(origin: pt, size: sz)
+            guard f.width > 0, f.height > 0 else { continue }
+            if best == nil || f.width * f.height > best!.width * best!.height { best = f }
+        }
+        guard let frame = best else { return nil }
+        lock.lock()
+        dockBarFrameCache = (frame, Date())
+        lock.unlock()
+        return frame
     }
 
     // MARK: - AX 辅助（与 DockClickMinimizer 同款）
