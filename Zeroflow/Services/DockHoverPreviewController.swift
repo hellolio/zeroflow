@@ -694,6 +694,17 @@ final class DockHoverPreviewController {
         self.panel = panel
         return panel
     }
+
+    /// 主线程：卡片剔除后重算面板尺寸（外框收缩，不留空白），
+    /// 并同步保活/mouseDown 命中用的 panelFrameTL，避免旧的大框区域误判。
+    private func refitPanelAfterClose() {
+        guard panelShown, let panel else { return }
+        panel.refit()
+        lock.lock()
+        panelFrameTL = toTopLeftCoords(panel.frame)
+        lock.unlock()
+    }
+
     // MARK: - 卡片动作（主线程）
 
     private func activate(windowID: CGWindowID) {
@@ -739,6 +750,7 @@ final class DockHoverPreviewController {
             } else {
                 self.currentWindows = remaining
                 self.model.items = self.makeItems(remaining)
+                self.refitPanelAfterClose()
             }
         }
         WindowOps.perform(.close, on: window) { [weak self] in
@@ -776,6 +788,7 @@ final class DockHoverPreviewController {
                         } else {
                             self.currentWindows = remaining
                             self.model.items = self.makeItems(remaining)
+                            self.refitPanelAfterClose()
                             WindowThumbnailer.shared.fetchThumbnails(for: remaining) { [weak self] images in
                                 self?.applyThumbnails(images, showGen: generation)
                             }

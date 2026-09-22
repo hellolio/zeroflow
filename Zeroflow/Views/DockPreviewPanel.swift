@@ -148,6 +148,13 @@ final class DockPreviewPanel: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 
+    /// 最近一次 present 的内容与锚点（refit 复用，面板不换目标时不变）
+    private var contentModel: DockPreviewViewModel?
+    private var onSelect: ((CGWindowID) -> Void)?
+    private var onClose: ((CGWindowID) -> Void)?
+    private var anchorTL: CGRect?
+    private var placement: Placement = .above
+
     /// 依据 Dock 项位置（左上原点全局坐标）重建内容并定位、显示。
     /// 面板弹出后位置冻结（图标放大效验抖由 controller 的保活/隐藏判定兜住，不跟随重排）。
     func present(anchorTL: CGRect,
@@ -155,6 +162,38 @@ final class DockPreviewPanel: NSPanel {
                  model: DockPreviewViewModel,
                  onSelect: @escaping (CGWindowID) -> Void,
                  onClose: @escaping (CGWindowID) -> Void) {
+        contentModel = model
+        self.onSelect = onSelect
+        self.onClose = onClose
+        self.anchorTL = anchorTL
+        self.placement = placement
+        rebuildContentView()
+        layoutAndPosition()
+        orderFront(nil)
+    }
+
+    /// 关闭卡片后调用：按最新模型重算面板尺寸并重新贴回锚点，外框随之收缩不留空白。
+    /// 重建 contentView 再测量——SwiftUI 对已装载视图的更新是异步提交的，
+    /// 直接量旧视图可能量到旧布局；新视图持有同一 model 引用，fittingSize 即最新内容尺寸。
+    func refit() {
+        guard contentModel != nil else { return }
+        rebuildContentView()
+        layoutAndPosition()
+    }
+
+    private func rebuildContentView() {
+        guard let contentModel, let onSelect, let onClose else { return }
+        contentView = NSHostingView(
+            rootView: DockPreviewContentView(model: contentModel,
+                                             vertical: placement != .above,
+                                             onSelect: onSelect,
+                                             onClose: onClose)
+        )
+    }
+
+    /// 按当前内容测量尺寸，并按锚点与朝向定位（present / refit 共用）。
+    private func layoutAndPosition() {
+        guard let anchorTL else { return }
         // AX/CGEvent 全局坐标（主屏左上原点）→ Cocoa 全局坐标（左下原点）
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
         let anchorCocoa = CGRect(x: anchorTL.minX, y: unionMaxY - anchorTL.maxY,
@@ -164,12 +203,6 @@ final class DockPreviewPanel: NSPanel {
             ?? NSScreen.screens.first { $0.frame.intersects(anchorCocoa) }
             ?? NSScreen.main
 
-        contentView = NSHostingView(
-            rootView: DockPreviewContentView(model: model,
-                                             vertical: placement != .above,
-                                             onSelect: onSelect,
-                                             onClose: onClose)
-        )
         contentView?.layoutSubtreeIfNeeded()
         var size = contentView?.fittingSize ?? frame.size
         size = NSSize(width: max(1, ceil(size.width)), height: max(1, ceil(size.height)))
@@ -197,7 +230,6 @@ final class DockPreviewPanel: NSPanel {
             }
             setFrameOrigin(origin)
         }
-        orderFront(nil)
     }
 
     private static func clamp(_ value: CGFloat, _ minValue: CGFloat, _ maxValue: CGFloat) -> CGFloat {
