@@ -12,8 +12,8 @@ final class WindowSwitcherViewModel: ObservableObject {
     }
 }
 
-/// 单个窗口卡：缩略图（未就绪显示 app 图标占位）+ 标题 + app 名；
-/// 悬停时左上角显示操作按钮（退出/关闭/最小化/全屏）。
+/// 单个窗口卡：共享 `WindowCardView`，左上角注入退出/关闭/最小化/全屏四钮。
+/// 无窗口占位卡只显退出钮。
 struct SwitcherTileView: View {
     let tile: SwitcherWindow
     let isSelected: Bool
@@ -22,96 +22,23 @@ struct SwitcherTileView: View {
     var onAction: (WindowOperation) -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.black.opacity(isHovered && !isSelected ? 0.10 : 0))
-                if let thumbnail = tile.thumbnail {
-                    Image(nsImage: thumbnail)
-                        .resizable()
-                        .scaledToFit()
-                        .padding(6)
-                } else if let icon = tile.appIcon {
-                    Image(nsImage: icon)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: 52, maxHeight: 52)
-                } else {
-                    Image(systemName: "app.dashed")
-                        .font(.largeTitle)
-                        .foregroundColor(.secondary)
-                }
-
-                if isHovered {
-                    HStack(spacing: 4) {
-                        if tile.isWindowlessApp {
-                            TileActionButton(symbol: "power", title: L10n.tr("退出应用"), fill: .purple) { onAction(.quitApp) }
-                        } else {
-                            TileActionButton(symbol: "power", title: L10n.tr("退出应用"), fill: .purple) { onAction(.quitApp) }
-                            TileActionButton(symbol: "xmark", title: L10n.tr("关闭窗口"), fill: .red) { onAction(.close) }
-                            TileActionButton(symbol: "minus", title: L10n.tr("最小化"), fill: .yellow, symbolColor: .black) { onAction(.minimize) }
-                            TileActionButton(symbol: "arrow.up.left.and.arrow.down.right", title: L10n.tr("全屏切换"), fill: .green) { onAction(.maximize) }
-                        }
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(5)
-                }
+        WindowCardView(
+            thumbnail: tile.thumbnail,
+            appIcon: tile.appIcon,
+            title: tile.title,
+            appName: tile.appName,
+            isSelected: isSelected,
+            isHovered: isHovered,
+            onSelect: onSelect
+        ) {
+            if tile.isWindowlessApp {
+                TileActionButton(symbol: "power", title: L10n.tr("退出应用"), fill: .purple) { onAction(.quitApp) }
+            } else {
+                TileActionButton(symbol: "power", title: L10n.tr("退出应用"), fill: .purple) { onAction(.quitApp) }
+                TileActionButton(symbol: "xmark", title: L10n.tr("关闭窗口"), fill: .red) { onAction(.close) }
+                TileActionButton(symbol: "minus", title: L10n.tr("最小化"), fill: .yellow, symbolColor: .black) { onAction(.minimize) }
+                TileActionButton(symbol: "arrow.up.left.and.arrow.down.right", title: L10n.tr("全屏切换"), fill: .green) { onAction(.maximize) }
             }
-            .frame(width: 168, height: 118)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .controlBackgroundColor)))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(isSelected ? Color.accentColor : Color(nsColor: .separatorColor),
-                                  lineWidth: isSelected ? 3 : 1)
-            )
-            .scaleEffect(isSelected ? 1.06 : 1.0)
-            .animation(.easeOut(duration: 0.1), value: isSelected)
-
-            Text(tile.title)
-                .font(.system(size: 11, weight: .medium))
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .frame(maxWidth: 168, alignment: .leading)
-                .foregroundColor(.primary)
-                .padding(.top, 4)
-            Text(tile.appName)
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-                .frame(maxWidth: 168, alignment: .leading)
-        }
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onSelect)
-    }
-}
-
-/// 缩略图左上角的圆形操作按钮（系统红绿灯样式：直径 12pt，退出紫 / 关闭红 / 最小化黄 / 全屏绿）。
-/// 悬停时仅当前按钮轻微放大（spring 动画）。
-private struct TileActionButton: View {
-    let symbol: String
-    let title: String
-    let fill: Color
-    var symbolColor: Color = .white
-    var action: () -> Void
-
-    @State private var hovering = false
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 7, weight: .bold))
-                .foregroundColor(symbolColor)
-                .frame(width: 12, height: 12)
-                .background(Circle().fill(fill))
-        }
-        .buttonStyle(.plain)
-        .help(title)
-        .scaleEffect(hovering ? 1.28 : 1.0)
-        .shadow(color: .black.opacity(hovering ? 0.35 : 0), radius: hovering ? 2 : 0, y: hovering ? 1 : 0)
-        .animation(.spring(response: 0.2, dampingFraction: 0.6), value: hovering)
-        .onHover { over in
-            hovering = over
         }
     }
 }

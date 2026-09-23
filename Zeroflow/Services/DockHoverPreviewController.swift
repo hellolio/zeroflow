@@ -618,14 +618,11 @@ final class DockHoverPreviewController {
         }
     }
 
-    private func makeItems(_ windows: [SwitcherWindow]) -> [DockPreviewItem] {
+    /// 组装卡片模型：直接用窗口数据，先用持久缓存里的旧图占位（抓到过就一直有），
+    /// 新图抓到后在 applyThumbnails 替换，避免空面板/闪烁。
+    private func makeItems(_ windows: [SwitcherWindow]) -> [SwitcherWindow] {
         windows.map { window in
-            var item = DockPreviewItem(id: window.id,
-                                       title: window.title.isEmpty ? window.appName : window.title,
-                                       appName: window.appName,
-                                       appIcon: window.appIcon,
-                                       thumbnail: nil)
-            // 先用持久缓存里的旧图占位（抓到过就一直有），新图抓到后在 applyThumbnails 替换
+            var item = window
             item.thumbnail = thumbnailCache[window.id]
             return item
         }
