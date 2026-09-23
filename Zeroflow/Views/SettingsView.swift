@@ -245,7 +245,7 @@ struct SettingsView: View {
         .formStyle(.grouped)
     }
 
-    // MARK: - 访达新建文件
+    // MARK: - 右键菜单
 
     private var finderTab: some View {
         Form {
@@ -269,7 +269,36 @@ struct SettingsView: View {
                 } footer: {
                     Text(L10n.tr("包含扩展名，如 new file.md。名称已存在时自动追加数字（new file 1.md、new file 2.md…）。"))
                 }
+            }
 
+            Section {
+                Toggle(L10n.tr("在访达右键菜单中显示「自定义命令」"), isOn: $store.finderCmdEnabled)
+            } header: {
+                Text(L10n.tr("自定义命令"))
+            } footer: {
+                Text(L10n.tr("开启后，访达右键菜单新增一条菜单项，点击即执行下方配置的命令。"))
+            }
+
+            if store.finderCmdEnabled {
+                Section {
+                    LabeledContent(L10n.tr("菜单名称")) {
+                        TextField(L10n.tr("打开终端"), text: $store.finderCmdTitle)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(maxWidth: 220)
+                    }
+                    LabeledContent(L10n.tr("命令")) {
+                        TextField(L10n.tr("如 /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\""), text: $store.finderCmdCommand)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(maxWidth: 340)
+                    }
+                } header: {
+                    Text(L10n.tr("命令配置"))
+                } footer: {
+                    Text(L10n.tr("命令中的 {path} 会替换为右键目标的绝对路径：右键文件夹=该文件夹、右键文件=其所在文件夹、右键空白处=当前目录；不含 {path} 则原样执行。路径含空格请给 {path} 加引号。命令由 Zeroflow 主 App 代为执行（登录 Shell，PATH 含 Homebrew），请保持 Zeroflow 常驻运行。"))
+                }
+            }
+
+            if store.finderNewFileEnabled || store.finderCmdEnabled {
                 Section {
                     FinderSyncPermissionRow()
                 } header: {

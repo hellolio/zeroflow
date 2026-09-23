@@ -26,10 +26,11 @@ open build/Build/Products/Release/Zeroflow.app
 ```
 - **构建必须带 `-allowProvisioningUpdates`**: FinderSync 扩展 target 带 App Group(`8NHN73Q43T.com.zeroflow.app`,Team 前缀)与沙盒授权,需要 Xcode 自动生成/更新带该 App Group 的 provisioning profile;不带会直接 `No profiles ... were found` BUILD FAILED。
 - **FinderSync 扩展必须沙盒化**: pkd(pluginkit)会静默拒绝非沙盒的扩展(`com.apple.security.app-sandbox` 缺失时 `pluginkit -m` 永远不出现、`-a` 返回 0 却无任何日志)。扩展与主 app 通过 App Group(`8NHN73Q43T.com.zeroflow.app`)共享设置:主 app 非沙盒但带 `com.apple.security.application-groups`,双方直接读写 group container 里的 `finder-sync-settings.plist` 文件——**不要用 `UserDefaults(suiteName:)` 读 App Group**(沙盒扩展里读不到,cfprefsd 报 `Container: (null)`)。登记/启用一键脚本:`scripts/install-findersync.sh [Debug|Release]`,内含两个致命坑的规避:① **pkd 内存会僵住**,新扩展 `pluginkit -a` 返回 0 却查不到,必须 `killall pkd`;② **LS 残留的旧路径插件记录**(如 build 目录)会让 pkd 解析到无效路径而拒绝,必须先 `lsregister -u` 所有旧路径的 app 及其 appex,再只注册 /Applications。诊断用扩展的 os_log(`log show --predicate 'subsystem == "com.zeroflow.app.finderSync"'`)。**右键菜单项被 Finder 硬编码在菜单底部,无 API 调整位置**;**macOS Sequoia/Tahoe 陈旧扩展 bug**: app 重建/覆盖安装后扩展显示已启用但右键菜单不出现,手动关开一次即恢复——已程序化复现(`pluginkit -e ignore`→`-e use` election 循环):脚本 `install-findersync.sh` 内建(支持 `--reload-only`),主 app 启动自愈走 `Zeroflow/Services/FinderSyncReloader.swift`,设置页有「刷新右键菜单扩展」按钮。完整开发流程见 skill `findersync-workflow`。
-- **FinderSync 扩展三个沙盒/协议坑**(功能 Debug 时踩过):
+- **FinderSync 扩展四个沙盒/协议坑**(功能 Debug 时踩过):
   ① **真实家目录**: 沙盒进程里 `FileManager.default.homeDirectoryForCurrentUser` 返回的是容器目录(`~/Library/Containers/<bundle>/Data`),直接当 `directoryURLs` 会让 Finder 完全不监控任何用户路径、`menu(for:)` 永不触发。要用 `URL(fileURLWithPath: "/Users/\(NSUserName())")` 拼真实家目录。
   ② **`NSMenuItem.representedObject` 跨 XPC 不保留**: 点击动作回调里 `sender` 拿不到自定义 `representedObject`(会 `createFile: invalid sender`)。目标目录必须在动作里用 `FIFinderSyncController.default().targetedURL()`/`selectedItemURLs()` 重新推导(`targetDirectory()`),不要依赖 sender。
   ③ **右键目录无写权限**: `files.user-selected.read-write` 不覆盖 FinderSync 右键目标(`deny file-write-create`),写文件必须加 `com.apple.security.temporary-exception.files.home-relative-path.read-write`(值 `["/"]`,覆盖整个家目录;不入 App Store 可接受)。
+  ④ **子进程继承沙盒**: 扩展里 `Process` 拉起的命令仍被沙盒约束,终端/pty 类命令(如 `wezterm start`)会 EPERM 秒退。自定义命令不能在扩展里执行:扩展把请求写进 group container 的 `finder-command-*.plist` 并广播分布式通知(沙盒发通知不能带 userInfo),由非沙盒的主 app 代为执行(`Zeroflow/Services/FinderCommandRunner.swift`,启动时也会消化积压请求,超过 30s 的请求丢弃;扩展侧主 app 未运行时会把它拉起)。
 - **产物路径不可靠**: Debug 产物可能落在 `build/Build/Intermediates.noindex/ArchiveIntermediates/.../Applications/Zeroflow.app`(`cp -R` 复制这个可能是坏符号链接)。用 `find <derived>/Build -name "Zeroflow.app"` 定位,复制用 `cp -R -L` 解引用,复制前 `rm -rf` 目标。
 - **dist/ 已被 gitignore**,是发布副本。部署流程: `rm -rf dist/Zeroflow.app && cp -R -L <找到的app> dist/ && pkill -f Zeroflow.app`,再 `open dist/Zeroflow.app`。
 - 给 `-derivedDataPath` 的目录若无写权限,构建会直接 `BUILD FAILED`(0644/只读目录),换一个可写路径。
@@ -47,6 +48,7 @@ open build/Build/Products/Release/Zeroflow.app
   - `DockHoverPreviewController` + `Views/DockPreviewPanel`: Dock 悬停窗口预览(listen-only CGEventTap + Dock AX 探测独立拷贝自 DockClickMinimizer,受 `dockPreviewEnabled` 开关控制); 窗口来源与切换器同源(`WindowList.enumerate()` 按 bundleID 过滤, 含最小化瓦片), idle→pending→visible 状态机 + generation 作废, 面板非激活 NSPanel, 卡片点击激活(`WindowActivator`)/悬停关闭(`WindowOps`)。
   - `WindowList`: 窗口枚举(CGWindowList 公开 API)+ 幽灵窗口过滤 + 窗口级 MRU 排序 + 无窗口 app 占位卡(开关 `windowSwitcherShowWindowlessApps`, 排最后); `CGSWindowServer`: SkyLight/CGS 私有 API dlsym 桥(SLS 批量枚举 + 可见/全量成员列表 + Space 拓扑, 符号缺失退回公开 API); `PhantomWindowDetector`: 幽灵判定(对齐 AltTab cgsVerdict, 含 AX subrole 兜底); `WindowActivityTracker`: AX 焦点通知维护窗口级 MRU; `WindowThumbnailer`: SkyLight 私有 API(dlsym)抓缩略图 + 缓存/节流/降级; `WindowActivator`: AX 还原/前置/激活(本 app 窗口走主线程 makeKeyAndOrderFront, AX 后台线程会崩)。切换器模块完整需求见 `需求文档.md` 第 12 章。
   - `AccessibilityPermission` / `ScreenRecordingPermission`: 辅助功能 / 屏幕录制权限检测与申请。
+  - `FinderCommandRunner`: 执行 Finder 扩展转交的「访达自定义命令」(请求文件 + 分布式通知 IPC, 非沙盒代执行, 见上方坑位④); 扩展侧在 `FinderSyncExtension/FinderSync.swift` 的 `CustomCommandRunner`。
   - `ZSLog`: 统一日志(stderr + `/tmp/zeroflow.log`)。
 - 编辑页就是 `Views/EditorView.swift`(单一 1300+ 行文件)。工具: `select / pencil(画线) / rect(矩形) / ellipse(圆框) / bubble(文字气泡) / mosaic(马赛克 半径 12/18/28)`。新增其他工具/图形也先加在这个文件。
 

@@ -1,111 +1,522 @@
 {
-  "通用": { "zh-Hans": "通用", "en": "General", "ja": "一般" },
-  "截图": { "zh-Hans": "截图", "en": "Screenshot", "ja": "スクリーンショット" },
-  "切换": { "zh-Hans": "切换", "en": "Switcher", "ja": "切り替え" },
-  "Dock": { "zh-Hans": "Dock", "en": "Dock", "ja": "Dock" },
-  "右键菜单": { "zh-Hans": "右键菜单", "en": "Context Menu", "ja": "コンテキストメニュー" },
-
-  "在访达右键菜单中显示「新建空文件」": { "zh-Hans": "在访达右键菜单中显示「新建空文件」", "en": "Show \"New Empty File\" in the Finder context menu", "ja": "Finder のコンテキストメニューに「空の新規ファイル」を表示" },
-  "开启后，在「访达」窗口或桌面的用户目录内点按右键即可新建空文件；关闭后 Finder 不监控任何目录，完全无副作用。": { "zh-Hans": "开启后，在「访达」窗口或桌面的用户目录内点按右键即可新建空文件；关闭后 Finder 不监控任何目录，完全无副作用。", "en": "When enabled, right-clicking inside your user folders in Finder or on the Desktop creates a new empty file; when disabled, Finder monitors no directories and there is no side effect.", "ja": "有効にすると、Finder またはデスクトップのユーザーディレクトリ内で右クリックして空のファイルを新規作成できます。無効にすると Finder はディレクトリを監視せず、副作用はありません。" },
-  "新文件名": { "zh-Hans": "新文件名", "en": "New File Name", "ja": "新しいファイル名" },
-  "默认文件名": { "zh-Hans": "默认文件名", "en": "Default file name", "ja": "デフォルトのファイル名" },
-  "文件名": { "zh-Hans": "文件名", "en": "File Name", "ja": "ファイル名" },
-  "包含扩展名，如 new file.md。名称已存在时自动追加数字（new file 1.md、new file 2.md…）。": { "zh-Hans": "包含扩展名，如 new file.md。名称已存在时自动追加数字（new file 1.md、new file 2.md…）。", "en": "Include the file extension, e.g. new file.md. When the name already exists, a number is appended automatically (new file 1.md, new file 2.md…).", "ja": "拡張子を含めます（例: new file.md）。名前が既に存在する場合は数字が自動的に追加されます（new file 1.md、new file 2.md…）。" },
-  "访达扩展": { "zh-Hans": "访达扩展", "en": "Finder Extension", "ja": "Finder 拡張" },
-  "首次使用需在系统中启用扩展；扩展启用后，菜单出现在用户目录（含桌面）内的任意位置。": { "zh-Hans": "首次使用需在系统中启用扩展；扩展启用后，菜单出现在用户目录（含桌面）内的任意位置。", "en": "The extension must be enabled once in System Settings. Once enabled, the menu appears anywhere inside your user folders, including the Desktop.", "ja": "初回はシステム設定で拡張を有効にする必要があります。有効にすると、デスクトップを含むユーザーディレクトリ内のどこでもメニューが表示されます。" },
-  "访达扩展已启用": { "zh-Hans": "访达扩展已启用", "en": "Finder Extension Enabled", "ja": "Finder 拡張が有効です" },
-  "刷新右键菜单扩展": { "zh-Hans": "刷新右键菜单扩展", "en": "Refresh Context Menu Extension", "ja": "コンテキストメニュー拡張を再読み込み" },
-  "尚未在系统中启用访达扩展": { "zh-Hans": "尚未在系统中启用访达扩展", "en": "Finder Extension is not enabled yet", "ja": "Finder 拡張がまだ有効になっていません" },
-  "点击下方按钮，在「系统设置 → 通用 → 登录项与扩展 → 扩展」中开启 zeroflow 的「FinderSync」扩展。": { "zh-Hans": "点击下方按钮，在「系统设置 → 通用 → 登录项与扩展 → 扩展」中开启 zeroflow 的「FinderSync」扩展。", "en": "Click the button below, then turn on zeroflow's \"FinderSync\" extension in System Settings → General → Login Items & Extensions → Extensions.", "ja": "下のボタンをクリックし、システム設定 → 一般 → ログイン項目と拡張機能 → 拡張機能 で zeroflow の「FinderSync」拡張をオンにしてください。" },
-  "打开扩展管理": { "zh-Hans": "打开扩展管理", "en": "Open Extension Management", "ja": "拡張機能の管理を開く" },
-
-  "语言": { "zh-Hans": "语言", "en": "Language", "ja": "言語" },
-  "跟随系统": { "zh-Hans": "跟随系统", "en": "Follow System", "ja": "システムに従う" },
-
-  "启用截图功能": { "zh-Hans": "启用截图功能", "en": "Enable Screenshot", "ja": "スクリーンショットを有効にする" },
-  "启用": { "zh-Hans": "启用", "en": "Enable", "ja": "有効化" },
-  "关闭后，全局快捷键与菜单栏「立即截图」将停止工作。": { "zh-Hans": "关闭后，全局快捷键与菜单栏「立即截图」将停止工作。", "en": "When disabled, the global shortcut and the menu bar \"Capture Screenshot\" item stop working.", "ja": "無効にすると、グローバルショートカットとメニューバーの「スクリーンショット」項目が動作しなくなります。" },
-  "截屏快捷键": { "zh-Hans": "截屏快捷键", "en": "Screenshot Shortcut", "ja": "スクリーンショットのショートカット" },
-  "快捷键": { "zh-Hans": "快捷键", "en": "Shortcut", "ja": "ショートカット" },
-  "屏幕录制权限": { "zh-Hans": "屏幕录制权限", "en": "Screen Recording Permission", "ja": "画面収録の権限" },
-  "默认保存位置": { "zh-Hans": "默认保存位置", "en": "Default Save Location", "ja": "デフォルトの保存先" },
-  "保存时询问位置": { "zh-Hans": "保存时询问位置", "en": "Ask for Save Location", "ja": "保存先を毎回確認" },
-  "保存": { "zh-Hans": "保存", "en": "Save", "ja": "保存" },
-  "开机自动启动（登录时打开）": { "zh-Hans": "开机自动启动（登录时打开）", "en": "Launch at Login", "ja": "ログイン時に起動" },
-  "开机自启": { "zh-Hans": "开机自启", "en": "Launch at Login", "ja": "ログイン時に起動" },
-  "开启后，登录 macOS 时自动在后台启动 zeroflow，可随时用快捷键截图。": { "zh-Hans": "开启后，登录 macOS 时自动在后台启动 zeroflow，可随时用快捷键截图。", "en": "When enabled, zeroflow launches in the background at login, so you can capture anytime with the shortcut.", "ja": "有効にすると、ログイン時に zeroflow がバックグラウンドで起動し、いつでもショートカットでスクリーンショットを撮れます。" },
-
-  "用 ⌘⇥ 显示窗口缩略图": { "zh-Hans": "用 ⌘⇥ 显示窗口缩略图", "en": "Show Window Thumbnails with ⌘⇥", "ja": "⌘⇥ でウィンドウのサムネイルを表示" },
-  "开启后，按下配置的组合键会弹出窗口缩略图切换器，可切换到最小化、同 app 多窗口、其他 Space 的窗口。关闭后完全恢复系统默认。": { "zh-Hans": "开启后，按下配置的组合键会弹出窗口缩略图切换器，可切换到最小化、同 app 多窗口、其他 Space 的窗口。关闭后完全恢复系统默认。", "en": "When enabled, pressing the configured shortcut opens a window thumbnail switcher. You can switch to minimized windows, multiple windows of the same app, and windows on other Spaces. When disabled, the system default behavior is fully restored.", "ja": "有効にすると、設定したショートカットでウィンドウのサムネイル切り替えが表示されます。最小化したウィンドウ、同じアプリの複数ウィンドウ、他の Space のウィンドウに切り替えられます。無効にするとシステムのデフォルトに完全に戻ります。" },
-  "切换快捷键": { "zh-Hans": "切换快捷键", "en": "Switcher Shortcut", "ja": "切り替えのショートカット" },
-  "选择其一弹出切换器：⌘⇥（Command + Tab）或 ⌥`（Option + Tab 上方的「`」键）。⇧ + 修饰键 + 主键 后退。": { "zh-Hans": "选择其一弹出切换器：⌘⇥（Command + Tab）或 ⌥`（Option + Tab 上方的「`」键）。⇧ + 修饰键 + 主键 后退。", "en": "Pick one to open the switcher: ⌘⇥ (Command + Tab) or ⌥` (Option + the \u0060 key above Tab). ⇧ + modifier + main key goes backward.", "ja": "いずれかを選択して切り替えを表示: ⌘⇥（Command + Tab）または ⌥`（Option + Tab の上にある「\u0060」キー）。⇧ + 修飾キー + メインキーで戻ります。" },
-  "需要「辅助功能」权限才能接管 ⌘⇥ 切换": { "zh-Hans": "需要「辅助功能」权限才能接管 ⌘⇥ 切换", "en": "Accessibility permission is required to take over ⌘⇥ switching", "ja": "⌘⇥ の切り替えを引き継ぐにはアクセシビリティ権限が必要です" },
-  "该权限与 Dock 单击最小化共用，若已开启则此处直接显示绿色。": { "zh-Hans": "该权限与 Dock 单击最小化共用，若已开启则此处直接显示绿色。", "en": "This permission is shared with Dock single-click minimize; if it is already enabled, this shows green.", "ja": "この権限は Dock のワンクリック最小化と共用です。すでに有効な場合はここで緑色で表示されます。" },
-  "权限": { "zh-Hans": "权限", "en": "Permission", "ja": "権限" },
-  "选项": { "zh-Hans": "选项", "en": "Options", "ja": "オプション" },
-  "显示无窗口的应用": { "zh-Hans": "显示无窗口的应用", "en": "Show Windowless Apps", "ja": "ウィンドウのないアプリを表示" },
-  "开启「显示无窗口的应用」后，窗口全部关闭但仍在运行的应用也会显示（无缩略图时显示 app 图标）。切换器总是会列出其他 Space 上打开的窗口。": { "zh-Hans": "开启「显示无窗口的应用」后，窗口全部关闭但仍在运行的应用也会显示（无缩略图时显示 app 图标）。切换器总是会列出其他 Space 上打开的窗口。", "en": "When \"Show Windowless Apps\" is enabled, apps that are still running with all windows closed are shown (an app icon appears when there is no thumbnail). The switcher always lists windows opened on other Spaces.", "ja": "「ウィンドウのないアプリを表示」を有効にすると、すべてのウィンドウを閉じても実行中のアプリが表示されます（サムネイルがない場合はアプリアイコンが表示されます）。切り替えには他の Space で開いているウィンドウも常に一覧表示されます。" },
-
-  "单击 Dock 图标最小化窗口": { "zh-Hans": "单击 Dock 图标最小化窗口", "en": "Single-click Dock Icon to Minimize Window", "ja": "Dock アイコンのシングルクリックでウィンドウを最小化" },
-  "需要「辅助功能」权限才能最小化窗口": { "zh-Hans": "需要「辅助功能」权限才能最小化窗口", "en": "Accessibility permission is required to minimize windows", "ja": "ウィンドウを最小化するにはアクセシビリティ権限が必要です" },
-  "桌面与 Dock": { "zh-Hans": "桌面与 Dock", "en": "Desktop & Dock", "ja": "デスクトップと Dock" },
-  "前往设置": { "zh-Hans": "前往设置", "en": "Open Settings", "ja": "設定を開く" },
-  "建议同时开启「桌面与 Dock → 最小化窗口到应用图标」，可避免最小化后还原位置丢失。": { "zh-Hans": "建议同时开启「桌面与 Dock → 最小化窗口到应用图标」，可避免最小化后还原位置丢失。", "en": "It is recommended to also enable \"Desktop & Dock \u2192 Minimize windows into application icon\" to avoid losing the restore position after minimizing.", "ja": "「デスクトップと Dock → ウィンドウをアプリアイコンに最小化」も有効にすることをおすすめします。最小化後の復元位置のずれを防げます。" },
-
-  "屏幕录制权限已开启": { "zh-Hans": "屏幕录制权限已开启", "en": "Screen Recording Permission Enabled", "ja": "画面収録の権限が有効です" },
-  "需要「屏幕录制」权限才能截图": { "zh-Hans": "需要「屏幕录制」权限才能截图", "en": "Screen Recording permission is required to capture", "ja": "スクリーンショットには「画面収録」権限が必要です" },
-  "1. 点击下方「打开系统设置授权」\n2. 在「隐私与安全性 → 屏幕录制」中为 Zeroflow 打开开关\n3. 授权后回到应用，点击「重新检测」": { "zh-Hans": "1. 点击下方「打开系统设置授权」\n2. 在「隐私与安全性 → 屏幕录制」中为 Zeroflow 打开开关\n3. 授权后回到应用，点击「重新检测」", "en": "1. Click \"Open System Settings\" below\n2. In \"Privacy & Security \u2192 Screen Recording\", enable Zeroflow\n3. Return to the app and click \"Recheck\"", "ja": "1. 下の「システム設定を開く」をクリック\n2. 「プライバシーとセキュリティ → 画面収録」で Zeroflow をオンにします\n3. アプリに戻って「再確認」をクリック" },
-  "打开系统设置授权": { "zh-Hans": "打开系统设置授权", "en": "Open System Settings", "ja": "システム設定を開く" },
-  "重新检测": { "zh-Hans": "重新检测", "en": "Recheck", "ja": "再確認" },
-
-  "立即截图（%@）": { "zh-Hans": "立即截图（%@）", "en": "Capture Screenshot (%@)", "ja": "スクリーンショット (%@)" },
-  "设置…": { "zh-Hans": "设置…", "en": "Settings…", "ja": "設定…" },
-  "打开最近截图": { "zh-Hans": "打开最近截图", "en": "Open Recent Screenshot", "ja": "最近のスクリーンショットを開く" },
-  "退出 zeroflow": { "zh-Hans": "退出 zeroflow", "en": "Quit zeroflow", "ja": "zeroflow を終了" },
-  "zeroflow 设置": { "zh-Hans": "zeroflow 设置", "en": "zeroflow Settings", "ja": "zeroflow 設定" },
-  "zeroflow 截图": { "zh-Hans": "zeroflow 截图", "en": "zeroflow Screenshot", "ja": "zeroflow スクリーンショット" },
-
-  "截图失败": { "zh-Hans": "截图失败", "en": "Screenshot Failed", "ja": "スクリーンショットに失敗しました" },
-  "无法捕获所选区域，请检查屏幕录制权限后重试。": { "zh-Hans": "无法捕获所选区域，请检查屏幕录制权限后重试。", "en": "Unable to capture the selected area. Please check the Screen Recording permission and try again.", "ja": "選択した領域をキャプチャできませんでした。画面収録の権限を確認してもう一度お試しください。" },
-  "好的": { "zh-Hans": "好的", "en": "OK", "ja": "OK" },
-
-  "撤回 (⌘Z)": { "zh-Hans": "撤回 (⌘Z)", "en": "Undo (⌘Z)", "ja": "元に戻す (⌘Z)" },
-  "重做 (⇧⌘Z)": { "zh-Hans": "重做 (⇧⌘Z)", "en": "Redo (⇧⌘Z)", "ja": "やり直す (⇧⌘Z)" },
-  "画线 (L)": { "zh-Hans": "画线 (L)", "en": "Draw Line (L)", "ja": "線を描く (L)" },
-  "矩形标注": { "zh-Hans": "矩形标注", "en": "Rectangle", "ja": "四角形" },
-  "圆框标注": { "zh-Hans": "圆框标注", "en": "Ellipse", "ja": "楕円" },
-  "标注 (T)": { "zh-Hans": "标注 (T)", "en": "Annotation (T)", "ja": "注釈 (T)" },
-  "马赛克 小": { "zh-Hans": "马赛克 小", "en": "Mosaic Small", "ja": "モザイク 小" },
-  "马赛克 中": { "zh-Hans": "马赛克 中", "en": "Mosaic Medium", "ja": "モザイク 中" },
-  "马赛克 大": { "zh-Hans": "马赛克 大", "en": "Mosaic Large", "ja": "モザイク 大" },
-  "下载保存 (⌘S)": { "zh-Hans": "下载保存 (⌘S)", "en": "Save (⌘S)", "ja": "保存 (⌘S)" },
-  "复制 (⌘C)": { "zh-Hans": "复制 (⌘C)", "en": "Copy (⌘C)", "ja": "コピー (⌘C)" },
-  "粗细": { "zh-Hans": "粗细", "en": "Stroke Width", "ja": "線の太さ" },
-  "画笔颜色": { "zh-Hans": "画笔颜色", "en": "Pen Color", "ja": "ペンの色" },
-  "保存失败": { "zh-Hans": "保存失败", "en": "Save Failed", "ja": "保存に失敗しました" },
-  "无法生成图片数据": { "zh-Hans": "无法生成图片数据", "en": "Unable to generate image data", "ja": "画像データを生成できませんでした" },
-
-  "退出应用": { "zh-Hans": "退出应用", "en": "Quit App", "ja": "アプリを終了" },
-  "关闭窗口": { "zh-Hans": "关闭窗口", "en": "Close Window", "ja": "ウィンドウを閉じる" },
-  "最小化": { "zh-Hans": "最小化", "en": "Minimize", "ja": "最小化" },
-  "全屏切换": { "zh-Hans": "全屏切换", "en": "Toggle Full Screen", "ja": "フルスクリーン切り替え" },
-
-  "选择…": { "zh-Hans": "选择…", "en": "Choose…", "ja": "選択…" },
-  "打开": { "zh-Hans": "打开", "en": "Open", "ja": "開く" },
-  "选择": { "zh-Hans": "选择", "en": "Choose", "ja": "選択" },
-  "目录创建失败，请重试": { "zh-Hans": "目录创建失败，请重试", "en": "Failed to create directory. Please try again.", "ja": "ディレクトリの作成に失敗しました。もう一度お試しください。" },
-
-  "按下新快捷键…": { "zh-Hans": "按下新快捷键…", "en": "Press new shortcut…", "ja": "新しいショートカットを押してください…" },
-  "恢复默认": { "zh-Hans": "恢复默认", "en": "Restore Default", "ja": "デフォルトに戻す" },
-  "请至少按下一个修饰键（⌘/⌃/⌥/⇧）": { "zh-Hans": "请至少按下一个修饰键（⌘/⌃/⌥/⇧）", "en": "Press at least one modifier key (⌘/⌃/⌥/⇧)", "ja": "少なくとも1つの修飾キーを押してください（⌘/⌃/⌥/⇧）" },
-
-  "辅助功能权限已开启": { "zh-Hans": "辅助功能权限已开启", "en": "Accessibility Permission Enabled", "ja": "アクセシビリティ権限が有効です" },
-
-  "Dock 预览": { "zh-Hans": "Dock 预览", "en": "Dock Preview", "ja": "Dockプレビュー" },
-  "悬停 Dock 图标显示窗口缩略图": { "zh-Hans": "悬停 Dock 图标显示窗口缩略图", "en": "Show window thumbnails when hovering Dock icons", "ja": "Dockアイコンにカーソルを合わせるとウィンドウのサムネイルを表示" },
-  "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。": { "zh-Hans": "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。", "en": "Hovering a Dock icon shows thumbnails of all its windows. Click a card to switch to that window, or hover it to reveal a close button. Works on minimized-window tiles too.", "ja": "Dockアイコンにカーソルを合わせると、そのアプリの全ウィンドウのサムネイルを表示します。クリックでウィンドウを切り替え、カードにカーソルを合わせると閉じるボタンが出ます。最小化ウィンドウのタイルでも有効です。" },
-  "悬停延时": { "zh-Hans": "悬停延时", "en": "Hover delay", "ja": "ホバー遅延" },
-  "鼠标停留在 Dock 图标上多久后弹出预览。": { "zh-Hans": "鼠标停留在 Dock 图标上多久后弹出预览。", "en": "How long the mouse must stay on a Dock icon before the preview appears.", "ja": "マウスがDockアイコン上に留まってからプレビューが表示されるまでの時間。" },
-  "需要「辅助功能」权限才能监测 Dock 悬停": { "zh-Hans": "需要「辅助功能」权限才能监测 Dock 悬停", "en": "Accessibility permission is required to detect Dock hovering", "ja": "Dockのホバー検出には「アクセシビリティ」権限が必要です" },
-  "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。": { "zh-Hans": "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。", "en": "Screen Recording permission is needed to capture thumbnails; without it, cards show window titles only.", "ja": "サムネイルの取得には「画面収録」権限が必要です。未許可の場合、カードにはウィンドウタイトルのみ表示されます。" }
+  "通用": {
+    "zh-Hans": "通用",
+    "en": "General",
+    "ja": "一般"
+  },
+  "截图": {
+    "zh-Hans": "截图",
+    "en": "Screenshot",
+    "ja": "スクリーンショット"
+  },
+  "切换": {
+    "zh-Hans": "切换",
+    "en": "Switcher",
+    "ja": "切り替え"
+  },
+  "Dock": {
+    "zh-Hans": "Dock",
+    "en": "Dock",
+    "ja": "Dock"
+  },
+  "右键菜单": {
+    "zh-Hans": "右键菜单",
+    "en": "Context Menu",
+    "ja": "コンテキストメニュー"
+  },
+  "在访达右键菜单中显示「新建空文件」": {
+    "zh-Hans": "在访达右键菜单中显示「新建空文件」",
+    "en": "Show \"New Empty File\" in the Finder context menu",
+    "ja": "Finder のコンテキストメニューに「空の新規ファイル」を表示"
+  },
+  "开启后，在「访达」窗口或桌面的用户目录内点按右键即可新建空文件；关闭后 Finder 不监控任何目录，完全无副作用。": {
+    "zh-Hans": "开启后，在「访达」窗口或桌面的用户目录内点按右键即可新建空文件；关闭后 Finder 不监控任何目录，完全无副作用。",
+    "en": "When enabled, right-clicking inside your user folders in Finder or on the Desktop creates a new empty file; when disabled, Finder monitors no directories and there is no side effect.",
+    "ja": "有効にすると、Finder またはデスクトップのユーザーディレクトリ内で右クリックして空のファイルを新規作成できます。無効にすると Finder はディレクトリを監視せず、副作用はありません。"
+  },
+  "新文件名": {
+    "zh-Hans": "新文件名",
+    "en": "New File Name",
+    "ja": "新しいファイル名"
+  },
+  "默认文件名": {
+    "zh-Hans": "默认文件名",
+    "en": "Default file name",
+    "ja": "デフォルトのファイル名"
+  },
+  "文件名": {
+    "zh-Hans": "文件名",
+    "en": "File Name",
+    "ja": "ファイル名"
+  },
+  "包含扩展名，如 new file.md。名称已存在时自动追加数字（new file 1.md、new file 2.md…）。": {
+    "zh-Hans": "包含扩展名，如 new file.md。名称已存在时自动追加数字（new file 1.md、new file 2.md…）。",
+    "en": "Include the file extension, e.g. new file.md. When the name already exists, a number is appended automatically (new file 1.md, new file 2.md…).",
+    "ja": "拡張子を含めます（例: new file.md）。名前が既に存在する場合は数字が自動的に追加されます（new file 1.md、new file 2.md…）。"
+  },
+  "访达扩展": {
+    "zh-Hans": "访达扩展",
+    "en": "Finder Extension",
+    "ja": "Finder 拡張"
+  },
+  "首次使用需在系统中启用扩展；扩展启用后，菜单出现在用户目录（含桌面）内的任意位置。": {
+    "zh-Hans": "首次使用需在系统中启用扩展；扩展启用后，菜单出现在用户目录（含桌面）内的任意位置。",
+    "en": "The extension must be enabled once in System Settings. Once enabled, the menu appears anywhere inside your user folders, including the Desktop.",
+    "ja": "初回はシステム設定で拡張を有効にする必要があります。有効にすると、デスクトップを含むユーザーディレクトリ内のどこでもメニューが表示されます。"
+  },
+  "访达扩展已启用": {
+    "zh-Hans": "访达扩展已启用",
+    "en": "Finder Extension Enabled",
+    "ja": "Finder 拡張が有効です"
+  },
+  "刷新右键菜单扩展": {
+    "zh-Hans": "刷新右键菜单扩展",
+    "en": "Refresh Context Menu Extension",
+    "ja": "コンテキストメニュー拡張を再読み込み"
+  },
+  "尚未在系统中启用访达扩展": {
+    "zh-Hans": "尚未在系统中启用访达扩展",
+    "en": "Finder Extension is not enabled yet",
+    "ja": "Finder 拡張がまだ有効になっていません"
+  },
+  "点击下方按钮，在「系统设置 → 通用 → 登录项与扩展 → 扩展」中开启 zeroflow 的「FinderSync」扩展。": {
+    "zh-Hans": "点击下方按钮，在「系统设置 → 通用 → 登录项与扩展 → 扩展」中开启 zeroflow 的「FinderSync」扩展。",
+    "en": "Click the button below, then turn on zeroflow's \"FinderSync\" extension in System Settings → General → Login Items & Extensions → Extensions.",
+    "ja": "下のボタンをクリックし、システム設定 → 一般 → ログイン項目と拡張機能 → 拡張機能 で zeroflow の「FinderSync」拡張をオンにしてください。"
+  },
+  "打开扩展管理": {
+    "zh-Hans": "打开扩展管理",
+    "en": "Open Extension Management",
+    "ja": "拡張機能の管理を開く"
+  },
+  "语言": {
+    "zh-Hans": "语言",
+    "en": "Language",
+    "ja": "言語"
+  },
+  "跟随系统": {
+    "zh-Hans": "跟随系统",
+    "en": "Follow System",
+    "ja": "システムに従う"
+  },
+  "启用截图功能": {
+    "zh-Hans": "启用截图功能",
+    "en": "Enable Screenshot",
+    "ja": "スクリーンショットを有効にする"
+  },
+  "启用": {
+    "zh-Hans": "启用",
+    "en": "Enable",
+    "ja": "有効化"
+  },
+  "关闭后，全局快捷键与菜单栏「立即截图」将停止工作。": {
+    "zh-Hans": "关闭后，全局快捷键与菜单栏「立即截图」将停止工作。",
+    "en": "When disabled, the global shortcut and the menu bar \"Capture Screenshot\" item stop working.",
+    "ja": "無効にすると、グローバルショートカットとメニューバーの「スクリーンショット」項目が動作しなくなります。"
+  },
+  "截屏快捷键": {
+    "zh-Hans": "截屏快捷键",
+    "en": "Screenshot Shortcut",
+    "ja": "スクリーンショットのショートカット"
+  },
+  "快捷键": {
+    "zh-Hans": "快捷键",
+    "en": "Shortcut",
+    "ja": "ショートカット"
+  },
+  "屏幕录制权限": {
+    "zh-Hans": "屏幕录制权限",
+    "en": "Screen Recording Permission",
+    "ja": "画面収録の権限"
+  },
+  "默认保存位置": {
+    "zh-Hans": "默认保存位置",
+    "en": "Default Save Location",
+    "ja": "デフォルトの保存先"
+  },
+  "保存时询问位置": {
+    "zh-Hans": "保存时询问位置",
+    "en": "Ask for Save Location",
+    "ja": "保存先を毎回確認"
+  },
+  "保存": {
+    "zh-Hans": "保存",
+    "en": "Save",
+    "ja": "保存"
+  },
+  "开机自动启动（登录时打开）": {
+    "zh-Hans": "开机自动启动（登录时打开）",
+    "en": "Launch at Login",
+    "ja": "ログイン時に起動"
+  },
+  "开机自启": {
+    "zh-Hans": "开机自启",
+    "en": "Launch at Login",
+    "ja": "ログイン時に起動"
+  },
+  "开启后，登录 macOS 时自动在后台启动 zeroflow，可随时用快捷键截图。": {
+    "zh-Hans": "开启后，登录 macOS 时自动在后台启动 zeroflow，可随时用快捷键截图。",
+    "en": "When enabled, zeroflow launches in the background at login, so you can capture anytime with the shortcut.",
+    "ja": "有効にすると、ログイン時に zeroflow がバックグラウンドで起動し、いつでもショートカットでスクリーンショットを撮れます。"
+  },
+  "用 ⌘⇥ 显示窗口缩略图": {
+    "zh-Hans": "用 ⌘⇥ 显示窗口缩略图",
+    "en": "Show Window Thumbnails with ⌘⇥",
+    "ja": "⌘⇥ でウィンドウのサムネイルを表示"
+  },
+  "开启后，按下配置的组合键会弹出窗口缩略图切换器，可切换到最小化、同 app 多窗口、其他 Space 的窗口。关闭后完全恢复系统默认。": {
+    "zh-Hans": "开启后，按下配置的组合键会弹出窗口缩略图切换器，可切换到最小化、同 app 多窗口、其他 Space 的窗口。关闭后完全恢复系统默认。",
+    "en": "When enabled, pressing the configured shortcut opens a window thumbnail switcher. You can switch to minimized windows, multiple windows of the same app, and windows on other Spaces. When disabled, the system default behavior is fully restored.",
+    "ja": "有効にすると、設定したショートカットでウィンドウのサムネイル切り替えが表示されます。最小化したウィンドウ、同じアプリの複数ウィンドウ、他の Space のウィンドウに切り替えられます。無効にするとシステムのデフォルトに完全に戻ります。"
+  },
+  "切换快捷键": {
+    "zh-Hans": "切换快捷键",
+    "en": "Switcher Shortcut",
+    "ja": "切り替えのショートカット"
+  },
+  "选择其一弹出切换器：⌘⇥（Command + Tab）或 ⌥`（Option + Tab 上方的「`」键）。⇧ + 修饰键 + 主键 后退。": {
+    "zh-Hans": "选择其一弹出切换器：⌘⇥（Command + Tab）或 ⌥`（Option + Tab 上方的「`」键）。⇧ + 修饰键 + 主键 后退。",
+    "en": "Pick one to open the switcher: ⌘⇥ (Command + Tab) or ⌥` (Option + the ` key above Tab). ⇧ + modifier + main key goes backward.",
+    "ja": "いずれかを選択して切り替えを表示: ⌘⇥（Command + Tab）または ⌥`（Option + Tab の上にある「`」キー）。⇧ + 修飾キー + メインキーで戻ります。"
+  },
+  "需要「辅助功能」权限才能接管 ⌘⇥ 切换": {
+    "zh-Hans": "需要「辅助功能」权限才能接管 ⌘⇥ 切换",
+    "en": "Accessibility permission is required to take over ⌘⇥ switching",
+    "ja": "⌘⇥ の切り替えを引き継ぐにはアクセシビリティ権限が必要です"
+  },
+  "该权限与 Dock 单击最小化共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 单击最小化共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock single-click minimize; if it is already enabled, this shows green.",
+    "ja": "この権限は Dock のワンクリック最小化と共用です。すでに有効な場合はここで緑色で表示されます。"
+  },
+  "权限": {
+    "zh-Hans": "权限",
+    "en": "Permission",
+    "ja": "権限"
+  },
+  "选项": {
+    "zh-Hans": "选项",
+    "en": "Options",
+    "ja": "オプション"
+  },
+  "显示无窗口的应用": {
+    "zh-Hans": "显示无窗口的应用",
+    "en": "Show Windowless Apps",
+    "ja": "ウィンドウのないアプリを表示"
+  },
+  "开启「显示无窗口的应用」后，窗口全部关闭但仍在运行的应用也会显示（无缩略图时显示 app 图标）。切换器总是会列出其他 Space 上打开的窗口。": {
+    "zh-Hans": "开启「显示无窗口的应用」后，窗口全部关闭但仍在运行的应用也会显示（无缩略图时显示 app 图标）。切换器总是会列出其他 Space 上打开的窗口。",
+    "en": "When \"Show Windowless Apps\" is enabled, apps that are still running with all windows closed are shown (an app icon appears when there is no thumbnail). The switcher always lists windows opened on other Spaces.",
+    "ja": "「ウィンドウのないアプリを表示」を有効にすると、すべてのウィンドウを閉じても実行中のアプリが表示されます（サムネイルがない場合はアプリアイコンが表示されます）。切り替えには他の Space で開いているウィンドウも常に一覧表示されます。"
+  },
+  "单击 Dock 图标最小化窗口": {
+    "zh-Hans": "单击 Dock 图标最小化窗口",
+    "en": "Single-click Dock Icon to Minimize Window",
+    "ja": "Dock アイコンのシングルクリックでウィンドウを最小化"
+  },
+  "需要「辅助功能」权限才能最小化窗口": {
+    "zh-Hans": "需要「辅助功能」权限才能最小化窗口",
+    "en": "Accessibility permission is required to minimize windows",
+    "ja": "ウィンドウを最小化するにはアクセシビリティ権限が必要です"
+  },
+  "桌面与 Dock": {
+    "zh-Hans": "桌面与 Dock",
+    "en": "Desktop & Dock",
+    "ja": "デスクトップと Dock"
+  },
+  "前往设置": {
+    "zh-Hans": "前往设置",
+    "en": "Open Settings",
+    "ja": "設定を開く"
+  },
+  "建议同时开启「桌面与 Dock → 最小化窗口到应用图标」，可避免最小化后还原位置丢失。": {
+    "zh-Hans": "建议同时开启「桌面与 Dock → 最小化窗口到应用图标」，可避免最小化后还原位置丢失。",
+    "en": "It is recommended to also enable \"Desktop & Dock → Minimize windows into application icon\" to avoid losing the restore position after minimizing.",
+    "ja": "「デスクトップと Dock → ウィンドウをアプリアイコンに最小化」も有効にすることをおすすめします。最小化後の復元位置のずれを防げます。"
+  },
+  "屏幕录制权限已开启": {
+    "zh-Hans": "屏幕录制权限已开启",
+    "en": "Screen Recording Permission Enabled",
+    "ja": "画面収録の権限が有効です"
+  },
+  "需要「屏幕录制」权限才能截图": {
+    "zh-Hans": "需要「屏幕录制」权限才能截图",
+    "en": "Screen Recording permission is required to capture",
+    "ja": "スクリーンショットには「画面収録」権限が必要です"
+  },
+  "1. 点击下方「打开系统设置授权」\n2. 在「隐私与安全性 → 屏幕录制」中为 Zeroflow 打开开关\n3. 授权后回到应用，点击「重新检测」": {
+    "zh-Hans": "1. 点击下方「打开系统设置授权」\n2. 在「隐私与安全性 → 屏幕录制」中为 Zeroflow 打开开关\n3. 授权后回到应用，点击「重新检测」",
+    "en": "1. Click \"Open System Settings\" below\n2. In \"Privacy & Security → Screen Recording\", enable Zeroflow\n3. Return to the app and click \"Recheck\"",
+    "ja": "1. 下の「システム設定を開く」をクリック\n2. 「プライバシーとセキュリティ → 画面収録」で Zeroflow をオンにします\n3. アプリに戻って「再確認」をクリック"
+  },
+  "打开系统设置授权": {
+    "zh-Hans": "打开系统设置授权",
+    "en": "Open System Settings",
+    "ja": "システム設定を開く"
+  },
+  "重新检测": {
+    "zh-Hans": "重新检测",
+    "en": "Recheck",
+    "ja": "再確認"
+  },
+  "立即截图（%@）": {
+    "zh-Hans": "立即截图（%@）",
+    "en": "Capture Screenshot (%@)",
+    "ja": "スクリーンショット (%@)"
+  },
+  "设置…": {
+    "zh-Hans": "设置…",
+    "en": "Settings…",
+    "ja": "設定…"
+  },
+  "打开最近截图": {
+    "zh-Hans": "打开最近截图",
+    "en": "Open Recent Screenshot",
+    "ja": "最近のスクリーンショットを開く"
+  },
+  "退出 zeroflow": {
+    "zh-Hans": "退出 zeroflow",
+    "en": "Quit zeroflow",
+    "ja": "zeroflow を終了"
+  },
+  "zeroflow 设置": {
+    "zh-Hans": "zeroflow 设置",
+    "en": "zeroflow Settings",
+    "ja": "zeroflow 設定"
+  },
+  "zeroflow 截图": {
+    "zh-Hans": "zeroflow 截图",
+    "en": "zeroflow Screenshot",
+    "ja": "zeroflow スクリーンショット"
+  },
+  "截图失败": {
+    "zh-Hans": "截图失败",
+    "en": "Screenshot Failed",
+    "ja": "スクリーンショットに失敗しました"
+  },
+  "无法捕获所选区域，请检查屏幕录制权限后重试。": {
+    "zh-Hans": "无法捕获所选区域，请检查屏幕录制权限后重试。",
+    "en": "Unable to capture the selected area. Please check the Screen Recording permission and try again.",
+    "ja": "選択した領域をキャプチャできませんでした。画面収録の権限を確認してもう一度お試しください。"
+  },
+  "好的": {
+    "zh-Hans": "好的",
+    "en": "OK",
+    "ja": "OK"
+  },
+  "撤回 (⌘Z)": {
+    "zh-Hans": "撤回 (⌘Z)",
+    "en": "Undo (⌘Z)",
+    "ja": "元に戻す (⌘Z)"
+  },
+  "重做 (⇧⌘Z)": {
+    "zh-Hans": "重做 (⇧⌘Z)",
+    "en": "Redo (⇧⌘Z)",
+    "ja": "やり直す (⇧⌘Z)"
+  },
+  "画线 (L)": {
+    "zh-Hans": "画线 (L)",
+    "en": "Draw Line (L)",
+    "ja": "線を描く (L)"
+  },
+  "矩形标注": {
+    "zh-Hans": "矩形标注",
+    "en": "Rectangle",
+    "ja": "四角形"
+  },
+  "圆框标注": {
+    "zh-Hans": "圆框标注",
+    "en": "Ellipse",
+    "ja": "楕円"
+  },
+  "标注 (T)": {
+    "zh-Hans": "标注 (T)",
+    "en": "Annotation (T)",
+    "ja": "注釈 (T)"
+  },
+  "马赛克 小": {
+    "zh-Hans": "马赛克 小",
+    "en": "Mosaic Small",
+    "ja": "モザイク 小"
+  },
+  "马赛克 中": {
+    "zh-Hans": "马赛克 中",
+    "en": "Mosaic Medium",
+    "ja": "モザイク 中"
+  },
+  "马赛克 大": {
+    "zh-Hans": "马赛克 大",
+    "en": "Mosaic Large",
+    "ja": "モザイク 大"
+  },
+  "下载保存 (⌘S)": {
+    "zh-Hans": "下载保存 (⌘S)",
+    "en": "Save (⌘S)",
+    "ja": "保存 (⌘S)"
+  },
+  "复制 (⌘C)": {
+    "zh-Hans": "复制 (⌘C)",
+    "en": "Copy (⌘C)",
+    "ja": "コピー (⌘C)"
+  },
+  "粗细": {
+    "zh-Hans": "粗细",
+    "en": "Stroke Width",
+    "ja": "線の太さ"
+  },
+  "画笔颜色": {
+    "zh-Hans": "画笔颜色",
+    "en": "Pen Color",
+    "ja": "ペンの色"
+  },
+  "保存失败": {
+    "zh-Hans": "保存失败",
+    "en": "Save Failed",
+    "ja": "保存に失敗しました"
+  },
+  "无法生成图片数据": {
+    "zh-Hans": "无法生成图片数据",
+    "en": "Unable to generate image data",
+    "ja": "画像データを生成できませんでした"
+  },
+  "退出应用": {
+    "zh-Hans": "退出应用",
+    "en": "Quit App",
+    "ja": "アプリを終了"
+  },
+  "关闭窗口": {
+    "zh-Hans": "关闭窗口",
+    "en": "Close Window",
+    "ja": "ウィンドウを閉じる"
+  },
+  "最小化": {
+    "zh-Hans": "最小化",
+    "en": "Minimize",
+    "ja": "最小化"
+  },
+  "全屏切换": {
+    "zh-Hans": "全屏切换",
+    "en": "Toggle Full Screen",
+    "ja": "フルスクリーン切り替え"
+  },
+  "选择…": {
+    "zh-Hans": "选择…",
+    "en": "Choose…",
+    "ja": "選択…"
+  },
+  "打开": {
+    "zh-Hans": "打开",
+    "en": "Open",
+    "ja": "開く"
+  },
+  "选择": {
+    "zh-Hans": "选择",
+    "en": "Choose",
+    "ja": "選択"
+  },
+  "目录创建失败，请重试": {
+    "zh-Hans": "目录创建失败，请重试",
+    "en": "Failed to create directory. Please try again.",
+    "ja": "ディレクトリの作成に失敗しました。もう一度お試しください。"
+  },
+  "按下新快捷键…": {
+    "zh-Hans": "按下新快捷键…",
+    "en": "Press new shortcut…",
+    "ja": "新しいショートカットを押してください…"
+  },
+  "恢复默认": {
+    "zh-Hans": "恢复默认",
+    "en": "Restore Default",
+    "ja": "デフォルトに戻す"
+  },
+  "请至少按下一个修饰键（⌘/⌃/⌥/⇧）": {
+    "zh-Hans": "请至少按下一个修饰键（⌘/⌃/⌥/⇧）",
+    "en": "Press at least one modifier key (⌘/⌃/⌥/⇧)",
+    "ja": "少なくとも1つの修飾キーを押してください（⌘/⌃/⌥/⇧）"
+  },
+  "辅助功能权限已开启": {
+    "zh-Hans": "辅助功能权限已开启",
+    "en": "Accessibility Permission Enabled",
+    "ja": "アクセシビリティ権限が有効です"
+  },
+  "Dock 预览": {
+    "zh-Hans": "Dock 预览",
+    "en": "Dock Preview",
+    "ja": "Dockプレビュー"
+  },
+  "悬停 Dock 图标显示窗口缩略图": {
+    "zh-Hans": "悬停 Dock 图标显示窗口缩略图",
+    "en": "Show window thumbnails when hovering Dock icons",
+    "ja": "Dockアイコンにカーソルを合わせるとウィンドウのサムネイルを表示"
+  },
+  "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。": {
+    "zh-Hans": "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。",
+    "en": "Hovering a Dock icon shows thumbnails of all its windows. Click a card to switch to that window, or hover it to reveal a close button. Works on minimized-window tiles too.",
+    "ja": "Dockアイコンにカーソルを合わせると、そのアプリの全ウィンドウのサムネイルを表示します。クリックでウィンドウを切り替え、カードにカーソルを合わせると閉じるボタンが出ます。最小化ウィンドウのタイルでも有効です。"
+  },
+  "悬停延时": {
+    "zh-Hans": "悬停延时",
+    "en": "Hover delay",
+    "ja": "ホバー遅延"
+  },
+  "鼠标停留在 Dock 图标上多久后弹出预览。": {
+    "zh-Hans": "鼠标停留在 Dock 图标上多久后弹出预览。",
+    "en": "How long the mouse must stay on a Dock icon before the preview appears.",
+    "ja": "マウスがDockアイコン上に留まってからプレビューが表示されるまでの時間。"
+  },
+  "需要「辅助功能」权限才能监测 Dock 悬停": {
+    "zh-Hans": "需要「辅助功能」权限才能监测 Dock 悬停",
+    "en": "Accessibility permission is required to detect Dock hovering",
+    "ja": "Dockのホバー検出には「アクセシビリティ」権限が必要です"
+  },
+  "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。": {
+    "zh-Hans": "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。",
+    "en": "Screen Recording permission is needed to capture thumbnails; without it, cards show window titles only.",
+    "ja": "サムネイルの取得には「画面収録」権限が必要です。未許可の場合、カードにはウィンドウタイトルのみ表示されます。"
+  },
+  "自定义命令": {
+    "zh-Hans": "自定义命令",
+    "en": "Custom Command",
+    "ja": "カスタムコマンド"
+  },
+  "在访达右键菜单中显示「自定义命令」": {
+    "zh-Hans": "在访达右键菜单中显示「自定义命令」",
+    "en": "Show \"Custom Command\" in the Finder context menu",
+    "ja": "Finder のコンテキストメニューに「カスタムコマンド」を表示"
+  },
+  "开启后，访达右键菜单新增一条菜单项，点击即执行下方配置的命令。": {
+    "zh-Hans": "开启后，访达右键菜单新增一条菜单项，点击即执行下方配置的命令。",
+    "en": "When enabled, a menu item is added to the Finder context menu that runs the command configured below.",
+    "ja": "有効にすると、Finder のコンテキストメニューに項目が追加され、下で設定したコマンドを実行します。"
+  },
+  "菜单名称": {
+    "zh-Hans": "菜单名称",
+    "en": "Menu Title",
+    "ja": "メニュー名"
+  },
+  "命令": {
+    "zh-Hans": "命令",
+    "en": "Command",
+    "ja": "コマンド"
+  },
+  "命令配置": {
+    "zh-Hans": "命令配置",
+    "en": "Command",
+    "ja": "コマンド設定"
+  },
+  "打开终端": {
+    "zh-Hans": "打开终端",
+    "en": "Open Terminal",
+    "ja": "ターミナルを開く"
+  },
+  "如 /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\"": {
+    "zh-Hans": "如 /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\"",
+    "en": "e.g. /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\"",
+    "ja": "例: /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\""
+  },
+  "命令中的 {path} 会替换为右键目标的绝对路径：右键文件夹=该文件夹、右键文件=其所在文件夹、右键空白处=当前目录；不含 {path} 则原样执行。路径含空格请给 {path} 加引号。命令由 Zeroflow 主 App 代为执行（登录 Shell，PATH 含 Homebrew），请保持 Zeroflow 常驻运行。": {
+    "zh-Hans": "命令中的 {path} 会替换为右键目标的绝对路径：右键文件夹=该文件夹、右键文件=其所在文件夹、右键空白处=当前目录；不含 {path} 则原样执行。路径含空格请给 {path} 加引号。命令由 Zeroflow 主 App 代为执行（登录 Shell，PATH 含 Homebrew），请保持 Zeroflow 常驻运行。",
+    "en": "In the command, {path} is replaced with the absolute path of the right-click target: a folder uses itself, a file uses its parent folder, empty space uses the current directory; without {path} the command runs as-is. Quote {path} if paths may contain spaces. Commands are executed by the Zeroflow main app via your default login shell (PATH includes Homebrew), so keep Zeroflow running.",
+    "ja": "コマンド内の {path} は右クリック対象の絶対パスに置き換えられます：フォルダーならそのフォルダー、ファイルならその親フォルダー、空白部分なら現在のディレクトリ。{path} がない場合はそのまま実行します。パスに空白が含まれる可能性がある場合は {path} を引用符で囲ってください。コマンドは Zeroflow 本体アプリがログインシェル経由で実行します（PATH に Homebrew を含む）。Zeroflow を常駐させてください。"
+  }
 }
