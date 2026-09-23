@@ -154,13 +154,16 @@ final class FinderSync: FIFinderSync {
         return menu
     }
 
-    /// 确定创建文件的目标目录：
-    /// - 右键容器（窗口/桌面空白）→ targetedURL 即该目录
-    /// - 右键文件夹 → 在其内创建
-    /// - 右键普通文件 → 在其父目录创建
+    /// 确定创建文件/替换 {path} 的目标目录：
+    /// - 右键选中的文件夹 → 该文件夹本身
+    /// - 右键选中的普通文件 → 其父目录
+    /// - 无选中项（右键窗口/桌面空白处）→ targetedURL 即该目录
+    /// 注意：必须先查 selectedItemURLs 再查 targetedURL——右键选中的文件夹时，
+    /// targetedURL 返回的是窗口当前所在目录（也是目录），先查它会把选中的
+    /// 文件夹完全吞掉，导致 {path} 恒为窗口目录而非右键目标。
     private func targetDirectory() -> URL? {
         let controller = FIFinderSyncController.default()
-        for url in [controller.targetedURL(), controller.selectedItemURLs()?.first].compactMap({ $0 }) {
+        for url in [controller.selectedItemURLs()?.first, controller.targetedURL()].compactMap({ $0 }) {
             var isDirectory: ObjCBool = false
             if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) {
                 return isDirectory.boolValue ? url : url.deletingLastPathComponent()

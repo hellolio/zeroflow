@@ -260,7 +260,7 @@ struct SettingsView: View {
             if store.finderNewFileEnabled {
                 Section {
                     LabeledContent(L10n.tr("新文件名")) {
-                        TextField(L10n.tr("默认文件名"), text: $store.finderNewFileName)
+                        TextField("", text: $store.finderNewFileName, prompt: Text(L10n.tr("默认文件名")))
                             .textFieldStyle(.roundedBorder)
                             .frame(maxWidth: 220)
                     }
@@ -282,12 +282,12 @@ struct SettingsView: View {
             if store.finderCmdEnabled {
                 Section {
                     LabeledContent(L10n.tr("菜单名称")) {
-                        TextField(L10n.tr("打开终端"), text: $store.finderCmdTitle)
+                        TextField("", text: $store.finderCmdTitle, prompt: Text(L10n.tr("打开终端")))
                             .textFieldStyle(.roundedBorder)
                             .frame(maxWidth: 220)
                     }
                     LabeledContent(L10n.tr("命令")) {
-                        TextField(L10n.tr("如 /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\""), text: $store.finderCmdCommand)
+                        TextField("", text: $store.finderCmdCommand, prompt: Text(L10n.tr("如 /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\"")))
                             .textFieldStyle(.roundedBorder)
                             .frame(maxWidth: 340)
                     }
