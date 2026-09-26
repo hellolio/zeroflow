@@ -60,13 +60,13 @@ enum WindowOps {
         case .quitApp:
             window.app.terminate()
         case .close:
-            guard let axWindow = AXWindow.element(for: window.id, pid: window.pid, bounds: window.bounds) else { return }
+            guard let axWindow = AXWindow.element(for: window.id, pid: window.pid) else { return }
             closeAXWindow(axWindow, wid: window.id)
         case .minimize:
-            guard let axWindow = AXWindow.element(for: window.id, pid: window.pid, bounds: window.bounds) else { return }
+            guard let axWindow = AXWindow.element(for: window.id, pid: window.pid) else { return }
             AXUIElementSetAttributeValue(axWindow, kAXMinimizedAttribute as CFString, kCFBooleanTrue)
         case .maximize:
-            guard let axWindow = AXWindow.element(for: window.id, pid: window.pid, bounds: window.bounds) else { return }
+            guard let axWindow = AXWindow.element(for: window.id, pid: window.pid) else { return }
             var raw: CFTypeRef?
             let target: CFTypeRef
             if AXUIElementCopyAttributeValue(axWindow, "AXFullScreen" as CFString, &raw) == .success,

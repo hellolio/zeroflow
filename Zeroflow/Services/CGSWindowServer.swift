@@ -1,11 +1,19 @@
 import AppKit
+import ApplicationServices
 import CoreGraphics
 import Darwin
+
+/// 私有单行桥：pid → ProcessSerialNumber（HIServices，Amethyst/AltTab 同款 @_silgen_name 链接），
+/// `_SLPSSetFrontProcessWithOptions` 需要 PSN 入参。
+@_silgen_name("GetProcessForPID")
+@discardableResult
+func GetProcessForPID(_ pid: pid_t, _ psn: inout ProcessSerialNumber) -> OSStatus
 
 /// SkyLight / CGS 私有 API 桥（运行时 dlsym，与 `WindowThumbnailer` 同款模式）。
 /// - 枚举：`SLSWindowQueryWindows` 批量取 typed 字段（title/bounds/level/attributes/spaceTypeMask/tags）。
 /// - 成员：`CGSCopyWindowsWithOptionsAndTags`（`.invisible1/.invisible2` 区分「可见列表」与「全量列表」）。
 /// - Space：`CGSCopyManagedDisplaySpaces`（各屏当前 Space）+ 逐 Space 反查窗口归属。
+/// - 激活：`_SLPSSetFrontProcessWithOptions` + `SLPSPostEventRecordTo`（可选符号；跨 Space 前台切换，见 `WindowActivator`）。
 /// 任一符号缺失 → `isAvailable == false`，调用方退回公开 API（CGWindowList），不崩。
 /// 说明：本工程已在使用 SkyLight 私有 API（WindowThumbnailer），此处同样是 AltTab 的正式做法。
 final class CGSWindowServer {
@@ -38,6 +46,9 @@ final class CGSWindowServer {
     private typealias IterGetU64Fn = @convention(c) (CFTypeRef) -> UInt64
     private typealias IterCopyTitleFn = @convention(c) (CFTypeRef) -> Unmanaged<CFString>?
     private typealias IterGetBoundsFn = @convention(c) (UnsafeRawPointer) -> CGRect
+    // 跨 Space 前台激活（可选符号，缺失仅退化为 app.activate 旧行为）
+    private typealias SetFrontProcessWithOptionsFn = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UInt32, UInt32) -> CGError
+    private typealias PostEventRecordToFn = @convention(c) (UnsafeMutablePointer<ProcessSerialNumber>, UnsafeMutablePointer<UInt8>) -> CGError
 
     private struct Bridge {
         let mainConn: MainConnFn
@@ -55,6 +66,9 @@ final class CGSWindowServer {
         let iterGetAttributes: IterGetU64Fn
         let iterCopyTitle: IterCopyTitleFn
         let iterGetBounds: IterGetBoundsFn
+        // 可选符号：缺失仅影响跨 Space 前台激活，isAvailable 仍为 true（枚举/缩略图不受影响）
+        let setFrontProcessWithOptions: SetFrontProcessWithOptionsFn?
+        let postEventRecordTo: PostEventRecordToFn?
     }
 
     private let bridge: Bridge?
@@ -100,12 +114,18 @@ final class CGSWindowServer {
               let iterCopyTitle: IterCopyTitleFn = sym("SLSWindowIteratorCopyTitle"),
               let iterGetBounds: IterGetBoundsFn = sym("SLSWindowIteratorGetBounds")
         else { return nil }
+        // 可选符号（双名兜底）：本机实测 `_SLPSSetFrontProcessWithOptions` 与 `SLPSPostEventRecordTo` 均可 dlsym 解析
+        let setFrontProcessWithOptions: SetFrontProcessWithOptionsFn? =
+            sym("_SLPSSetFrontProcessWithOptions") ?? sym("SLPSSetFrontProcessWithOptions")
+        let postEventRecordTo: PostEventRecordToFn? =
+            sym("SLPSPostEventRecordTo") ?? sym("_SLPSPostEventRecordTo")
         let bridge = Bridge(mainConn: mainConn, copyWindows: copyWindows, copySpacesForWindows: copySpacesForWindows,
                             copyManagedDisplaySpaces: copyManagedDisplaySpaces, queryWindows: queryWindows,
                             queryResult: queryResult, iterAdvance: iterAdvance, iterGetWindowID: iterGetWindowID,
                             iterGetPID: iterGetPID, iterGetLevel: iterGetLevel, iterGetSpaceTypeMask: iterGetSpaceTypeMask,
                             iterGetTags: iterGetTags, iterGetAttributes: iterGetAttributes,
-                            iterCopyTitle: iterCopyTitle, iterGetBounds: iterGetBounds)
+                            iterCopyTitle: iterCopyTitle, iterGetBounds: iterGetBounds,
+                            setFrontProcessWithOptions: setFrontProcessWithOptions, postEventRecordTo: postEventRecordTo)
         return (mainConn(), bridge)
     }
 
@@ -175,5 +195,62 @@ final class CGSWindowServer {
         var clearTags = 0
         guard let array = bridge.copyWindows(cid, 0, spaceIds as CFArray, options, &setTags, &clearTags)?.takeRetainedValue() as? [CGWindowID] else { return [] }
         return array
+    }
+
+    // MARK: - 跨 Space 前台激活（SkyLight 私有 API，AltTab/Hammerspoon 同款）
+
+    /// WindowServer 级把指定窗口带前台并自动切到其所在 Space：
+    /// `GetProcessForPID` 取 PSN → `_SLPSSetFrontProcessWithOptions(psn, wid, kCPSUserGenerated=0x200)`。
+    /// 同 app 多窗口各占全屏 Space 时这是唯一可靠手段（`app.activate` 只会落到该 app「当前」的 Space）。
+    /// 返回 false = 符号缺失 / PSN 失败 / CGError 失败，调用方应退回 `app.activate` 旧行为。
+    @discardableResult
+    func setFrontProcess(windowId wid: CGWindowID, pid: pid_t) -> Bool {
+        guard let bridge, let fn = bridge.setFrontProcessWithOptions else {
+            ZSLog("CGSWindowServer: setFrontProcess unavailable (symbol missing)")
+            return false
+        }
+        var psn = ProcessSerialNumber()
+        guard GetProcessForPID(pid, &psn) == noErr else {
+            ZSLog("CGSWindowServer: GetProcessForPID failed pid=\(pid)")
+            return false
+        }
+        let err = fn(&psn, wid, 0x200) // kCPSUserGenerated
+        if err != .success {
+            ZSLog("CGSWindowServer: setFrontProcess wid=\(wid) err=\(err.rawValue)")
+        }
+        return err == .success
+    }
+
+    /// 把 AppKit 层 key 窗口收敛到指定窗口（Hammerspoon 事件记录配方，AltTab `makeKeyWindow` 逐字节同款）。
+    /// 不发这个，部分 app 已切 Space 但键盘焦点没跟上（AltTab 注释里的 System Preferences OS bug）。
+    func makeKeyWindow(pid: pid_t, windowId wid: CGWindowID) {
+        guard let bridge, let post = bridge.postEventRecordTo else { return }
+        var psn = ProcessSerialNumber()
+        guard GetProcessForPID(pid, &psn) == noErr else { return }
+        var bytes1 = [UInt8](repeating: 0, count: 0xf8)
+        bytes1[0x04] = 0xF8
+        bytes1[0x08] = 0x01
+        bytes1[0x3a] = 0x10
+        var bytes2 = [UInt8](repeating: 0, count: 0xf8)
+        bytes2[0x04] = 0xF8
+        bytes2[0x08] = 0x02
+        bytes2[0x3a] = 0x10
+        var wid32 = UInt32(wid)
+        withUnsafeBytes(of: &wid32) { raw in
+            for (i, byte) in raw.enumerated() {
+                bytes1[0x3c + i] = byte
+                bytes2[0x3c + i] = byte
+            }
+        }
+        for i in 0x20..<0x30 {
+            bytes1[i] = 0xFF
+            bytes2[i] = 0xFF
+        }
+        bytes1.withUnsafeMutableBufferPointer { b1 in
+            bytes2.withUnsafeMutableBufferPointer { b2 in
+                _ = post(&psn, b1.baseAddress!)
+                _ = post(&psn, b2.baseAddress!)
+            }
+        }
     }
 }

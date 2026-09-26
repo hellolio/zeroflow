@@ -184,7 +184,11 @@ final class WindowList {
             if debug {
                 ZSLog("  VERDICT wid=\(r.id) pid=\(r.ownerPID) size=\(Int(r.bounds.width))x\(Int(r.bounds.height)) minimized=\(minimized) appHidden=\(appHidden) inVis=\(visibleSet.contains(r.id)) inAll=\(allSet.contains(r.id)) spaceIds=\(spacesMap[r.id] ?? []) -> \(isPhantom ? "PHANTOM" : "KEEP")")
             }
-            if !isPhantom { result.append(r) }
+            if !isPhantom {
+                var kept = r
+                kept.minimized = minimized
+                result.append(kept)
+            }
         }
         return result
     }
@@ -225,7 +229,7 @@ final class WindowList {
                 appName: appName,
                 appIcon: app.icon,
                 bounds: r.bounds,
-                isMinimized: !r.isOnscreen,
+                isMinimized: r.minimized || (!r.isOnscreen && !CGSWindowServer.shared.isAvailable),
                 workspace: r.workspace
             ))
         }
@@ -277,7 +281,7 @@ final class WindowList {
             // 同步兜底表，让下面 sort 的 aIsFront/bIsFront tiebreak 与调试日志的 current 判定保持一致。
             if currentID != nil { frontWindowByPid[frontmostPID] = currentID }
             if let currentID {
-                tracker.noteFocus(wid: currentID)
+                tracker.noteFocus(wid: currentID, source: "frontmost")
             }
         }
 
@@ -300,10 +304,17 @@ final class WindowList {
 
         if ProcessInfo.processInfo.environment["ZEROFLOW_SWITCHER_DEBUG"] == "1" {
             let frontmostPID = NSWorkspace.shared.frontmostApplication?.processIdentifier
-            let frontIDs = result.prefix(5).map { w in
-                let hasDate = tracker.lastActiveDate(for: w.id) != nil
+            let now = Date()
+            let frontIDs = result.prefix(5).map { w -> String in
+                // age=距今毫秒（越小越新），none=无 MRU 记录（只能靠 app 级兜底排序）
+                let age: String
+                if let date = tracker.lastActiveDate(for: w.id) {
+                    age = String(format: "%.0fms", now.timeIntervalSince(date) * 1000)
+                } else {
+                    age = "none"
+                }
                 let isCurrent = frontmostPID != nil && frontWindowByPid[frontmostPID!] == w.id
-                return "\(w.appName)/\(String(w.id)) date=\(hasDate) current=\(isCurrent)"
+                return "\(w.appName)/\(String(w.id)) age=\(age) current=\(isCurrent)"
             }
             ZSLog("SWITCHER-DEBUG sorted order → [\(frontIDs.joined(separator: ", "))]")
         }
@@ -320,6 +331,10 @@ final class WindowList {
         var layer: Int
         var isOnscreen: Bool
         var workspace: Int
+        /// SLS tags 位 60（对齐 AltTab），由 filterPhantoms 回写；CGS 不可用时保持 false。
+        /// 注意不能用 `!isOnscreen` 充当最小化——跨全屏 Space 的窗口同样 offscreen（曾导致
+        /// 同 app 两个全屏 Space 互切被当成最小化还原、永远落回当前 Space）。
+        var minimized: Bool = false
 
         static func parse(_ dict: [String: Any]) -> RawWindow? {
             guard let num = (dict[kCGWindowNumber as String] as? NSNumber)?.uint32Value ?? (dict[kCGWindowNumber as String] as? UInt32) else { return nil }

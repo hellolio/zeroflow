@@ -37,7 +37,7 @@ final class WindowActivator {
         }
         nsWindow.makeKeyAndOrderFront(nil)
         // 同步补记 MRU：AX 焦点通知是异步的，快速连按 ⌘⇥ 时要保证下次枚举 index0 = 刚激活窗口
-        WindowActivityTracker.shared.noteFocus(wid: window.id)
+        WindowActivityTracker.shared.noteFocus(wid: window.id, source: "switcher")
         ZSLog("WindowActivator: focused own window wid=\(window.id)")
     }
 
@@ -46,8 +46,8 @@ final class WindowActivator {
 
         // 入口即补记 MRU：AX 焦点通知是异步的，快速连按 ⌘⇥ 时要保证下次枚举 index0 = 刚激活窗口。
         // 必须在 AX 匹配之前调用——全屏窗口在另一个 Space 上时 kAXWindowsAttribute 常取不到
-        // （走下方 app.activate 兜底），若补记放在成功路径末尾会被跳过，导致全屏切换后 MRU 排序不更新。
-        WindowActivityTracker.shared.noteFocus(wid: window.id)
+        // （走下方 SkyLight/activate 兜底），若补记放在成功路径末尾会被跳过，导致全屏切换后 MRU 排序不更新。
+        WindowActivityTracker.shared.noteFocus(wid: window.id, source: "switcher")
 
         // 无窗口 app 占位卡：`app.activate` 对没有窗口的 app 通常无效（macOS 无窗口可激活）。
         // 对齐 AltTab：重新 launch 该 app（已运行会置前，多数 app 会尝试重开窗口）；失败退回 activate。
@@ -62,24 +62,59 @@ final class WindowActivator {
             return
         }
 
-        guard let axWindow = AXWindow.element(for: window.id, pid: window.pid, bounds: window.bounds) else {
+        guard let axWindow = AXWindow.element(for: window.id, pid: window.pid) else {
+            // kAXWindowsAttribute 取不到（跨 Space 全屏窗口的常态）：先试 AltTab 同款 remote-token 暴力
+            // 枚举造出该窗口的 AX 元素（AX↔wid 桥单向，只能枚举；详见 AXWindow.elementByBruteForce），
+            // 拿到元素后走与常规路径一致的「SLP → makeKey → AX main/raise」收尾——这是同 app 多全屏
+            // Space 真正落到目标窗口的关键（app.activate 只会落到该 app「当前」Space；SLP 单独使用时
+            // AppKit 层激活不完整，实测对全屏 Space 静默无效）。
+            if let bfWindow = AXWindow.elementByBruteForce(pid: window.pid, windowId: window.id) {
+                raiseViaSLP(window: window, axWindow: bfWindow, via: "remote-token element")
+                return
+            }
+            // 暴力枚举失败（长命 app id 过高/超预算）：SLP 切 Space + app.activate 补激活兑底
+            // （不带 activateAllWindows，避免把同 app 另一个全屏 Space 拉回来）。
+            if CGSWindowServer.shared.setFrontProcess(windowId: window.id, pid: window.pid) {
+                CGSWindowServer.shared.makeKeyWindow(pid: window.pid, windowId: window.id)
+                app.activate(options: [.activateIgnoringOtherApps])
+                ZSLog("WindowActivator: no AX window matched wid=\(window.id), focused via SkyLight + app activate")
+                return
+            }
             ZSLog("WindowActivator: no AX window matched wid=\(window.id), fallback to app activate")
             app.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
             return
         }
 
-        // 1. 最小化窗口先还原（动画结束前不再重抓，避免迷你帧）
+        // 1. 最小化窗口先还原（动画结束前不再重抓，避免迷你帧）——还原路径维持 AX + activate（已验证）
         if window.isMinimized {
             AXUIElementSetAttributeValue(axWindow, kAXMinimizedAttribute as CFString, kCFBooleanFalse)
-            ZSLog("WindowActivator: unminimized wid=\(window.id)")
+            app.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+            AXUIElementSetAttributeValue(axWindow, kAXMainAttribute as CFString, kCFBooleanTrue)
+            AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
+            ZSLog("WindowActivator: raised (unminimized) wid=\(window.id) title='\(window.title)'")
+            return
         }
 
-        // 2. 激活 app（macOS 14 起为建议性请求，需叠加 AX 步骤）
-        app.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+        // 2. 非最小化：AltTab 同款 WindowServer 级激活（FR-19.4）
+        raiseViaSLP(window: window, axWindow: axWindow, via: "AX element")
+    }
 
-        // 3. AX 置顶 + 设为 main，跨 Space 时由系统自动切 Space
-        AXUIElementSetAttributeValue(axWindow, kAXMainAttribute as CFString, kCFBooleanTrue)
-        AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
-        ZSLog("WindowActivator: raised wid=\(window.id) title='\(window.title)'")
+    /// WindowServer 级置前 + AX 收敛 key/main（FR-19.4）。
+    /// 已在独立探针验证（含同 app 两个全屏 Space、目标 app 已前台/非前台、主线程/后台线程）：
+    /// `_SLPSSetFrontProcessWithOptions(psn, wid, 0x200)` 无条件按 wid 切 Space（即使该 app 已是
+    /// front process 也生效），随后 makeKey 事件收敛 key、AX main/raise 完成 AppKit 层激活收尾；
+    /// SLP 不可用时退回 app.activate。最小化还原路径不走这里（保持 AX deminiaturize 序列）。
+    private func raiseViaSLP(window: SwitcherWindow, axWindow: AXUIElement, via: String) {
+        let app = window.app
+        if CGSWindowServer.shared.setFrontProcess(windowId: window.id, pid: window.pid) {
+            CGSWindowServer.shared.makeKeyWindow(pid: window.pid, windowId: window.id)
+            AXUIElementSetAttributeValue(axWindow, kAXMainAttribute as CFString, kCFBooleanTrue)
+            AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
+        } else {
+            app.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+            AXUIElementSetAttributeValue(axWindow, kAXMainAttribute as CFString, kCFBooleanTrue)
+            AXUIElementPerformAction(axWindow, kAXRaiseAction as CFString)
+        }
+        ZSLog("WindowActivator: raised wid=\(window.id) title='\(window.title)' via \(via)")
     }
 }
