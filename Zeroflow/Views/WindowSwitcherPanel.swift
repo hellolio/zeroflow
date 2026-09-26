@@ -27,6 +27,7 @@ struct SwitcherTileView: View {
             appIcon: tile.appIcon,
             title: tile.title,
             appName: tile.appName,
+            showsLargeAppIcon: true,
             isSelected: isSelected,
             isHovered: isHovered,
             onSelect: onSelect
@@ -54,7 +55,7 @@ struct WindowSwitcherGridView: View {
     var onAction: (CGWindowID, WindowOperation) -> Void
     @State private var hoveredID: CGWindowID?
 
-    private static let cardWidth: CGFloat = 168
+    private static let cardWidth: CGFloat = 148
     private static let spacing: CGFloat = 12
 
     /// 把瓦片切成每行 ≤ switcherColumns 的行（行序稳定、块内保序）

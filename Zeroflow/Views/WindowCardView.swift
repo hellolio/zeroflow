@@ -11,10 +11,18 @@ struct WindowCardView<Actions: View>: View {
     let appIcon: NSImage?
     let title: String
     let appName: String
+    /// 切换器样式：卡片整体等比压缩（缩略图 168×118 → 148×104，显示比例不变），
+    /// 底部一行改为「大号 app 图标(22) + 名称(13pt)」靠左，便于切换时快速区分 app；
+    /// false（Dock 预览）维持原尺寸与纯文字 app 名。
+    var showsLargeAppIcon: Bool = false
     let isSelected: Bool
     let isHovered: Bool
     var onSelect: () -> Void
     @ViewBuilder var actions: () -> Actions
+
+    /// 缩略图/文字行共用宽度；切换器样式整体等比缩小（148×104 ≈ 168×118 × 0.88，宽高比不变）
+    private var contentWidth: CGFloat { showsLargeAppIcon ? 148 : 168 }
+    private var thumbnailHeight: CGFloat { showsLargeAppIcon ? 104 : 118 }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -46,7 +54,7 @@ struct WindowCardView<Actions: View>: View {
                     .padding(5)
                 }
             }
-            .frame(width: 168, height: 118)
+            .frame(width: contentWidth, height: thumbnailHeight)
             .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .controlBackgroundColor)))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -60,14 +68,32 @@ struct WindowCardView<Actions: View>: View {
                 .font(.system(size: 11, weight: .medium))
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .frame(maxWidth: 168, alignment: .leading)
+                .frame(maxWidth: contentWidth, alignment: .leading)
                 .foregroundColor(.primary)
                 .padding(.top, 4)
-            Text(appName)
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-                .frame(maxWidth: 168, alignment: .leading)
+            if showsLargeAppIcon {
+                HStack(spacing: 6) {
+                    if let appIcon {
+                        Image(nsImage: appIcon)
+                            .resizable()
+                            .interpolation(.high)
+                            .scaledToFit()
+                            .frame(width: 22, height: 22)
+                    }
+                    Text(appName)
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                .frame(maxWidth: contentWidth, alignment: .leading)
+            } else {
+                Text(appName)
+                    .font(.system(size: 10))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .frame(maxWidth: contentWidth, alignment: .leading)
+            }
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
