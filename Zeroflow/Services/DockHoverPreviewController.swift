@@ -44,6 +44,9 @@ final class DockHoverPreviewController {
     private static let parentWalkDepth = 8
     /// move 事件处理节流间隔（s）：几何判定足够快，但没必要每个 HID 事件都跑
     private static let moveThrottle: CFTimeInterval = 0.016
+    /// 右键菜单抑制：菜单开合探针的节流间隔 / 进入抑制后的确认探针延时（s）
+    private static let menuProbeInterval: CFTimeInterval = 0.2
+    private static let menuConfirmDelay: TimeInterval = 0.5
 
     private enum Phase { case idle, pending, visible }
 
@@ -93,6 +96,9 @@ final class DockHoverPreviewController {
     /// 点击卡片激活后的防重弹：指针仍停留在同一图标区域内时不再次弹出
     private var suppressKey: String?
     private var suppressRegionTL: CGRect?
+    /// Dock 右键菜单打开期间的预览抑制：期间不调度/弹出预览，探针确认菜单关闭后自动解除
+    private var contextMenuGuardActive = false
+    private var lastMenuProbeAt = CFTimeInterval(0)
 
     // 主线程专用
     private var currentTarget: HoverTarget?
@@ -173,6 +179,7 @@ final class DockHoverPreviewController {
         lock.lock()
         guard isRunning else { lock.unlock(); return }
         isRunning = false
+        contextMenuGuardActive = false
         let runLoop = tapRunLoop
         let source = runLoopSource
         let tap = eventTap
@@ -285,7 +292,7 @@ final class DockHoverPreviewController {
         case .mouseMoved:
             handleMouseMoved(event.location)
         case .leftMouseDown, .rightMouseDown, .otherMouseDown:
-            handleAnyMouseDown(at: event.location)
+            handleAnyMouseDown(at: event.location, type: type, flags: event.flags)
         default:
             break
         }
@@ -337,6 +344,13 @@ final class DockHoverPreviewController {
         let panelFrame = panelFrameTL
         let anchorFrame = currentItemTL
         lock.unlock()
+
+        // Dock 右键菜单打开期间：探针确认仍开着则本事件不参与悬停判定，
+        // 菜单关闭（探针解除抑制）后照常恢复
+        if isContextMenuGuarded() {
+            probeContextMenuOpen()
+            if isContextMenuGuarded() { return }
+        }
 
         let hit = cachedItem(at: point)
 
@@ -395,7 +409,7 @@ final class DockHoverPreviewController {
         }
     }
 
-    private func handleAnyMouseDown(at point: CGPoint) {
+    private func handleAnyMouseDown(at point: CGPoint, type: CGEventType, flags: CGEventFlags) {
         lock.lock()
         let onPanel: Bool
         if let panelFrame = panelFrameTL, phase == .visible {
@@ -407,8 +421,88 @@ final class DockHoverPreviewController {
         lock.unlock()
         // 点击发生在自己面板上：放行（卡片点击/关闭钮需要收到这次 mouseDown），不隐藏
         if onPanel { return }
+        // 右键（含 Ctrl+左键）落在 Dock 本体附近：大概率要弹 Dock 右键菜单，
+        // 进入抑制直到菜单关闭——hidePanel 会清空 hoverItemID，否则指针在图标内
+        // 稍一移动就会走 idle 分支重新 scheduleShow 弹出预览
+        let menuOpener = type == .rightMouseDown
+            || (type == .leftMouseDown && flags.contains(.maskControl))
+        if menuOpener {
+            enterContextMenuGuardIfDockZone(at: point)
+        }
         // 其余任意 mouseDown：面板收起，事件放行（Dock 原生行为、DockClickMinimizer 不受影响）
         if active { hidePanel(reason: "mouseDown") }
+    }
+
+    // MARK: - 右键菜单抑制（Dock 菜单打开期间禁止弹出预览）
+
+    private func isContextMenuGuarded() -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        return contextMenuGuardActive
+    }
+
+    /// 右键打开 Dock 菜单只可能发生在 Dock 本体上：缓存命中图标，或 Dock 条带 bbox 外扩内。
+    /// 不用 isNearDockStrip 的屏幕边缘兜底——屏幕中部右键不应进入抑制。
+    private func isDockMenuLaunchZone(_ point: CGPoint) -> Bool {
+        if cachedItem(at: point) != nil { return true }
+        if let zone = (dockBarFrameTL() ?? dockStripTL())?.insetBy(dx: -Self.stripTriggerMargin, dy: -Self.stripTriggerMargin) {
+            return zone.contains(point)
+        }
+        return false
+    }
+
+    private func enterContextMenuGuardIfDockZone(at point: CGPoint) {
+        guard isDockMenuLaunchZone(point) else { return }
+        lock.lock()
+        let newlyArmed = !contextMenuGuardActive
+        contextMenuGuardActive = true
+        lock.unlock()
+        if newlyArmed { ZSLog("DockHoverPreview: context menu guard on") }
+        // 确认探针：菜单没真正弹出时（右键分隔符/空白处）尽快解除
+        workQueue.asyncAfter(deadline: .now() + Self.menuConfirmDelay) { [weak self] in
+            self?.probeContextMenuOpen(force: true)
+        }
+    }
+
+    /// 节流探针：Dock AX 树里还挂着菜单 → 保持抑制；已关闭 → 解除。
+    /// AX 扫描丢到 workQueue，不占用 tap 回调线程（listen-only 回调必须快）。
+    private func probeContextMenuOpen(force: Bool = false) {
+        let now = CFAbsoluteTimeGetCurrent()
+        lock.lock()
+        guard contextMenuGuardActive else { lock.unlock(); return }
+        guard force || now - lastMenuProbeAt >= Self.menuProbeInterval else { lock.unlock(); return }
+        lastMenuProbeAt = now
+        lock.unlock()
+        workQueue.async { [weak self] in
+            guard let self else { return }
+            let open = self.isDockContextMenuOpen()
+            self.lock.lock()
+            if self.contextMenuGuardActive && !open {
+                self.contextMenuGuardActive = false
+                ZSLog("DockHoverPreview: context menu guard off")
+            }
+            self.lock.unlock()
+        }
+    }
+
+    /// Dock 应用元素的 AX 树里是否存在打开的菜单（右键菜单/子菜单）。
+    /// resolveTarget 实测右键菜单元素可沿 Dock 层级命中（isMenuElement），浅层扫描即可。
+    /// AX 调用失败一律视为未打开（自愈，避免抑制永久卡死）。
+    private func isDockContextMenuOpen() -> Bool {
+        guard let dock = NSRunningApplication.runningApplications(withBundleIdentifier: Self.dockBundleID).first else { return false }
+        let dockElement = AXUIElementCreateApplication(dock.processIdentifier)
+        guard var frontier = copyAXElements(dockElement, kAXChildrenAttribute), !frontier.isEmpty else { return false }
+        for _ in 0..<3 {
+            var next: [AXUIElement] = []
+            for element in frontier {
+                if isMenuElement(element) { return true }
+                if let children = copyAXElements(element, kAXChildrenAttribute) {
+                    next.append(contentsOf: children)
+                }
+            }
+            if next.isEmpty { break }
+            frontier = next
+        }
+        return false
     }
 
     // MARK: - 调度
@@ -528,6 +622,11 @@ final class DockHoverPreviewController {
             lock.lock(); defer { lock.unlock() }
             return lastMousePoint
         }()
+        // 兜底：抑制期间到达的在途 show 一律不放行
+        if isContextMenuGuarded() {
+            failResolve(showGen: g, reason: "dock context menu open")
+            return
+        }
         let target: HoverTarget
         switch resolveTarget(at: point) {
         case .resolved(let resolved):
@@ -634,7 +733,8 @@ final class DockHoverPreviewController {
         // 持锁调用会主线程死锁——面板永远弹不出来）
         let anchorItemID = cachedItem(at: pointer)?.id
         lock.lock()
-        guard generation == self.showGen, phase == .pending || phase == .visible else {
+        // 菜单抑制兜底：即使 generation/phase 均在途，菜单开着也不上屏
+        guard generation == self.showGen, phase == .pending || phase == .visible, !contextMenuGuardActive else {
             lock.unlock()
             return
         }
