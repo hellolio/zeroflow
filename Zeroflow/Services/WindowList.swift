@@ -281,7 +281,7 @@ final class WindowList {
             // 同步兜底表，让下面 sort 的 aIsFront/bIsFront tiebreak 与调试日志的 current 判定保持一致。
             if currentID != nil { frontWindowByPid[frontmostPID] = currentID }
             if let currentID {
-                tracker.noteFocus(wid: currentID, source: "frontmost")
+                tracker.noteFocus(pid: frontmostPID, wid: currentID, source: "frontmost")
             }
         }
 

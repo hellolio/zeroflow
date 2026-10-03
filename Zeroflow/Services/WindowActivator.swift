@@ -36,8 +36,8 @@ final class WindowActivator {
             nsWindow.deminiaturize(nil)
         }
         nsWindow.makeKeyAndOrderFront(nil)
-        // 同步补记 MRU：AX 焦点通知是异步的，快速连按 ⌘⇥ 时要保证下次枚举 index0 = 刚激活窗口
-        WindowActivityTracker.shared.noteFocus(wid: window.id, source: "switcher")
+        // 同步补记 MRU + 开激活护栏（本 app 直调 makeKeyAndOrderFront，无同 app 瞬态，护栏仅对齐语义）
+        WindowActivityTracker.shared.beginSwitcherActivation(pid: window.pid, wid: window.id)
         ZSLog("WindowActivator: focused own window wid=\(window.id)")
     }
 
@@ -47,7 +47,9 @@ final class WindowActivator {
         // 入口即补记 MRU：AX 焦点通知是异步的，快速连按 ⌘⇥ 时要保证下次枚举 index0 = 刚激活窗口。
         // 必须在 AX 匹配之前调用——全屏窗口在另一个 Space 上时 kAXWindowsAttribute 常取不到
         // （走下方 SkyLight/activate 兜底），若补记放在成功路径末尾会被跳过，导致全屏切换后 MRU 排序不更新。
-        WindowActivityTracker.shared.noteFocus(wid: window.id, source: "switcher")
+        // 护栏丢弃激活瞬态里同 app 旧 key 窗口的焦点时间戳（见 WindowActivityTracker.switcherGuard），
+        // 否则 a→同 app 另一窗口后再按 ⌘⇥ 会错选旧窗口。
+        WindowActivityTracker.shared.beginSwitcherActivation(pid: window.pid, wid: window.id)
 
         // 无窗口 app 占位卡：`app.activate` 对没有窗口的 app 通常无效（macOS 无窗口可激活）。
         // 对齐 AltTab：重新 launch 该 app（已运行会置前，多数 app 会尝试重开窗口）；失败退回 activate。
