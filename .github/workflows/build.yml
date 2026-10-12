@@ -54,6 +54,13 @@ jobs:
           security set-keychain-settings -lut 21600 "$KC_PATH"
           security unlock-keychain -p "$KC_PASS" "$KC_PATH"
           security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KC_PATH"
+          # 校验私钥真的进来了:p12 只导出证书没带私钥时(常见坑)这里为 0,
+          # 否则后续 set-key-partition-list 只报隐晦的 SecItemCopyMatching
+          COUNT="$(security find-identity -v -p codesigning "$KC_PATH" | awk '/valid identities found/ {print $1}')"
+          if [ "${COUNT:-0}" -eq 0 ]; then
+            echo "::error::keychain 里没有可签名的身份——导出的 p12 大概率没带私钥。请在钥匙串访问「我的证书」里展开证书条目确认有「专用密钥」,连私钥一起导出 .p12 后更新 secret;若私钥不可导出(Xcode 生成于其它机器),在 Xcode → Accounts → Manage Certificates 新建证书后重新导出"
+            exit 1
+          fi
           security set-key-partition-list -S apple-tool:,apple: -k "$KC_PASS" "$KC_PATH"
           security list-keychain -d user -s "$KC_PATH" login.keychain
           echo "CS_IDENTITY=Apple Development" >> "$GITHUB_ENV"
