@@ -23,39 +23,41 @@ struct SettingsView: View {
     @State private var selectedTab: SettingsTab = .screenshot
 
     var body: some View {
-        VStack(spacing: 0) {
-            // 标签多时超出窗口宽，可横向滚动
-            ScrollView(.horizontal, showsIndicators: false) {
-                Picker("", selection: $selectedTab) {
-                    ForEach(SettingsTab.allCases, id: \.self) { tab in
-                        Text(tab.title).tag(tab)
-                    }
+        HStack(spacing: 0) {
+            // 左侧：纵向标签栏（仿系统设置）
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(SettingsTab.allCases, id: \.self) { tab in
+                    sidebarRow(tab)
                 }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .fixedSize()
+                Spacer()
             }
-            .padding(.bottom, 12)
+            .padding(10)
+            .frame(width: 168)
 
-            switch selectedTab {
-            case .general:
-                generalTab
-            case .screenshot:
-                screenshotTab
-            case .switcher:
-                switcherTab
-            case .dock:
-                dockTab
-            case .dockPreview:
-                dockPreviewTab
-            case .notch:
-                notchTab
-            case .finder:
-                finderTab
+            Divider()
+
+            // 右侧：当前标签的详细设置（Form .grouped 自带滚动）
+            Group {
+                switch selectedTab {
+                case .general:
+                    generalTab
+                case .screenshot:
+                    screenshotTab
+                case .switcher:
+                    switcherTab
+                case .dock:
+                    dockTab
+                case .dockPreview:
+                    dockPreviewTab
+                case .notch:
+                    notchTab
+                case .finder:
+                    finderTab
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 520, minHeight: 560)
-        .padding()
+        .frame(minWidth: 760, minHeight: 560)
         // 无权限触发截图时自动跳到「截图」标签页，让权限引导直接可见
         .onReceive(NotificationCenter.default.publisher(for: .zeroflowOpenSettings)) { _ in
             selectedTab = .screenshot
@@ -71,6 +73,26 @@ struct SettingsView: View {
                 selectedTab = tab
             }
         }
+    }
+
+    private func sidebarRow(_ tab: SettingsTab) -> some View {
+        let selected = selectedTab == tab
+        return Button {
+            selectedTab = tab
+        } label: {
+            Text(tab.title)
+                .font(.system(size: 13, weight: selected ? .medium : .regular))
+                .foregroundColor(selected ? .white : .primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(selected ? Color(nsColor: .controlAccentColor) : .clear)
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - 截图

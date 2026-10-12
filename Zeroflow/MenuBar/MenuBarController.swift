@@ -182,7 +182,7 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
                 contentViewController: NSHostingController(rootView: SettingsView())
             )
             window.title = L10n.tr("zeroflow 设置")
-            window.setContentSize(NSSize(width: 560, height: 640))
+            window.setContentSize(NSSize(width: 860, height: 640))
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.center()

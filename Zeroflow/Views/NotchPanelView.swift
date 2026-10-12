@@ -258,16 +258,16 @@ struct NotchContentView: View {
     private static let calendarColumnWidth: CGFloat = 332
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
+        // 单模块居中；后续多模块在 HStack 内并排、整体居中
+        HStack(alignment: .top, spacing: 16) {
             if SettingsStore.shared.notchShowCalendar {
                 calendarColumn
             } else {
                 emptyState
             }
-            Spacer(minLength: 0)
         }
-        .padding(14)
-        .frame(width: NotchPanel.preferredWidth, alignment: .leading)
+        .padding(.vertical, 14)
+        .frame(width: NotchPanel.preferredWidth, alignment: .center)
         .background(
             VisualEffectBackground(opacity: Double(SettingsStore.shared.notchPanelOpacity) / 100)
         )
@@ -295,8 +295,7 @@ struct NotchContentView: View {
             }
             .controlSize(.small)
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.vertical, 24)
+        .padding(.vertical, 16)
     }
 
     private var header: some View {
@@ -476,15 +475,19 @@ final class NotchPanel: NSPanel {
         // 热区 TL 坐标最大 y = 刘海下边缘；转回 Cocoa 坐标作为面板顶边
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
         let finalOrigin = NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - size.height)
-        setFrameOrigin(NSPoint(x: finalOrigin.x, y: finalOrigin.y + 12))
+        // 从刘海后方 12pt 处滑入；NSWindow 只有 frame 可动画（animator().setFrameOrigin 无效，
+        // 面板会停在起始位置），必须用 animator().setFrame(_:display:)
+        let startFrame = NSRect(origin: NSPoint(x: finalOrigin.x, y: finalOrigin.y + 12), size: size)
+        let finalFrame = NSRect(origin: finalOrigin, size: size)
+        setFrame(startFrame, display: false)
         alphaValue = 0
         orderFront(nil)
         invalidateShadow()
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.18
             context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            animator().setFrame(finalFrame, display: true)
             animator().alphaValue = 1
-            animator().setFrameOrigin(finalOrigin)
         }
     }
 
