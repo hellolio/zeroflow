@@ -28,6 +28,9 @@ final class SettingsStore: ObservableObject {
         static let appLanguage = "appLanguage"
         static let finderNewFileEnabled = "finderNewFileEnabled"
         static let finderNewFileName = "finderNewFileName"
+        static let finderCmdEnabled = "finderCmdEnabled"
+        static let finderCmdTitle = "finderCmdTitle"
+        static let finderCmdCommand = "finderCmdCommand"
     }
 
     private let defaults: UserDefaults
@@ -44,12 +47,29 @@ final class SettingsStore: ObservableObject {
             .appendingPathComponent(finderSharedFileName)
     }
 
-    /// 把访达新建文件相关设置写进 group container,供沙盒化的 FinderSync 扩展读取。
-    static func saveFinderSharedSettings(enabled: Bool, fileName: String, language: String) {
+    /// 「访达自定义命令」默认值：装了 WezTerm 直接用其 CLI 在目标目录开新窗口，
+    /// 否则退回 open -a Terminal。路径含空格，所以默认模板给 {path} 带上双引号。
+    static var defaultFinderCmdCommand: String {
+        let wezterm = "/Applications/WezTerm.app/Contents/MacOS/wezterm"
+        if FileManager.default.fileExists(atPath: wezterm) {
+            return "\(wezterm) start --cwd \"{path}\""
+        }
+        return "open -a Terminal \"{path}\""
+    }
+
+    static let defaultFinderCmdTitle = "打开终端"
+
+    /// 把访达右键菜单相关设置写进 group container,供沙盒化的 FinderSync 扩展读取。
+    static func saveFinderSharedSettings(newFileEnabled: Bool, fileName: String,
+                                         cmdEnabled: Bool, cmdTitle: String,
+                                         cmdCommand: String, language: String) {
         guard let url = finderSharedURL else { return }
         let dict: [String: Any] = [
-            Keys.finderNewFileEnabled: enabled,
+            Keys.finderNewFileEnabled: newFileEnabled,
             Keys.finderNewFileName: fileName,
+            Keys.finderCmdEnabled: cmdEnabled,
+            Keys.finderCmdTitle: cmdTitle,
+            Keys.finderCmdCommand: cmdCommand,
             Keys.appLanguage: language,
         ]
         (dict as NSDictionary).write(to: url, atomically: true)
@@ -78,6 +98,9 @@ final class SettingsStore: ObservableObject {
             Keys.cmdTabShortcutModifiers: Int(ShortcutKey.cmdTabDefault.modifiers.rawValue),
             Keys.finderNewFileEnabled: false,
             Keys.finderNewFileName: "new file.md",
+            Keys.finderCmdEnabled: false,
+            Keys.finderCmdTitle: Self.defaultFinderCmdTitle,
+            Keys.finderCmdCommand: Self.defaultFinderCmdCommand,
         ])
         _launchAtLogin = Published(initialValue: defaults.bool(forKey: Keys.launchAtLogin))
         _saveDirectory = Published(initialValue: defaults.string(forKey: Keys.saveDirectory) ?? Self.defaultSaveDirectory)
@@ -90,13 +113,24 @@ final class SettingsStore: ObservableObject {
         _windowSwitcherShowWindowlessApps = Published(initialValue: defaults.bool(forKey: Keys.windowSwitcherShowWindowlessApps))
         _finderNewFileEnabled = Published(initialValue: defaults.bool(forKey: Keys.finderNewFileEnabled))
         _finderNewFileName = Published(initialValue: defaults.string(forKey: Keys.finderNewFileName) ?? "new file.md")
+        _finderCmdEnabled = Published(initialValue: defaults.bool(forKey: Keys.finderCmdEnabled))
+        _finderCmdTitle = Published(initialValue: defaults.string(forKey: Keys.finderCmdTitle) ?? Self.defaultFinderCmdTitle)
+        _finderCmdCommand = Published(initialValue: defaults.string(forKey: Keys.finderCmdCommand) ?? Self.defaultFinderCmdCommand)
         _shortcut = Published(initialValue: Self.loadShortcut(from: defaults))
         _cmdTabShortcut = Published(initialValue: Self.loadCmdTabShortcut(from: defaults))
         _appLanguage = Published(initialValue: AppLanguage(rawValue: defaults.string(forKey: Keys.appLanguage) ?? "") ?? .system)
         ensureDefaultDirectoryExists()
         // 用本次加载的真实值补齐 group container 共享文件（didSet 只在变更时触发）
-        Self.saveFinderSharedSettings(enabled: finderNewFileEnabled,
+        syncFinderSharedSettings()
+    }
+
+    /// 汇总当前所有访达右键菜单设置写入共享 plist。
+    private func syncFinderSharedSettings() {
+        Self.saveFinderSharedSettings(newFileEnabled: finderNewFileEnabled,
                                       fileName: finderNewFileName,
+                                      cmdEnabled: finderCmdEnabled,
+                                      cmdTitle: finderCmdTitle,
+                                      cmdCommand: finderCmdCommand,
                                       language: appLanguage.rawValue)
     }
 
@@ -313,7 +347,7 @@ final class SettingsStore: ObservableObject {
     @Published var finderNewFileEnabled: Bool {
         didSet {
             defaults.set(finderNewFileEnabled, forKey: Keys.finderNewFileEnabled)
-            Self.saveFinderSharedSettings(enabled: finderNewFileEnabled, fileName: finderNewFileName, language: appLanguage.rawValue)
+            syncFinderSharedSettings()
             // 通知 FinderSync 扩展即时增删 directoryURLs（关闭时清空，Finder 零监控）
             DistributedNotificationCenter.default().post(
                 name: .zeroflowFinderNewFileDidChange,
@@ -325,7 +359,37 @@ final class SettingsStore: ObservableObject {
     @Published var finderNewFileName: String {
         didSet {
             defaults.set(finderNewFileName, forKey: Keys.finderNewFileName)
-            Self.saveFinderSharedSettings(enabled: finderNewFileEnabled, fileName: finderNewFileName, language: appLanguage.rawValue)
+            syncFinderSharedSettings()
+        }
+    }
+
+    // MARK: - 访达自定义命令
+
+    @Published var finderCmdEnabled: Bool {
+        didSet {
+            defaults.set(finderCmdEnabled, forKey: Keys.finderCmdEnabled)
+            syncFinderSharedSettings()
+            // 扩展的 directoryURLs 由「任一功能开启」决定，需通知扩展重算
+            DistributedNotificationCenter.default().post(
+                name: .zeroflowFinderNewFileDidChange,
+                object: nil
+            )
+        }
+    }
+
+    /// 右键菜单里显示的名称（用户自定义文案，不参与本地化）
+    @Published var finderCmdTitle: String {
+        didSet {
+            defaults.set(finderCmdTitle, forKey: Keys.finderCmdTitle)
+            syncFinderSharedSettings()
+        }
+    }
+
+    /// 命令模板：{path} 占位符替换为右键目标目录的绝对路径；不含 {path} 则原样执行
+    @Published var finderCmdCommand: String {
+        didSet {
+            defaults.set(finderCmdCommand, forKey: Keys.finderCmdCommand)
+            syncFinderSharedSettings()
         }
     }
 
@@ -346,7 +410,7 @@ final class SettingsStore: ObservableObject {
     @Published var appLanguage: AppLanguage {
         didSet {
             defaults.set(appLanguage.rawValue, forKey: Keys.appLanguage)
-            Self.saveFinderSharedSettings(enabled: finderNewFileEnabled, fileName: finderNewFileName, language: appLanguage.rawValue)
+            syncFinderSharedSettings()
             NotificationCenter.default.post(name: L10n.didChangeNotification, object: nil)
         }
     }

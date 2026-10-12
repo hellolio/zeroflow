@@ -89,6 +89,18 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
                 CommandTabSwitcher.runDebugProbe()
             }
         }
+        if let focusStr = ProcessInfo.processInfo.environment["ZEROFLOW_AUTO_FOCUS"],
+           let wid = CGWindowID(exactly: Int(focusStr) ?? -1) {
+            ZSLog("env ZEROFLOW_AUTO_FOCUS: defer 2s then focus wid=\(wid)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                guard let w = WindowList.shared.enumerate().first(where: { $0.id == wid }) else {
+                    ZSLog("AUTO_FOCUS: wid \(wid) not in enumerate list")
+                    return
+                }
+                ZSLog("AUTO_FOCUS: focusing wid=\(wid) app=\(w.appName)")
+                WindowActivator.shared.focus(window: w)
+            }
+        }
     }
 
     private func setupMenuBar() {
