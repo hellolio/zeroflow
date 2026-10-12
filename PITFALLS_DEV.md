@@ -71,3 +71,8 @@
 - **Pitfall:** 扩展里 `Process` 拉起终端/pty 类命令(如 `wezterm start`)EPERM 秒退。
 - **Cause:** 子进程继承扩展的沙盒约束。
 - **Prevention:** 自定义命令不在扩展执行:扩展把请求写进 group container 的 `finder-command-*.plist` 并广播分布式通知(沙盒发通知不能带 userInfo),由非沙盒主 app `Zeroflow/Services/FinderCommandRunner.swift` 代执行(启动时消化积压请求,超过 30s 的丢弃;扩展侧主 app 未运行时会拉起它)。
+
+## DEV-015: 新 SDK(27.0)下 EventKit/CG/NSScreen 的 API 形态变化
+- **Pitfall:** 灵动岛功能首编四处报错:`store.events(from:to:calendars:)` 不存在、`EKCalendar.color` 按 CGColor 用报类型错、`NSScreen.auxiliaryTopLeft/RightArea` 按 non-optional 用报可选错、`CGEvent.keyCode` 属性不存在。
+- **Cause:** EventKit 便捷查询只剩谓词版 `events(matching:)`;macOS 上 `EKCalendar.color` 一直是 NSColor(iOS 才是 CGColor);辅助区矩形在新 SDK 声明为可选;CGEvent 键码要走 `getIntegerValueField(.keyboardEventKeycode)`。
+- **Prevention:** 遇到系统框架 API 编译错先查本机 SDK 头文件(`/Applications/Xcode.app/.../System/Library/Frameworks/<F>.framework/Headers/*.h`)再改实现,不要凭记忆按 iOS 或旧文档签名写。

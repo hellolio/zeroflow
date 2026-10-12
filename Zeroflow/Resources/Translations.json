@@ -549,11 +549,6 @@
     "en": "Calendar",
     "ja": "カレンダー"
   },
-  "弹出面板中显示的内容模块。全部关闭后，悬停/单击刘海将不再弹出面板。": {
-    "zh-Hans": "弹出面板中显示的内容模块。全部关闭后，悬停/单击刘海将不再弹出面板。",
-    "en": "Content modules shown in the panel. With all modules off, hovering or clicking the notch no longer opens the panel.",
-    "ja": "パネルに表示するコンテンツモジュール。すべてオフにすると、ノッチのホバー/クリックでパネルは開かなくなります。"
-  },
   "需要「辅助功能」权限才能监测刘海悬停": {
     "zh-Hans": "需要「辅助功能」权限才能监测刘海悬停",
     "en": "Accessibility permission is required to detect notch hover",
@@ -588,5 +583,35 @@
     "zh-Hans": "未获准访问日历，无法显示日程。",
     "en": "Calendar access is not granted, so events can't be shown.",
     "ja": "カレンダーへのアクセスが許可されていないため、予定を表示できません。"
+  },
+  "弹出面板中显示的内容模块。全部关闭时，面板仍会弹出并提示添加显示内容。": {
+    "zh-Hans": "弹出面板中显示的内容模块。全部关闭时，面板仍会弹出并提示添加显示内容。",
+    "en": "Content modules shown in the panel. With all modules off, the panel still opens and offers to add content.",
+    "ja": "パネルに表示するコンテンツモジュール。すべてオフでもパネルは開き、コンテンツ追加を案内します。"
+  },
+  "面板": {
+    "zh-Hans": "面板",
+    "en": "Panel",
+    "ja": "パネル"
+  },
+  "不透明度": {
+    "zh-Hans": "不透明度",
+    "en": "Opacity",
+    "ja": "不透明度"
+  },
+  "面板背景的不透明度，数值越小越透明。": {
+    "zh-Hans": "面板背景的不透明度，数值越小越透明。",
+    "en": "Panel background opacity: lower values are more transparent.",
+    "ja": "パネル背景の不透明度。数値が小さいほど透明になります。"
+  },
+  "暂无显示内容": {
+    "zh-Hans": "暂无显示内容",
+    "en": "No content yet",
+    "ja": "表示内容がありません"
+  },
+  "添加显示内容": {
+    "zh-Hans": "添加显示内容",
+    "en": "Add Content",
+    "ja": "コンテンツを追加"
   }
 }

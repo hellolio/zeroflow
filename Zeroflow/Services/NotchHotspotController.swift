@@ -456,13 +456,6 @@ final class NotchHotspotController {
             lock.unlock()
             return
         }
-        // 内容模块全关：没有可显示的内容，不弹
-        guard SettingsStore.shared.notchShowCalendar else {
-            phase = .idle
-            pendingShowGen = nil
-            lock.unlock()
-            return
-        }
         phase = .visible
         lock.unlock()
 

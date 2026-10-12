@@ -4,6 +4,9 @@ import SwiftUI
 extension Notification.Name {
     /// 请求打开设置窗口（如无截屏权限时引导授权）
     static let zeroflowOpenSettings = Notification.Name("zeroflow.openSettings")
+
+    /// 请求打开设置窗口并跳到「灵动岛」标签页（面板空态引导按钮）
+    static let zeroflowOpenNotchSettings = Notification.Name("zeroflow.openNotchSettings")
 }
 
 /// 菜单栏控制器：常驻菜单栏，提供「设置」与「退出」
@@ -21,6 +24,12 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
             self,
             selector: #selector(openSettings),
             name: .zeroflowOpenSettings,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(openSettings),
+            name: .zeroflowOpenNotchSettings,
             object: nil
         )
         NotificationCenter.default.addObserver(

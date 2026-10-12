@@ -226,6 +226,9 @@ final class NotchCalendarViewModel: ObservableObject {
 
 /// 磨砂背景（HUD 材质；面板固定深色外观 → 灵动岛同款深色磨砂圆角）
 private struct VisualEffectBackground: NSViewRepresentable {
+    /// 不透明度 0...1（数值越小越透明）
+    let opacity: Double
+
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
         view.material = .hudWindow
@@ -235,20 +238,42 @@ private struct VisualEffectBackground: NSViewRepresentable {
         view.layer?.cornerRadius = 16
         view.layer?.cornerCurve = .continuous
         view.layer?.masksToBounds = true
+        view.alphaValue = opacity
         return view
     }
 
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {}
+    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
+        nsView.alphaValue = opacity
+    }
 }
 
-/// 灵动岛面板内容：月历（今天高亮/日程打点/翻月/点选日期）+ 当日日程列表
+/// 灵动岛面板内容：日历列（月历 + 当日日程）贴左，预留右侧空白区；
+/// 无内容模块时显示「添加显示内容」引导。宽度 = 面板宽，日历列固定原尺寸不随宽度拉伸。
 struct NotchContentView: View {
     @ObservedObject var model: NotchCalendarViewModel
 
     private let accent = Color.accentColor
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
+    /// 日历列宽度（面板加宽前的内容宽，保持原比例）
+    private static let calendarColumnWidth: CGFloat = 332
 
     var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            if SettingsStore.shared.notchShowCalendar {
+                calendarColumn
+            } else {
+                emptyState
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .frame(width: NotchPanel.preferredWidth, alignment: .leading)
+        .background(
+            VisualEffectBackground(opacity: Double(SettingsStore.shared.notchPanelOpacity) / 100)
+        )
+    }
+
+    private var calendarColumn: some View {
         VStack(spacing: 10) {
             header
             weekdayRow
@@ -256,9 +281,22 @@ struct NotchContentView: View {
             Divider()
             daySection
         }
-        .padding(14)
-        .frame(width: NotchPanel.preferredWidth)
-        .background(VisualEffectBackground())
+        .frame(width: Self.calendarColumnWidth)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 10) {
+            Text(L10n.tr("暂无显示内容"))
+                .font(.system(size: 12))
+                .foregroundColor(.secondary)
+            Button(L10n.tr("添加显示内容")) {
+                SettingsView.pendingTab = .notch
+                NotificationCenter.default.post(name: .zeroflowOpenNotchSettings, object: nil)
+            }
+            .controlSize(.small)
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.vertical, 24)
     }
 
     private var header: some View {
@@ -402,7 +440,7 @@ struct NotchContentView: View {
 /// 悬停/点击/Esc 判定全部由 NotchHotspotController 的 listen-only tap 完成，
 /// 本面板只负责内容展示（不成为 key，无键盘交互）。
 final class NotchPanel: NSPanel {
-    static let preferredWidth: CGFloat = 360
+    static let preferredWidth: CGFloat = 560
 
     init() {
         super.init(contentRect: NSRect(x: 0, y: 0, width: Self.preferredWidth, height: 200),
@@ -423,7 +461,8 @@ final class NotchPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 
     /// 依据刘海热区（主屏左上原点坐标）重建内容、测尺寸、定位并滑入显示。
-    /// 面板顶部贴屏幕顶、水平居中刘海；每次 present 重建 contentView（模型重置到今天）。
+    /// 面板顶边贴刘海下边缘（热区竖向范围 = 刘海竖向范围）、水平居中刘海；
+    /// 每次 present 重建 contentView（模型重置到今天，同时取最新透明度/内容设置）。
     func present(hotspotTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
         contentView = NSHostingView(rootView: NotchContentView(model: model))
         contentView?.layoutSubtreeIfNeeded()
@@ -434,7 +473,9 @@ final class NotchPanel: NSPanel {
 
         let x = Self.clamp(hotspotTL.midX - size.width / 2,
                            screen.frame.minX + 8, screen.frame.maxX - size.width - 8)
-        let finalOrigin = NSPoint(x: x, y: screen.frame.maxY - size.height)
+        // 热区 TL 坐标最大 y = 刘海下边缘；转回 Cocoa 坐标作为面板顶边
+        let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
+        let finalOrigin = NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - size.height)
         setFrameOrigin(NSPoint(x: finalOrigin.x, y: finalOrigin.y + 12))
         alphaValue = 0
         orderFront(nil)

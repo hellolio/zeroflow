@@ -16,18 +16,25 @@ enum SettingsTab: String, CaseIterable {
 }
 
 struct SettingsView: View {
+    /// 跨窗口跳转：外部（如灵动岛面板「添加显示内容」）先置此值再发通知，窗口首次打开时消费
+    static var pendingTab: SettingsTab?
+
     @StateObject private var store = SettingsStore.shared
     @State private var selectedTab: SettingsTab = .screenshot
 
     var body: some View {
         VStack(spacing: 0) {
-            Picker("", selection: $selectedTab) {
-                ForEach(SettingsTab.allCases, id: \.self) { tab in
-                    Text(tab.title).tag(tab)
+            // 标签多时超出窗口宽，可横向滚动
+            ScrollView(.horizontal, showsIndicators: false) {
+                Picker("", selection: $selectedTab) {
+                    ForEach(SettingsTab.allCases, id: \.self) { tab in
+                        Text(tab.title).tag(tab)
+                    }
                 }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
             .padding(.bottom, 12)
 
             switch selectedTab {
@@ -52,6 +59,17 @@ struct SettingsView: View {
         // 无权限触发截图时自动跳到「截图」标签页，让权限引导直接可见
         .onReceive(NotificationCenter.default.publisher(for: .zeroflowOpenSettings)) { _ in
             selectedTab = .screenshot
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .zeroflowOpenNotchSettings)) { _ in
+            Self.pendingTab = nil
+            selectedTab = .notch
+        }
+        // 窗口首次打开时（通知先于视图存在）消费外部预置的标签页
+        .onAppear {
+            if let tab = Self.pendingTab {
+                Self.pendingTab = nil
+                selectedTab = tab
+            }
         }
     }
 
@@ -290,7 +308,25 @@ struct SettingsView: View {
                 } header: {
                     Text(L10n.tr("显示内容"))
                 } footer: {
-                    Text(L10n.tr("弹出面板中显示的内容模块。全部关闭后，悬停/单击刘海将不再弹出面板。"))
+                    Text(L10n.tr("弹出面板中显示的内容模块。全部关闭时，面板仍会弹出并提示添加显示内容。"))
+                }
+
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("不透明度")) {
+                            Text("\(store.notchPanelOpacity)%")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.notchPanelOpacity) },
+                            set: { store.notchPanelOpacity = Int($0) }
+                        ), in: 30...100, step: 5)
+                    }
+                } header: {
+                    Text(L10n.tr("面板"))
+                } footer: {
+                    Text(L10n.tr("面板背景的不透明度，数值越小越透明。"))
                 }
 
                 Section {
