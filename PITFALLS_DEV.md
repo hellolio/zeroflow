@@ -86,3 +86,8 @@
 - **Pitfall:** `CGWindowListCreateImage` 在 macOS 15 已 obsoleted(SDK 15+ 直接编译错误),系统磨砂(NSVisualEffectView)公开 API 不暴露模糊半径;`NSGlassEffectView` 的 `alphaValue` 会连 contentView 内容一起变透明,不能当「背景不透明度」用。
 - **Cause:** 液态玻璃透明度只能经 `tintColor` 的 alpha(染色深浅)控制;内容必须嵌 `contentView` 才保证在玻璃内(任意兄弟子视图 z 序无保证)。
 - **Prevention:** macOS 26+ 面板背景用 `NSGlassEffectView`(cornerRadius 对齐屏幕圆角,macOS 上无公开 API 查屏幕圆角,取 16);旧系统回退 `NSVisualEffectView(.hudWindow)`。若真需要面板背后区域的模糊快照,须 SCScreenshotManager + `SCContentFilter(display:excludingWindows: [自身 SCWindow])` 整屏捕获后裁剪再 `CIGaussianBlur`(输入先 `clampedToExtent()` 防边缘晕边);SCShareableContent 枚举耗时数百毫秒,需缓存。
+
+## DEV-018: ad-hoc 签名的扩展对 App Group 容器只读,写请求文件 EPERM,「打开终端」静默失效
+- **Pitfall:** 「访达右键 → 打开终端」点击毫无反应,而「新建空文件」(纯扩展内动作)正常,极具迷惑性。扩展 os_log 仅报 `submit: failed to write`,底层为 `NSCocoaErrorDomain Code=513 / NSPOSIXErrorDomain Code=1 (EPERM)`;group container 里从未出现 `finder-command-*.plist`,主 app 日志零条 `finderCommand`。GitHub CI 的 ad-hoc 包必现,Team 签名构建正常。
+- **Cause:** ad-hoc 签名(`TeamIdentifier=not set`)的沙盒扩展,系统不认可其 `com.apple.security.application-groups` entitlement,沙盒只放行 group container 的**读**、**写**被拒(EPERM)。扩展读设置正常所以菜单/文案都正常,只有「写请求文件」这一步死;非沙盒主 app 不受沙盒中介、读写都正常——这种读写不对称掩盖了问题。Team 签名(真证书)即可放行写,实测无需嵌入 provisioning profile。
+- **Prevention:** 涉及 FinderSync 扩展的产物必须 Team 签名(`CODE_SIGN_IDENTITY="Apple Development" DEVELOPMENT_TEAM=8NHN73Q43T`)。CI 已加 `Import signing certificate` 步骤从 secrets 导入证书,发 tag 时断言 appex `TeamIdentifier=8NHN73Q43T`;无 secrets 回退 ad-hoc 仅限编译检查(那种包右键命令功能无效)。排障用 `log show --info --predicate 'subsystem == "com.zeroflow.app.finderSync"'`(必须 `--info`,否则只剩 error 级);`CustomCommandRunner.submit` 的失败日志已改为输出真实 NSError + 完整路径(之前只打布尔,排障信息为零)。

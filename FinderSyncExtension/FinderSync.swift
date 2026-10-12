@@ -247,8 +247,13 @@ enum CustomCommandRunner {
             "directory": directory?.path ?? "",
             "createdAt": Double(stamp),
         ]
-        guard (payload as NSDictionary).write(to: fileURL, atomically: true) else {
-            os_log("submit: failed to write %@", log: finderSyncLog, type: .error, fileURL.path)
+        do {
+            let data = try PropertyListSerialization.data(fromPropertyList: payload, format: .xml, options: 0)
+            try data.write(to: fileURL, options: .atomic)
+        } catch {
+            // 诊断:写出真实 NSError 与完整路径(os_log 默认对动态字符串打 <private>)
+            os_log("submit: failed to write %{public}@ error=%{public}@", log: finderSyncLog, type: .error,
+                   fileURL.path, String(describing: error))
             return
         }
         os_log("submit: cmd=%{public}@ file=%{public}@", log: finderSyncLog, type: .info,

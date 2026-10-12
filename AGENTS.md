@@ -13,7 +13,9 @@ macOS 截图菜单栏工具(截图 + 画线/矩形/圆框/文字气泡/马赛克
 xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow -configuration Debug -derivedDataPath build -allowProvisioningUpdates build
 open build/Build/Products/Debug/Zeroflow.app
 
-# CI 等价命令(ad-hoc 签名,无需团队证书/provisioning)
+# CI 等价命令(ad-hoc;仅限编译检查——ad-hoc 包的 FinderSync 扩展无 App Group 写权限,
+# 「访达右键打开终端」会静默失败,见 PITFALLS_DEV.md DEV-018;正式分发用 Team 签名,
+# CI 已从 secrets 导入 Apple Development 证书,本地用上面的 Debug 命令)
 xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow -configuration Release -derivedDataPath build \
   CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= build
 ```
