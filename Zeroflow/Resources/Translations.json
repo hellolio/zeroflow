@@ -518,5 +518,75 @@
     "zh-Hans": "命令中的 {path} 会替换为右键目标的绝对路径：右键文件夹=该文件夹、右键文件=其所在文件夹、右键空白处=当前目录；不含 {path} 则原样执行。路径含空格请给 {path} 加引号。命令由 Zeroflow 主 App 代为执行（登录 Shell，PATH 含 Homebrew），请保持 Zeroflow 常驻运行。",
     "en": "In the command, {path} is replaced with the absolute path of the right-click target: a folder uses itself, a file uses its parent folder, empty space uses the current directory; without {path} the command runs as-is. Quote {path} if paths may contain spaces. Commands are executed by the Zeroflow main app via your default login shell (PATH includes Homebrew), so keep Zeroflow running.",
     "ja": "コマンド内の {path} は右クリック対象の絶対パスに置き換えられます：フォルダーならそのフォルダー、ファイルならその親フォルダー、空白部分なら現在のディレクトリ。{path} がない場合はそのまま実行します。パスに空白が含まれる可能性がある場合は {path} を引用符で囲ってください。コマンドは Zeroflow 本体アプリがログインシェル経由で実行します（PATH に Homebrew を含む）。Zeroflow を常駐させてください。"
+  },
+  "灵动岛": {
+    "zh-Hans": "灵动岛",
+    "en": "Notch",
+    "ja": "ノッチ"
+  },
+  "启用灵动岛": {
+    "zh-Hans": "启用灵动岛",
+    "en": "Enable Notch Panel",
+    "ja": "ノッチパネルを有効にする"
+  },
+  "鼠标悬停或单击屏幕顶部刘海区域，从刘海向下弹出日历面板；点击面板外部或按 Esc 收起。仅支持带刘海的机型。": {
+    "zh-Hans": "鼠标悬停或单击屏幕顶部刘海区域，从刘海向下弹出日历面板；点击面板外部或按 Esc 收起。仅支持带刘海的机型。",
+    "en": "Hover over or click the notch at the top of the screen to drop down a calendar panel; click outside the panel or press Esc to dismiss. Only works on Macs with a notch.",
+    "ja": "画面上部のノッチにカーソルを合わせるかクリックすると、カレンダーパネルが下に展開します。パネルの外側をクリックするか Esc で閉じます。ノッチ搭載機種のみ対応。"
+  },
+  "鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。": {
+    "zh-Hans": "鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。",
+    "en": "How long the pointer must stay on the notch before the panel appears; clicking the notch opens it instantly.",
+    "ja": "ノッチ上に何ミリ秒とどまるとパネルを表示するか。クリックでは即座に開きます。"
+  },
+  "显示内容": {
+    "zh-Hans": "显示内容",
+    "en": "Content",
+    "ja": "表示内容"
+  },
+  "日历": {
+    "zh-Hans": "日历",
+    "en": "Calendar",
+    "ja": "カレンダー"
+  },
+  "弹出面板中显示的内容模块。全部关闭后，悬停/单击刘海将不再弹出面板。": {
+    "zh-Hans": "弹出面板中显示的内容模块。全部关闭后，悬停/单击刘海将不再弹出面板。",
+    "en": "Content modules shown in the panel. With all modules off, hovering or clicking the notch no longer opens the panel.",
+    "ja": "パネルに表示するコンテンツモジュール。すべてオフにすると、ノッチのホバー/クリックでパネルは開かなくなります。"
+  },
+  "需要「辅助功能」权限才能监测刘海悬停": {
+    "zh-Hans": "需要「辅助功能」权限才能监测刘海悬停",
+    "en": "Accessibility permission is required to detect notch hover",
+    "ja": "ノッチのホバー検知には「アクセシビリティ」権限が必要です"
+  },
+  "该权限与 Dock 预览等功能共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 预览等功能共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock preview and other features; if already granted, it shows green here.",
+    "ja": "この権限は Dock プレビューなどと共通です。許可済みならここは緑色で表示されます。"
+  },
+  "今天": {
+    "zh-Hans": "今天",
+    "en": "Today",
+    "ja": "今日"
+  },
+  "全天": {
+    "zh-Hans": "全天",
+    "en": "All-day",
+    "ja": "終日"
+  },
+  "没有日程": {
+    "zh-Hans": "没有日程",
+    "en": "No events",
+    "ja": "予定はありません"
+  },
+  "无标题日程": {
+    "zh-Hans": "无标题日程",
+    "en": "Untitled event",
+    "ja": "タイトルなしの予定"
+  },
+  "未获准访问日历，无法显示日程。": {
+    "zh-Hans": "未获准访问日历，无法显示日程。",
+    "en": "Calendar access is not granted, so events can't be shown.",
+    "ja": "カレンダーへのアクセスが許可されていないため、予定を表示できません。"
   }
 }

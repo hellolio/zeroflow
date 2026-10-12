@@ -40,6 +40,8 @@ xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow -configuration Release -
 | `ZEROFLOW_DOCK_PROBE=1` | 启动 1s 后 dump Dock 的 AX 布局到日志 |
 | `ZEROFLOW_SWITCHER_DEBUG=1` | 启动 1s 后 dump 窗口列表 + ⌘⇥ tap 安装状态,并输出事件级日志 |
 | `ZEROFLOW_DOCKPREVIEW_DEBUG=1` | 打印 Dock 悬停预览的命中/展示/隐藏决策日志 |
+| `ZEROFLOW_NOTCH_DEBUG=1` | 打印灵动岛刘海探测/弹出/收起决策日志 |
+| `ZEROFLOW_NOTCH_FAKE=1` | 在主屏合成伪刘海(宽 180/高 24),便于无刘海机器调试面板 |
 | `ZEROFLOW_FAKE_PERMISSION=1` | 跳过真实权限检测(视为已授权) |
 
 ## 项目架构
@@ -51,6 +53,7 @@ SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/A
 - **截图链**:`GlobalHotkeyManager`(Carbon 热键,受 `screenshotEnabled` 总开关控制)→ `CaptureCoordinator`(权限→遮罩→捕获→编辑页,`isActive` 防重入)→ `ScreenCapture`(ScreenCaptureKit,按 displayID 缓存 `SCContentFilter`)→ `CaptureOverlayView`(选区遮罩)→ `EditorView`(编辑页)。
 - **窗口管理族**(切换器与 Dock 预览共用):`WindowList`(CGWindowList 枚举 + 幽灵过滤 + 窗口级 MRU + 无窗口 app 占位)→ `PhantomWindowDetector`(幽灵判定,对齐 AltTab)/ `WindowActivityTracker`(AX 焦点维护 MRU)/ `WindowThumbnailer`(SkyLight 抓缩略图,能截最小化/离屏)/ `WindowActivator`(跨 Space 前台激活)/ `WindowOps`(卡片操作);消费方 `CommandTabSwitcher`(⌘⇥ 面板)与 `DockHoverPreviewController` + `DockPreviewPanel`。`CGSWindowServer` 是上述私有 API 的 dlsym 桥,启动需预热。
 - **Dock**:`DockClickMinimizer`(单击最小化),开关变化经通知启停 CGEventTap。
+- **灵动岛**:`NotchHotspotController`(listen-only CGEventTap + idle→pending→visible 状态机;由公开 API 推导刘海热区:`safeAreaInsets.top` + `auxiliaryTopLeftArea`/`auxiliaryTopRightArea` 间隙)→ `NotchPanel`(非激活 NSPanel,固定深色 HUD)→ `NotchCalendarViewModel` → `CalendarService`(EventKit,macOS 14 全量授权;后台线程查询)。悬停 ≥ 延时(设置项)或单击热区弹出,点击面板外/Esc/移出热区∪面板/切 Space/睡眠/屏幕变化收起;无刘海或未授权则静默不生效。
 - **FinderSync 桥**:主 app(非沙盒)与扩展(沙盒)经 App Group 的共享文件通信——设置 plist `finder-sync-settings.plist`、命令请求 `finder-command-*.plist` + 分布式通知,自定义命令由主 app `FinderCommandRunner` 代执行;`FinderSyncReloader` 自愈陈旧扩展实例。**不要用 `UserDefaults(suiteName:)` 读 App Group**——原因及全部沙盒/登记坑见 `PITFALLS_DEV.md`。
 - **基础**:`AccessibilityPermission` / `ScreenRecordingPermission`(权限检测)、`ZSLog`(日志,stderr + `/tmp/zeroflow.log`)、`L10n`(国际化:UI 文案一律 `L10n.tr("中文")` 作 key,新增文案需同步 `Resources/Translations.json`)。
 
@@ -96,6 +99,7 @@ SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/A
 |---|---|
 | `AccessibilityPermission.swift` | 辅助功能权限检测与引导跳系统设置 |
 | `AXWindow.swift` | AX 窗口元素查找:`_AXUIElementGetWindow` 精确匹配(禁 bounds 模糊兜底)、remote-token 暴力枚举 |
+| `CalendarService.swift` | EventKit 门面:授权状态/请求(macOS 14 全量)、区间日程查询(未授权返回 [],后台线程调用) |
 | `CaptureCoordinator.swift` | 截图流程协调:权限→遮罩→捕获→编辑页,`isActive` 防重入 |
 | `CGSWindowServer.swift` | SkyLight/CGS 私有 API dlsym 桥:SLS 批量枚举、Space 拓扑、跨 Space 激活 |
 | `CommandTabSwitcher.swift` | ⌘⇥ 切换器:CGEventTap 拦截 + 会话键盘(⇥/⇧⇥/方向键)+ 悬停卡片操作 |
@@ -104,6 +108,7 @@ SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/A
 | `FinderCommandRunner.swift` | 代执行扩展转交的自定义命令:请求文件 + 分布式通知 IPC,启动消化积压(>30s 丢弃) |
 | `FinderSyncReloader.swift` | 陈旧扩展自愈:pluginkit ignore→use election 循环重载(Sequoia/Tahoe bug) |
 | `GlobalHotkeyManager.swift` | Carbon 全局热键注册/注销,受 `screenshotEnabled` 总开关控制 |
+| `NotchHotspotController.swift` | 灵动岛:listen-only CGEventTap 悬停/单击刘海热区弹出面板,状态机 + 收起重弹抑制 + 全局隐藏触发(切 Space/睡眠/屏幕变化) |
 | `PhantomWindowDetector.swift` | 幽灵窗口判定(对齐 AltTab cgsVerdict + AX subrole 兜底) |
 | `ScreenCapture.swift` | ScreenCaptureKit 截屏,按 displayID 缓存 `SCContentFilter` |
 | `WindowActivator.swift` | 跨 app 窗口激活:还原最小化 → SLP 置前 → makeKey → AX main/raise(探针验证) |
@@ -121,8 +126,9 @@ SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/A
 | `CaptureOverlayView.swift` | 全屏选区遮罩(SwiftUI 包 NSView) |
 | `DockPreviewPanel.swift` | Dock 悬停预览面板(非激活 NSPanel)+ `DockPreviewViewModel` |
 | `EditorView.swift` | 截图编辑页(单一 ~1400 行文件):6 种工具 + 画布交互 + 键盘 + 导出 |
+| `NotchPanelView.swift` | 灵动岛面板:月视图日历(今日高亮/日程打点/翻月/当日日程列表)+ 未授权引导,`NotchPanel` 非激活 NSPanel + `NotchCalendarViewModel` |
 | `SaveDirectoryRow.swift` | 保存目录行:路径显示 / 选择 / 打开 |
-| `SettingsView.swift` | 设置窗口:6 个标签页(截图/通用/切换/Dock/Dock 预览/右键菜单) |
+| `SettingsView.swift` | 设置窗口:7 个标签页(截图/通用/切换/Dock/Dock 预览/灵动岛/右键菜单) |
 | `ShortcutRecorderView.swift` | 快捷键录制控件(截图页用,录制期间挂起全局热键) |
 | `WindowCardView.swift` | 窗口缩略图卡片(切换器瓦片与 Dock 预览共用 UI) |
 | `WindowSwitcherPanel.swift` | ⌘⇥ 切换器面板(瓦片网格 + 选中)+ `WindowSwitcherViewModel` |

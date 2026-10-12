@@ -9,6 +9,7 @@ enum SettingsTab: String, CaseIterable {
     case switcher = "切换"
     case dock = "Dock"
     case dockPreview = "Dock 预览"
+    case notch = "灵动岛"
     case finder = "右键菜单"
 
     var title: String { L10n.tr(rawValue) }
@@ -40,6 +41,8 @@ struct SettingsView: View {
                 dockTab
             case .dockPreview:
                 dockPreviewTab
+            case .notch:
+                notchTab
             case .finder:
                 finderTab
             }
@@ -239,6 +242,64 @@ struct SettingsView: View {
                         .foregroundColor(.secondary)
                 } header: {
                     Text(L10n.tr("屏幕录制权限"))
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    // MARK: - 灵动岛
+
+    private var notchTab: some View {
+        Form {
+            Section {
+                Toggle(L10n.tr("启用灵动岛"), isOn: $store.notchEnabled)
+                    .onChange(of: store.notchEnabled) { enabled in
+                        guard enabled else { return }
+                        if !AccessibilityPermission.isGranted {
+                            AccessibilityPermission.requestAuthorization()
+                        }
+                    }
+            } header: {
+                Text(L10n.tr("启用"))
+            } footer: {
+                Text(L10n.tr("鼠标悬停或单击屏幕顶部刘海区域，从刘海向下弹出日历面板；点击面板外部或按 Esc 收起。仅支持带刘海的机型。"))
+            }
+
+            if store.notchEnabled {
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("悬停延时")) {
+                            Text("\(store.notchHoverDelayMs) ms")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.notchHoverDelayMs) },
+                            set: { store.notchHoverDelayMs = Int($0) }
+                        ), in: 100...1000, step: 50)
+                    }
+                } header: {
+                    Text(L10n.tr("选项"))
+                } footer: {
+                    Text(L10n.tr("鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。"))
+                }
+
+                Section {
+                    Toggle(L10n.tr("日历"), isOn: $store.notchShowCalendar)
+                } header: {
+                    Text(L10n.tr("显示内容"))
+                } footer: {
+                    Text(L10n.tr("弹出面板中显示的内容模块。全部关闭后，悬停/单击刘海将不再弹出面板。"))
+                }
+
+                Section {
+                    AccessibilityPermissionRow(message: L10n.tr("需要「辅助功能」权限才能监测刘海悬停"))
+                    Text(L10n.tr("该权限与 Dock 预览等功能共用，若已开启则此处直接显示绿色。"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } header: {
+                    Text(L10n.tr("权限"))
                 }
             }
         }
