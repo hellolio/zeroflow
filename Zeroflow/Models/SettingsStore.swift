@@ -35,6 +35,7 @@ final class SettingsStore: ObservableObject {
         static let notchHoverDelayMs = "notchHoverDelayMs"
         static let notchShowCalendar = "notchShowCalendar"
         static let notchPanelOpacity = "notchPanelOpacity"
+        static let notchBlurStrength = "notchBlurStrength"
     }
 
     private let defaults: UserDefaults
@@ -109,6 +110,7 @@ final class SettingsStore: ObservableObject {
             Keys.notchHoverDelayMs: 200,
             Keys.notchShowCalendar: true,
             Keys.notchPanelOpacity: 80,
+            Keys.notchBlurStrength: 50,
         ])
         _launchAtLogin = Published(initialValue: defaults.bool(forKey: Keys.launchAtLogin))
         _saveDirectory = Published(initialValue: defaults.string(forKey: Keys.saveDirectory) ?? Self.defaultSaveDirectory)
@@ -128,6 +130,7 @@ final class SettingsStore: ObservableObject {
         _notchHoverDelayMs = Published(initialValue: defaults.integer(forKey: Keys.notchHoverDelayMs))
         _notchShowCalendar = Published(initialValue: defaults.bool(forKey: Keys.notchShowCalendar))
         _notchPanelOpacity = Published(initialValue: defaults.integer(forKey: Keys.notchPanelOpacity))
+        _notchBlurStrength = Published(initialValue: defaults.integer(forKey: Keys.notchBlurStrength))
         _shortcut = Published(initialValue: Self.loadShortcut(from: defaults))
         _cmdTabShortcut = Published(initialValue: Self.loadCmdTabShortcut(from: defaults))
         _appLanguage = Published(initialValue: AppLanguage(rawValue: defaults.string(forKey: Keys.appLanguage) ?? "") ?? .system)
@@ -436,6 +439,13 @@ final class SettingsStore: ObservableObject {
     @Published var notchPanelOpacity: Int {
         didSet {
             defaults.set(notchPanelOpacity, forKey: Keys.notchPanelOpacity)
+        }
+    }
+
+    /// 背景模糊强度（%）：在磨砂底上叠加高斯模糊屏幕快照的比例，0 = 仅系统磨砂
+    @Published var notchBlurStrength: Int {
+        didSet {
+            defaults.set(notchBlurStrength, forKey: Keys.notchBlurStrength)
         }
     }
 

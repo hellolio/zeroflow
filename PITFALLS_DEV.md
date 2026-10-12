@@ -81,3 +81,8 @@
 - **Pitfall:** 灵动岛面板从刘海后方 12pt 滑入,用 `animator().setFrameOrigin(final)` 做动画,面板最终停在起始位置(比目标高 12pt),像是"贴不到刘海下缘"。
 - **Cause:** NSWindow 经 animator 代理可动画的属性只有 frame/alphaValue/bounds 等,`setFrameOrigin:` 不在其中,调用静默无效。
 - **Prevention:** 窗口位移动画用 `animator().setFrame(_:display:)`(先 setFrame 到起始位置);或只动画 alphaValue/内容视图 transform。
+
+## DEV-017: 窗口背景模糊的可行路径(macOS 15+)
+- **Pitfall:** 想自定义窗口背景模糊半径时:`CGWindowListCreateImage` 在 macOS 15 已 obsoleted(SDK 15+ 直接编译错误);`animator().setFrameOrigin` 类私有 CABackdropLayer 方案要处理 WindowServer flattening/Mission Control,极易碎。
+- **Cause:** 公开 API 不暴露 NSVisualEffectView 的模糊半径;旧同步截图 API 已移除。
+- **Prevention:** 用 SCScreenshotManager + `SCContentFilter(display:excludingWindows: [自身 SCWindow])` 整屏捕获后裁剪,再 `CIGaussianBlur`(输入先 `clampedToExtent()` 防边缘晕边)合成快照背景。注意:不排除自身窗口会把面板自己拍进背景(反馈循环);SCShareableContent 枚举耗时数百毫秒,需缓存(TTL 内找不到自身窗口就放弃叠加,宁缺毋滥)。

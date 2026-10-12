@@ -345,10 +345,21 @@ struct SettingsView: View {
                             set: { store.notchPanelOpacity = Int($0) }
                         ), in: 30...100, step: 5)
                     }
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("模糊强度")) {
+                            Text("\(store.notchBlurStrength)%")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.notchBlurStrength) },
+                            set: { store.notchBlurStrength = Int($0) }
+                        ), in: 0...100, step: 5)
+                    }
                 } header: {
                     Text(L10n.tr("面板"))
                 } footer: {
-                    Text(L10n.tr("面板背景的不透明度，数值越小越透明。"))
+                    Text(L10n.tr("不透明度：数值越小越透明。模糊强度：磨砂底上叠加的高斯模糊背景，0 为关闭；需要「屏幕录制」权限，无权限时仅显示系统磨砂。重新弹出面板后生效。"))
                 }
 
                 Section {

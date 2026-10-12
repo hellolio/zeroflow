@@ -599,11 +599,6 @@
     "en": "Opacity",
     "ja": "不透明度"
   },
-  "面板背景的不透明度，数值越小越透明。": {
-    "zh-Hans": "面板背景的不透明度，数值越小越透明。",
-    "en": "Panel background opacity: lower values are more transparent.",
-    "ja": "パネル背景の不透明度。数値が小さいほど透明になります。"
-  },
   "暂无显示内容": {
     "zh-Hans": "暂无显示内容",
     "en": "No content yet",
@@ -613,5 +608,15 @@
     "zh-Hans": "添加显示内容",
     "en": "Add Content",
     "ja": "コンテンツを追加"
+  },
+  "模糊强度": {
+    "zh-Hans": "模糊强度",
+    "en": "Blur Strength",
+    "ja": "ぼかしの強さ"
+  },
+  "不透明度：数值越小越透明。模糊强度：磨砂底上叠加的高斯模糊背景，0 为关闭；需要「屏幕录制」权限，无权限时仅显示系统磨砂。重新弹出面板后生效。": {
+    "zh-Hans": "不透明度：数值越小越透明。模糊强度：磨砂底上叠加的高斯模糊背景，0 为关闭；需要「屏幕录制」权限，无权限时仅显示系统磨砂。重新弹出面板后生效。",
+    "en": "Opacity: lower values are more transparent. Blur Strength: a gaussian-blurred snapshot layered on the frost; 0 turns it off. Requires Screen Recording permission; without it only the system frost shows. Changes apply when the panel is reopened.",
+    "ja": "不透明度：数値が小さいほど透明になります。ぼかしの強さ：すりガラスの上に重ねるガウスぼかし背景で、0 でオフ。「画面収録」権限が必要で、未許可の場合はシステムのすりガラスのみ表示します。変更はパネルを開き直すと反映されます。"
   }
 }

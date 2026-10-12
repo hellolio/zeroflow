@@ -1,6 +1,8 @@
 import SwiftUI
 import AppKit
 import EventKit
+import CoreImage
+import ScreenCaptureKit
 
 /// 灵动岛面板的一条日程（主线程由 EKEvent 转换生成）
 struct NotchEventItem: Identifiable {
@@ -251,6 +253,8 @@ private struct VisualEffectBackground: NSViewRepresentable {
 /// 无内容模块时显示「添加显示内容」引导。宽度 = 面板宽，日历列固定原尺寸不随宽度拉伸。
 struct NotchContentView: View {
     @ObservedObject var model: NotchCalendarViewModel
+    /// 模糊背景（面板背后的屏幕快照 + 高斯模糊）；nil = 未就绪，仅显示磨砂底
+    var backdrop: NSImage?
 
     private let accent = Color.accentColor
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -268,9 +272,23 @@ struct NotchContentView: View {
         }
         .padding(.vertical, 14)
         .frame(width: NotchPanel.preferredWidth, alignment: .center)
-        .background(
+        .background(backgroundLayer)
+    }
+
+    /// 磨砂底（实时透视，不透明度设置）+ 高斯模糊快照叠加层（模糊强度设置）
+    private var backgroundLayer: some View {
+        ZStack {
             VisualEffectBackground(opacity: Double(SettingsStore.shared.notchPanelOpacity) / 100)
-        )
+            if let backdrop {
+                ZStack {
+                    Image(nsImage: backdrop)
+                        .resizable()
+                        .interpolation(.medium)
+                    Color.black.opacity(0.2)
+                }
+                .opacity(Double(SettingsStore.shared.notchBlurStrength) / 100)
+            }
+        }
     }
 
     private var calendarColumn: some View {
@@ -441,6 +459,9 @@ struct NotchContentView: View {
 final class NotchPanel: NSPanel {
     static let preferredWidth: CGFloat = 560
 
+    /// 异步模糊背景的代数：面板重开/隐藏后作废在途快照
+    private var captureGen = 0
+
     init() {
         super.init(contentRect: NSRect(x: 0, y: 0, width: Self.preferredWidth, height: 200),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -489,7 +510,87 @@ final class NotchPanel: NSPanel {
             animator().setFrame(finalFrame, display: true)
             animator().alphaValue = 1
         }
+
+        // 异步叠加高斯模糊快照背景（需屏幕录制权限；未授权/强度 0 时保持磨砂底）
+        captureGen += 1
+        let gen = captureGen
+        let strength = SettingsStore.shared.notchBlurStrength
+        if strength > 0, ScreenRecordingPermission.isGranted {
+            // ScreenCapture.crop 接受「该屏内部左下原点」矩形
+            let rect = CGRect(x: finalFrame.origin.x - screen.frame.origin.x,
+                              y: finalFrame.origin.y - screen.frame.origin.y,
+                              width: finalFrame.width, height: finalFrame.height)
+            let windowNumber = self.windowNumber
+            Task { [weak self] in
+                guard let captured = await Self.captureBackdrop(screen: screen, rect: rect, windowNumber: windowNumber),
+                      let cgImage = captured.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
+                let pixelScale = Double(cgImage.width) / Double(finalFrame.width)
+                guard let blurred = Self.gaussianBlur(cgImage,
+                                                      radiusPixels: Double(strength) * 0.5 * pixelScale) else { return }
+                let image = NSImage(cgImage: blurred,
+                                    size: NSSize(width: finalFrame.width, height: finalFrame.height))
+                DispatchQueue.main.async {
+                    guard let self, self.captureGen == gen, self.isVisible else { return }
+                    self.contentView = NSHostingView(rootView: NotchContentView(model: model, backdrop: image))
+                    self.invalidateShadow()
+                }
+            }
+        }
     }
+
+    private static var scContentCache: SCShareableContent?
+    private static var scContentCacheDate = Date.distantPast
+
+    /// 抓取面板背后的屏幕区域（整屏捕获后裁剪）；filter 排除面板自身窗口，避免自拍
+    private static func captureBackdrop(screen: NSScreen, rect: CGRect, windowNumber: Int) async -> NSImage? {
+        do {
+            guard let (scDisplay, scWindow) = await scDisplayAndSelfWindow(screen: screen, windowNumber: windowNumber) else { return nil }
+            let filter = SCContentFilter(display: scDisplay, excludingWindows: [scWindow])
+            let config = SCStreamConfiguration()
+            let pixelScale = CGFloat(filter.pointPixelScale)
+            config.width = Int(filter.contentRect.width * pixelScale)
+            config.height = Int(filter.contentRect.height * pixelScale)
+            config.showsCursor = false
+            config.captureResolution = .best
+            let cgImage = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
+            return ScreenCapture.crop(DisplayCapture(cgImage: cgImage, pixelScale: pixelScale), on: screen, rect: rect)
+        } catch {
+            ZSLog("notch backdrop capture error: \(error)")
+            return nil
+        }
+    }
+
+    /// SCShareableContent 缓存（TTL 30s）；找不到自身窗口时返回 nil——宁可不叠加也不把面板拍进背景
+    private static func scDisplayAndSelfWindow(screen: NSScreen, windowNumber: Int) async -> (SCDisplay, SCWindow)? {
+        let displayID = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
+        var content = scContentCache
+        if content == nil || -scContentCacheDate.timeIntervalSinceNow > 30
+                || !(content!.displays.contains(where: { $0.displayID == displayID })) {
+            guard let fresh = try? await SCShareableContent.current else { return nil }
+            scContentCache = fresh
+            scContentCacheDate = Date()
+            content = fresh
+        }
+        guard let content,
+              let scDisplay = content.displays.first(where: { $0.displayID == displayID }),
+              let scWindow = content.windows.first(where: { $0.windowID == CGWindowID(windowNumber) }) else { return nil }
+        return (scDisplay, scWindow)
+    }
+
+    /// 高斯模糊（输入先 clamp 到无限延展，避免边缘透明晕边）；radiusPixels 相对输入像素
+    private static func gaussianBlur(_ image: CGImage, radiusPixels: Double) -> CGImage? {
+        guard radiusPixels >= 0.5 else { return image }
+        let input = CIImage(cgImage: image).clampedToExtent()
+        guard let filter = CIFilter(name: "CIGaussianBlur") else { return nil }
+        filter.setValue(input, forKey: kCIInputImageKey)
+        filter.setValue(radiusPixels, forKey: kCIInputRadiusKey)
+        guard let output = filter.outputImage else { return nil }
+        let extent = CGRect(x: 0, y: 0, width: image.width, height: image.height)
+        return ciContext.createCGImage(output, from: extent, format: .RGBA8,
+                                       colorSpace: image.colorSpace ?? CGColorSpaceCreateDeviceRGB())
+    }
+
+    private static let ciContext = CIContext()
 
     private static func clamp(_ value: CGFloat, _ minValue: CGFloat, _ maxValue: CGFloat) -> CGFloat {
         guard maxValue >= minValue else { return minValue }
