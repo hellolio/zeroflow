@@ -30,9 +30,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Ad-hoc signing (no Apple certificate available on CI):
-      # keeps the sandbox + App Group entitlements of the FinderSync extension
-      # and makes the binaries runnable on Apple Silicon.
+      # FinderSync 扩展沙盒进程需要 Team 签名才有 App Group 容器的写权限：
+      # ad-hoc 签名时扩展能读组容器但写入 EPERM（POSIX Code=1），「访达右键打开终端」
+      # 等依赖扩展→主app IPC 的功能会静默失败。CI 从 secrets 导入 Apple Development
+      # 证书签名；未配置证书时回退 ad-hoc（fork PR 拿不到 secrets，仅编译检查用）。
+      - name: Import signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BUILD_CERTIFICATE_BASE64:-}" ]; then
+            echo "::warning::未配置 BUILD_CERTIFICATE_BASE64，回退 ad-hoc 签名（FinderSync 扩展将无 App Group 写权限）"
+            echo "CS_IDENTITY=-" >> "$GITHUB_ENV"
+            echo "CS_TEAM=" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          CERT_PATH="$RUNNER_TEMP/build_certificate.p12"
+          KC_PATH="$RUNNER_TEMP/build.keychain-db"
+          KC_PASS="$(openssl rand -hex 16)"
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERT_PATH"
+          security create-keychain -p "$KC_PASS" "$KC_PATH"
+          security set-keychain-settings -lut 21600 "$KC_PATH"
+          security unlock-keychain -p "$KC_PASS" "$KC_PATH"
+          security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KC_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KC_PASS" "$KC_PATH"
+          security list-keychain -d user -s "$KC_PATH" login.keychain
+          echo "CS_IDENTITY=Apple Development" >> "$GITHUB_ENV"
+          echo "CS_TEAM=8NHN73Q43T" >> "$GITHUB_ENV"
+
       - name: Build
         run: |
           set -euo pipefail
@@ -41,9 +67,9 @@ jobs:
             -scheme Zeroflow \
             -configuration Release \
             -derivedDataPath build \
-            CODE_SIGN_IDENTITY=- \
+            CODE_SIGN_IDENTITY="$CS_IDENTITY" \
             CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM= \
+            DEVELOPMENT_TEAM="$CS_TEAM" \
             build
 
       # The product path is not always deterministic (may land in
@@ -67,6 +93,12 @@ jobs:
           set -euo pipefail
           codesign --verify --deep --strict "$APP_PATH"
           codesign -dv "$APP_PATH/Contents/PlugIns/FinderSyncExtension.appex"
+          # 发 Release 的包必须带 Team 签名，否则扩展沙盒无 App Group 写权限
+          if [ -n "${CS_TEAM:-}" ]; then
+            codesign -dv "$APP_PATH/Contents/PlugIns/FinderSyncExtension.appex" 2>&1 \
+              | grep -q "TeamIdentifier=$CS_TEAM" \
+              || { echo "::error::appex 未按 Team 签名，沙盒下 App Group 写入会被拒（打开终端功能会失效）"; exit 1; }
+          fi
 
       - name: Package app zip
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
