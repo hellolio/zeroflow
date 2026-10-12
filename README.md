@@ -1,14 +1,40 @@
 # zeroflow
 
-一款免费、无弹窗的 macOS 原生的效率小工具，安装包小、启动迅速。
+一款免费、无弹窗的 macOS 原生的效率小工具，安装包小、低内存占用（截图和缩略图需要一定内存），启动迅速。
 
 ## 功能
 
-- 全局快捷键 `⌘⇧S` 任意时刻截图，支持自定义快捷键
-- 框选截屏 + 画线、矩形/圆框标注、文字气泡标注 + 马赛克涂抹
-- 撤销/重做
+- 全局快捷键 `⌘+⇧+S` 任意时刻截图，支持自定义快捷键
+- `⌘+tab`切换窗口显示缩略图
 - 单击 Dock 图标最小化窗口（可在设置中开启）
-- 内置 ⌘⇥ 窗口缩略图切换器：每个窗口一张缩略图，可切到最小化窗口、同 app 多窗口、其他 Space 的窗口（可在设置中开启）
+- Dock图标悬停可预览窗口
+- 访达中支持右键菜单自定义
+
+## 下载安装
+
+从 [Releases](https://github.com/hellolio/zeroflow/releases) 下载最新的 `Zeroflow-x.x.x.dmg`，打开后将 Zeroflow 拖入「应用程序」。
+
+> 应用目前未做开发者签名/公证，首次打开时 Gatekeeper 可能提示「已损坏，无法打开」或「无法验证开发者」。任选其一解决：
+>
+> - 终端执行 `xattr -cr /Applications/Zeroflow.app` 后再打开；
+> - 或前往 系统设置 → 隐私与安全性 → 找到 Zeroflow 的拦截提示 → 点「仍要打开」。
+
+
+## 构建
+
+前置条件：macOS 14.0+、Xcode 16+。
+
+```bash
+cd zeroflow
+xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow \
+  -configuration Debug -derivedDataPath build build
+
+open build/Build/Products/Debug/Zeroflow.app
+```
+
+> 新建源文件放入 `Zeroflow/` 目录即自动纳入编译，无需改 pbxproj。
+
+CI（`.github/workflows/build.yml`）：推送/PR 到 main 触发编译检查并上传 app zip artifact；打 `v*` tag 会用 Release 配置构建、打包 DMG 并自动发布到 GitHub Releases。
 
 ## 技术栈
 
@@ -36,30 +62,6 @@ zeroflow/
 └── dist/                        # 构建产物副本
 ```
 
-## 构建
-
-前置条件：macOS 14.0+、Xcode 16+。
-
-```bash
-cd zeroflow
-xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow \
-  -configuration Debug -derivedDataPath build build
-
-open build/Build/Products/Debug/Zeroflow.app
-```
-
-> 新建源文件放入 `Zeroflow/` 目录即自动纳入编译，无需改 pbxproj。
-
-CI（`.github/workflows/build.yml`）：推送/PR 到 main 触发编译检查并上传 app zip artifact；打 `v*` tag 会用 Release 配置构建、打包 DMG 并自动发布到 GitHub Releases。
-
-## 下载安装
-
-从 [Releases](https://github.com/hellolio/zeroflow/releases) 下载最新的 `Zeroflow-x.x.x.dmg`，打开后将 Zeroflow 拖入「应用程序」。
-
-> 应用目前未做开发者签名/公证，首次打开时 Gatekeeper 可能提示「已损坏，无法打开」或「无法验证开发者」。任选其一解决：
->
-> - 终端执行 `xattr -cr /Applications/Zeroflow.app` 后再打开；
-> - 或前往 系统设置 → 隐私与安全性 → 找到 Zeroflow 的拦截提示 → 点「仍要打开」。
 
 ## License
 
