@@ -1,8 +1,6 @@
 import SwiftUI
 import AppKit
 import EventKit
-import CoreImage
-import ScreenCaptureKit
 
 /// 灵动岛面板的一条日程（主线程由 EKEvent 转换生成）
 struct NotchEventItem: Identifiable {
@@ -226,35 +224,10 @@ final class NotchCalendarViewModel: ObservableObject {
     }
 }
 
-/// 磨砂背景（HUD 材质；面板固定深色外观 → 灵动岛同款深色磨砂圆角）
-private struct VisualEffectBackground: NSViewRepresentable {
-    /// 不透明度 0...1（数值越小越透明）
-    let opacity: Double
-
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = .hudWindow
-        view.blendingMode = .behindWindow
-        view.state = .active
-        view.wantsLayer = true
-        view.layer?.cornerRadius = 16
-        view.layer?.cornerCurve = .continuous
-        view.layer?.masksToBounds = true
-        view.alphaValue = opacity
-        return view
-    }
-
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        nsView.alphaValue = opacity
-    }
-}
-
 /// 灵动岛面板内容：日历列（月历 + 当日日程）贴左，预留右侧空白区；
 /// 无内容模块时显示「添加显示内容」引导。宽度 = 面板宽，日历列固定原尺寸不随宽度拉伸。
 struct NotchContentView: View {
     @ObservedObject var model: NotchCalendarViewModel
-    /// 模糊背景（面板背后的屏幕快照 + 高斯模糊）；nil = 未就绪，仅显示磨砂底
-    var backdrop: NSImage?
 
     private let accent = Color.accentColor
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
@@ -272,23 +245,6 @@ struct NotchContentView: View {
         }
         .padding(.vertical, 14)
         .frame(width: NotchPanel.preferredWidth, alignment: .center)
-        .background(backgroundLayer)
-    }
-
-    /// 磨砂底（实时透视，不透明度设置）+ 高斯模糊快照叠加层（模糊强度设置）
-    private var backgroundLayer: some View {
-        ZStack {
-            VisualEffectBackground(opacity: Double(SettingsStore.shared.notchPanelOpacity) / 100)
-            if let backdrop {
-                ZStack {
-                    Image(nsImage: backdrop)
-                        .resizable()
-                        .interpolation(.medium)
-                    Color.black.opacity(0.2)
-                }
-                .opacity(Double(SettingsStore.shared.notchBlurStrength) / 100)
-            }
-        }
     }
 
     private var calendarColumn: some View {
@@ -458,9 +414,8 @@ struct NotchContentView: View {
 /// 本面板只负责内容展示（不成为 key，无键盘交互）。
 final class NotchPanel: NSPanel {
     static let preferredWidth: CGFloat = 560
-
-    /// 异步模糊背景的代数：面板重开/隐藏后作废在途快照
-    private var captureGen = 0
+    /// 圆角半径（≈Mac 屏幕圆角；屏幕圆角无公开 API 可查询）
+    static let cornerRadius: CGFloat = 16
 
     init() {
         super.init(contentRect: NSRect(x: 0, y: 0, width: Self.preferredWidth, height: 200),
@@ -484,11 +439,13 @@ final class NotchPanel: NSPanel {
     /// 面板顶边贴刘海下边缘（热区竖向范围 = 刘海竖向范围）、水平居中刘海；
     /// 每次 present 重建 contentView（模型重置到今天，同时取最新透明度/内容设置）。
     func present(hotspotTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
-        contentView = NSHostingView(rootView: NotchContentView(model: model))
-        contentView?.layoutSubtreeIfNeeded()
-        var size = contentView?.fittingSize ?? frame.size
+        // 用临时视图测量内容高度（正式 contentView 由玻璃/磨砂容器包裹）
+        let measuring = NSHostingView(rootView: NotchContentView(model: model))
+        measuring.layoutSubtreeIfNeeded()
+        var size = measuring.fittingSize
         size = NSSize(width: Self.preferredWidth,
                       height: max(120, min(ceil(size.height), screen.frame.height - 80)))
+        contentView = makeContentView(model: model)
         setContentSize(size)
 
         let x = Self.clamp(hotspotTL.midX - size.width / 2,
@@ -510,87 +467,45 @@ final class NotchPanel: NSPanel {
             animator().setFrame(finalFrame, display: true)
             animator().alphaValue = 1
         }
+    }
 
-        // 异步叠加高斯模糊快照背景（需屏幕录制权限；未授权/强度 0 时保持磨砂底）
-        captureGen += 1
-        let gen = captureGen
-        let strength = SettingsStore.shared.notchBlurStrength
-        if strength > 0, ScreenRecordingPermission.isGranted {
-            // ScreenCapture.crop 接受「该屏内部左下原点」矩形
-            let rect = CGRect(x: finalFrame.origin.x - screen.frame.origin.x,
-                              y: finalFrame.origin.y - screen.frame.origin.y,
-                              width: finalFrame.width, height: finalFrame.height)
-            let windowNumber = self.windowNumber
-            Task { [weak self] in
-                guard let captured = await Self.captureBackdrop(screen: screen, rect: rect, windowNumber: windowNumber),
-                      let cgImage = captured.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-                let pixelScale = Double(cgImage.width) / Double(finalFrame.width)
-                guard let blurred = Self.gaussianBlur(cgImage,
-                                                      radiusPixels: Double(strength) * 0.5 * pixelScale) else { return }
-                let image = NSImage(cgImage: blurred,
-                                    size: NSSize(width: finalFrame.width, height: finalFrame.height))
-                DispatchQueue.main.async {
-                    guard let self, self.captureGen == gen, self.isVisible else { return }
-                    self.contentView = NSHostingView(rootView: NotchContentView(model: model, backdrop: image))
-                    self.invalidateShadow()
-                }
-            }
+    /// 液态玻璃背景（macOS 26+）或磨砂底（旧系统）包裹内容，圆角≈屏幕圆角。
+    /// 透明度经玻璃染色深浅控制——直接对玻璃设 alphaValue 会连内容一起变透明。
+    private func makeContentView(model: NotchCalendarViewModel) -> NSView {
+        let hosting = NSHostingView(rootView: NotchContentView(model: model))
+        hosting.translatesAutoresizingMaskIntoConstraints = false
+        let opacity = Double(SettingsStore.shared.notchPanelOpacity) / 100
+        if #available(macOS 26.0, *) {
+            let glass = NSGlassEffectView()
+            glass.cornerRadius = Self.cornerRadius
+            glass.style = .regular
+            glass.tintColor = NSColor.black.withAlphaComponent(opacity * 0.35)
+            glass.contentView = hosting
+            pinEdges(of: hosting, to: glass)
+            return glass
         }
+        let frost = NSVisualEffectView()
+        frost.material = .hudWindow
+        frost.blendingMode = .behindWindow
+        frost.state = .active
+        frost.wantsLayer = true
+        frost.layer?.cornerRadius = Self.cornerRadius
+        frost.layer?.cornerCurve = .continuous
+        frost.layer?.masksToBounds = true
+        frost.alphaValue = opacity
+        frost.addSubview(hosting)
+        pinEdges(of: hosting, to: frost)
+        return frost
     }
 
-    private static var scContentCache: SCShareableContent?
-    private static var scContentCacheDate = Date.distantPast
-
-    /// 抓取面板背后的屏幕区域（整屏捕获后裁剪）；filter 排除面板自身窗口，避免自拍
-    private static func captureBackdrop(screen: NSScreen, rect: CGRect, windowNumber: Int) async -> NSImage? {
-        do {
-            guard let (scDisplay, scWindow) = await scDisplayAndSelfWindow(screen: screen, windowNumber: windowNumber) else { return nil }
-            let filter = SCContentFilter(display: scDisplay, excludingWindows: [scWindow])
-            let config = SCStreamConfiguration()
-            let pixelScale = CGFloat(filter.pointPixelScale)
-            config.width = Int(filter.contentRect.width * pixelScale)
-            config.height = Int(filter.contentRect.height * pixelScale)
-            config.showsCursor = false
-            config.captureResolution = .best
-            let cgImage = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
-            return ScreenCapture.crop(DisplayCapture(cgImage: cgImage, pixelScale: pixelScale), on: screen, rect: rect)
-        } catch {
-            ZSLog("notch backdrop capture error: \(error)")
-            return nil
-        }
+    private func pinEdges(of view: NSView, to container: NSView) {
+        NSLayoutConstraint.activate([
+            view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            view.topAnchor.constraint(equalTo: container.topAnchor),
+            view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+        ])
     }
-
-    /// SCShareableContent 缓存（TTL 30s）；找不到自身窗口时返回 nil——宁可不叠加也不把面板拍进背景
-    private static func scDisplayAndSelfWindow(screen: NSScreen, windowNumber: Int) async -> (SCDisplay, SCWindow)? {
-        let displayID = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value ?? 0
-        var content = scContentCache
-        if content == nil || -scContentCacheDate.timeIntervalSinceNow > 30
-                || !(content!.displays.contains(where: { $0.displayID == displayID })) {
-            guard let fresh = try? await SCShareableContent.current else { return nil }
-            scContentCache = fresh
-            scContentCacheDate = Date()
-            content = fresh
-        }
-        guard let content,
-              let scDisplay = content.displays.first(where: { $0.displayID == displayID }),
-              let scWindow = content.windows.first(where: { $0.windowID == CGWindowID(windowNumber) }) else { return nil }
-        return (scDisplay, scWindow)
-    }
-
-    /// 高斯模糊（输入先 clamp 到无限延展，避免边缘透明晕边）；radiusPixels 相对输入像素
-    private static func gaussianBlur(_ image: CGImage, radiusPixels: Double) -> CGImage? {
-        guard radiusPixels >= 0.5 else { return image }
-        let input = CIImage(cgImage: image).clampedToExtent()
-        guard let filter = CIFilter(name: "CIGaussianBlur") else { return nil }
-        filter.setValue(input, forKey: kCIInputImageKey)
-        filter.setValue(radiusPixels, forKey: kCIInputRadiusKey)
-        guard let output = filter.outputImage else { return nil }
-        let extent = CGRect(x: 0, y: 0, width: image.width, height: image.height)
-        return ciContext.createCGImage(output, from: extent, format: .RGBA8,
-                                       colorSpace: image.colorSpace ?? CGColorSpaceCreateDeviceRGB())
-    }
-
-    private static let ciContext = CIContext()
 
     private static func clamp(_ value: CGFloat, _ minValue: CGFloat, _ maxValue: CGFloat) -> CGFloat {
         guard maxValue >= minValue else { return minValue }
