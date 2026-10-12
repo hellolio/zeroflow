@@ -98,8 +98,8 @@ jobs:
             --background dmg_bg.png \
             --window-size 660 400 \
             --icon-size 128 \
-            --icon "Zeroflow.app" 160 210 \
-            --app-drop-link 500 210 \
+            --icon "Zeroflow.app" 160 146 \
+            --app-drop-link 500 146 \
             --hide-extension "Zeroflow.app" \
             "Zeroflow-$VERSION.dmg" \
             "$STAGING"
