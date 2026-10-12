@@ -1,91 +1,156 @@
 # AGENTS.md
 
-macOS 截图菜单栏工具(截图 + 画线/矩形/圆框/文字气泡/马赛克 + 撤销重做 + Dock 单击最小化 + 内置 ⌘⇥ 窗口缩略图切换器)。SwiftUI + AppKit,无第三方依赖,零测试/零 lint 目标。文档为中文: `README.md`(用户说明)、`需求文档.md`(需求与验收, 含第 12 章「内置 ⌘⇥ 窗口缩略图切换器」完整需求)、本文件(AI/开发者构建与架构速查)。
+This file provides guidance to latent (an AI coding agent) when working with code in this repository.
 
-## 构建与部署
+macOS 截图菜单栏工具(截图 + 画线/矩形/圆框/文字气泡/马赛克标注 + 撤销重做 + Dock 单击最小化 + Dock 悬停预览 + 内置 ⌘⇥ 窗口缩略图切换器 + 访达右键菜单 + 中/英/日国际化)。SwiftUI + AppKit,无第三方依赖,零测试/零 lint 目标。前置:macOS 14+、Xcode 16+。踩坑记录见 `PITFALLS_DEV.md`(dev-test skill 维护)。
 
-前置: macOS 14+、Xcode 16+。没有测试/lint 命令,唯一验证 = `xcodebuild` 通过 + 手动运行。
+## 常用命令
+
+### 构建(xcodebuild 通过 = 唯一验证方式,无测试/lint)
 
 ```bash
-# Debug（需 -allowProvisioningUpdates：App Group 自动配置新 profile）
+# 本地 Debug(必须带 -allowProvisioningUpdates:FinderSync 扩展的 App Group 需自动生成 provisioning)
 xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow -configuration Debug -derivedDataPath build -allowProvisioningUpdates build
-# 产物一般在 build/Build/Products/Debug/Zeroflow.app
 open build/Build/Products/Debug/Zeroflow.app
+
+# CI 等价命令(ad-hoc 签名,无需团队证书/provisioning)
+xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow -configuration Release -derivedDataPath build \
+  CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= build
 ```
-```bash
-# Release
-/Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild \
-  -project Zeroflow.xcodeproj \
-  -scheme Zeroflow \
-  -configuration Release \
-  -derivedDataPath build \
-  -allowProvisioningUpdates \
-  build
-# 产物一般在 build/Build/Products/Release/Zeroflow.app
-open build/Build/Products/Release/Zeroflow.app
-```
-- **构建必须带 `-allowProvisioningUpdates`**: FinderSync 扩展 target 带 App Group(`8NHN73Q43T.com.zeroflow.app`,Team 前缀)与沙盒授权,需要 Xcode 自动生成/更新带该 App Group 的 provisioning profile;不带会直接 `No profiles ... were found` BUILD FAILED。
-- **FinderSync 扩展必须沙盒化**: pkd(pluginkit)会静默拒绝非沙盒的扩展(`com.apple.security.app-sandbox` 缺失时 `pluginkit -m` 永远不出现、`-a` 返回 0 却无任何日志)。扩展与主 app 通过 App Group(`8NHN73Q43T.com.zeroflow.app`)共享设置:主 app 非沙盒但带 `com.apple.security.application-groups`,双方直接读写 group container 里的 `finder-sync-settings.plist` 文件——**不要用 `UserDefaults(suiteName:)` 读 App Group**(沙盒扩展里读不到,cfprefsd 报 `Container: (null)`)。登记/启用一键脚本:`scripts/install-findersync.sh [Debug|Release]`,内含两个致命坑的规避:① **pkd 内存会僵住**,新扩展 `pluginkit -a` 返回 0 却查不到,必须 `killall pkd`;② **LS 残留的旧路径插件记录**(如 build 目录)会让 pkd 解析到无效路径而拒绝,必须先 `lsregister -u` 所有旧路径的 app 及其 appex,再只注册 /Applications。诊断用扩展的 os_log(`log show --predicate 'subsystem == "com.zeroflow.app.finderSync"'`)。**右键菜单项被 Finder 硬编码在菜单底部,无 API 调整位置**;**macOS Sequoia/Tahoe 陈旧扩展 bug**: app 重建/覆盖安装后扩展显示已启用但右键菜单不出现,手动关开一次即恢复——已程序化复现(`pluginkit -e ignore`→`-e use` election 循环):脚本 `install-findersync.sh` 内建(支持 `--reload-only`),主 app 启动自愈走 `Zeroflow/Services/FinderSyncReloader.swift`,设置页有「刷新右键菜单扩展」按钮。完整开发流程见 skill `findersync-workflow`。
-- **FinderSync 扩展四个沙盒/协议坑**(功能 Debug 时踩过):
-  ① **真实家目录**: 沙盒进程里 `FileManager.default.homeDirectoryForCurrentUser` 返回的是容器目录(`~/Library/Containers/<bundle>/Data`),直接当 `directoryURLs` 会让 Finder 完全不监控任何用户路径、`menu(for:)` 永不触发。要用 `URL(fileURLWithPath: "/Users/\(NSUserName())")` 拼真实家目录。
-  ② **`NSMenuItem.representedObject` 跨 XPC 不保留**: 点击动作回调里 `sender` 拿不到自定义 `representedObject`(会 `createFile: invalid sender`)。目标目录必须在动作里用 `FIFinderSyncController.default().targetedURL()`/`selectedItemURLs()` 重新推导(`targetDirectory()`),不要依赖 sender。
-  ③ **右键目录无写权限**: `files.user-selected.read-write` 不覆盖 FinderSync 右键目标(`deny file-write-create`),写文件必须加 `com.apple.security.temporary-exception.files.home-relative-path.read-write`(值 `["/"]`,覆盖整个家目录;不入 App Store 可接受)。
-  ④ **子进程继承沙盒**: 扩展里 `Process` 拉起的命令仍被沙盒约束,终端/pty 类命令(如 `wezterm start`)会 EPERM 秒退。自定义命令不能在扩展里执行:扩展把请求写进 group container 的 `finder-command-*.plist` 并广播分布式通知(沙盒发通知不能带 userInfo),由非沙盒的主 app 代为执行(`Zeroflow/Services/FinderCommandRunner.swift`,启动时也会消化积压请求,超过 30s 的请求丢弃;扩展侧主 app 未运行时会把它拉起)。
-- **产物路径不可靠**: Debug 产物可能落在 `build/Build/Intermediates.noindex/ArchiveIntermediates/.../Applications/Zeroflow.app`(`cp -R` 复制这个可能是坏符号链接)。用 `find <derived>/Build -name "Zeroflow.app"` 定位,复制用 `cp -R -L` 解引用,复制前 `rm -rf` 目标。
-- **dist/ 已被 gitignore**,是发布副本。部署流程: `rm -rf dist/Zeroflow.app && cp -R -L <找到的app> dist/ && pkill -f Zeroflow.app`,再 `open dist/Zeroflow.app`。
-- 给 `-derivedDataPath` 的目录若无写权限,构建会直接 `BUILD FAILED`(0644/只读目录),换一个可写路径。
-- **新增 .swift 文件自动纳入编译**: 工程用 `PBXFileSystemSynchronizedRootGroup`,不要手动改 pbxproj 加文件。
-- **新增 target 需手改 pbxproj**: 唯一的例外是 FinderSync 扩展 target(`FinderSyncExtension/`)。它也是 `PBXFileSystemSynchronizedRootGroup` 自动纳入源码,但 target 本身、Embed App Extensions 阶段、target dependency、FinderSync.framework 链接(App 用于 `FIFinderSyncController.isExtensionEnabled` 状态)都要在 pbxproj 里手工维护,改错会直接 `BUILD FAILED`。
 
-## 架构要点
+- dist/ 已 gitignore,是发布副本:`rm -rf dist/Zeroflow.app && cp -R -L <app> dist/ && pkill -f Zeroflow.app && open dist/Zeroflow.app`。
+- 构建相关坑(provisioning、产物路径漂移、只读 derivedDataPath)见 `PITFALLS_DEV.md`。
 
-- 入口 `Zeroflow/ZeroflowApp.swift`(`@main` 手动建 `NSApplication` + `MenuBarController`); 菜单栏 `MenuBar/MenuBarController.swift`; 服务层 `Services/`:
-  - `GlobalHotkeyManager`: Carbon 全局热键,受截图总开关 `screenshotEnabled` 控制(`reapply()` 里判断)。
-  - `ScreenCapture`: ScreenCaptureKit 截图; 按 displayID 缓存 `SCContentFilter`(屏幕参数变化通知里 `invalidateFilterCache()`)。
-  - `CaptureCoordinator`: 权限→遮罩→捕获→编辑页 的协调器,`isActive` 防重入。
-  - `DockClickMinimizer`: Dock 单击最小化(CGEventTap + AX),受 `dockClickMinimize` 开关控制。
-  - `CommandTabSwitcher`: 内置 ⌘⇥ 窗口缩略图切换器(CGEventTap + AX),受 `cmdTabSwitcherEnabled` 开关控制; 会话中 ⇥/⇧⇥/方向键移动选择, 悬停卡片可退出/关闭/最小化/全屏(`WindowOps`, 本 app 窗口走主线程 NSWindow)。
-  - `DockHoverPreviewController` + `Views/DockPreviewPanel`: Dock 悬停窗口预览(listen-only CGEventTap + Dock AX 探测独立拷贝自 DockClickMinimizer,受 `dockPreviewEnabled` 开关控制); 窗口来源与切换器同源(`WindowList.enumerate()` 按 bundleID 过滤, 含最小化瓦片), idle→pending→visible 状态机 + generation 作废, 面板非激活 NSPanel, 卡片点击激活(`WindowActivator`)/悬停关闭(`WindowOps`)。
-  - `WindowList`: 窗口枚举(CGWindowList 公开 API)+ 幽灵窗口过滤 + 窗口级 MRU 排序 + 无窗口 app 占位卡(开关 `windowSwitcherShowWindowlessApps`, 排最后); `isMinimized` 用 SLS tags 位 60(对齐 AltTab, 不可用 `!isOnscreen` 充当——跨全屏 Space 窗口同样 offscreen, 误判会致同 app 全屏互切永远落回当前 Space); `CGSWindowServer`: SkyLight/CGS 私有 API dlsym 桥(SLS 批量枚举 + 可见/全量成员列表 + Space 拓扑 + 跨 Space 前台激活 `_SLPSSetFrontProcessWithOptions`(可选符号缺失退回公开 API); `PhantomWindowDetector`: 幽灵判定(对齐 AltTab cgsVerdict, 含 AX subrole 兜底); `WindowActivityTracker`: AX 焦点通知 + app 激活/Space 切换补记维护窗口级 MRU; `WindowThumbnailer`: SkyLight 私有 API(dlsym)抓缩略图 + 缓存/节流/降级; `WindowActivator`: SkyLight SLP 指定窗口置前(SLP→makeKey→AX main/raise, 探针验证对同 app 前台/非前台均生效) + AX 还原/前置/激活(本 app 窗口走主线程 makeKeyAndOrderFront, AX 后台线程会崩)。元素缺失时先 remote-token 暴力枚举造 AX 元素再 raise(`AXWindow.elementByBruteForce`, 失败才 app.activate 收尾); `AXWindow.element(for:)` 只信 `_AXUIElementGetWindow` 精确匹配、禁止 bounds 模糊兜底(同 app 两个全屏窗口 bounds 相同会误配); 启动需预热 CGS 连接。切换器模块完整需求见 `需求文档.md` 第 12 章。
-  - `AccessibilityPermission` / `ScreenRecordingPermission`: 辅助功能 / 屏幕录制权限检测与申请。
-  - `FinderCommandRunner`: 执行 Finder 扩展转交的「访达自定义命令」(请求文件 + 分布式通知 IPC, 非沙盒代执行, 见上方坑位④); 扩展侧在 `FinderSyncExtension/FinderSync.swift` 的 `CustomCommandRunner`。
-  - `ZSLog`: 统一日志(stderr + `/tmp/zeroflow.log`)。
-- 编辑页就是 `Views/EditorView.swift`(单一 1300+ 行文件)。工具: `select / pencil(画线) / rect(矩形) / ellipse(圆框) / bubble(文字气泡) / mosaic(马赛克 半径 12/18/28)`。新增其他工具/图形也先加在这个文件。
+### CI / 发布
 
-### 编辑画布模型(`Models/EditDocument.swift`)
+- `.github/workflows/build.yml`:push/PR 到 main = Release 编译检查 + app zip artifact;推 `v*` tag = Release 构建 + create-dmg(背景 `dmg_bg.png`)+ 自动发 GitHub Release。
+- 发布 = `./create_release_tag.sh [vX.Y.Z]`:切 main、计算下一 patch tag 并推送,tag 触发 CI 出 DMG 发 Release。
 
-- 所有元素存**图像坐标**(非视图坐标); `EditorView` 用 `displayRect`/`scaleFactor` + `toView`/`toImage`(及 Rect 版本)换算。改元素绘制/命中时必须走这两个函数。
-- `CanvasElement` 有 4 个 case: stroke / bubble / shape / mosaic,相等比较逐字段。
-- 只有 bubble / shape 可选中、移动、缩放、删除(Backspace/Delete); stroke、mosaic 提交后不可再选。
-- `EditDocument` 持有撤销/重做栈(上限 50),任何修改前先 `snapshotBeforeChange()`。
-- **BubbleElement / ShapeElement 的 id 不可换**: 重设位置/大小/文字时要用 `init(id:...)` 沿用原 id,否则编辑覆盖层、拖动状态(`elementDrag`)、`selectedElementID` 按 id 索引的簿记全部失效。
+### FinderSync 扩展登记
 
-### 文字气泡的交互
+`scripts/install-findersync.sh [Debug|Release]`(支持 `--reload-only` 仅重载)。pkd/LS 相关坑见 `PITFALLS_DEV.md`;诊断用扩展 os_log:`log show --predicate 'subsystem == "com.zeroflow.app.finderSync"'`。
 
-- 创建气泡后立即进入文字编辑(自动把 `text` 缓冲区置空); 文字编辑覆盖层 `bubbleEditor` 是内缩 8pt 的白底 `TextEditor`,边缘/四角仍可拖动缩放。
-- **双击**气泡进入文字编辑(单击只选中)。
-- TextEditor 必须显式 `.foregroundColor(.black)`,否则深色模式下黑底白字串字看不见; 顺带 `.environment(\.colorScheme, .light)`。
-- 键盘(EditorView 内 NSEvent monitor): `⌘Z`/`⇧⌘Z`/`⌘S`/`⌘C`/`⌘L`(画线)/`T`(标注); Backspace/Delete(51/117) 删除选中气泡/形状(文字编辑中不生效); Esc(53) 文字编辑中=提交并退出编辑,否则关闭窗口。
-- 导出(`exportedImage()`)用 AppKit 按原图尺寸重绘,不依赖视图层级,改绘制逻辑记得同步这里。
-
-### 马赛克
-
-- `drawMosaic`(画布)与 `drawMosaicIntoCanvas`(导出)共用 `MosaicOverlayCache`(整图最近邻像素化叠加图按半径缓存一次),临时笔划/已提交笔划/导出共用同一张图,保证三处样式一致。改动时保持这个一致性。
-
-### 设置(`Models/SettingsStore.swift` + `Views/SettingsView.swift`)
-
-- 三个标签页: 通用(开机自启)/ 截图(启用截图功能、快捷键、屏幕录制权限、保存)/ Dock(单击最小化开关 + 辅助功能权限引导)/ 切换(⌘⇥ 切换器)/ Dock 预览(悬停预览开关 + 悬停延时)/ 右键菜单(FinderSync)。
-- `screenshotEnabled`(默认关)是总开关: 关闭时全局热键不注册、菜单「立即截图」置灰、`CaptureCoordinator.startCapture` 直接忽略。
-- `dockClickMinimize` 开关变化由 `DockClickMinimizer` 监听通知启停 CGEventTap; `launchAtLogin` 变化经 `SMAppService.mainApp` 注册/注销(带防重入 + 注册失败回滚)。
-- 所有 UserDefaults key 与默认值见 `需求文档.md` FR-12.9。
-
-## 调试辅助环境变量(进程环境)
+### 调试环境变量(进程环境)
 
 | 变量 | 作用 |
 |---|---|
 | `ZEROFLOW_AUTO_CAPTURE=1` | 启动 1.5s 后自动触发一次截图流程 |
-| `ZEROFLOW_EDITOR_DEBUG=1` | 启动 1.5s 后直接打开编辑页(合成网格图),绕过截图 |
+| `ZEROFLOW_EDITOR_DEBUG=1` | 启动 1.5s 后直接打开编辑页(合成网格图,绕过截图) |
+| `ZEROFLOW_AUTO_FOCUS=<wid>` | 启动 2s 后用 WindowActivator 聚焦指定窗口 |
 | `ZEROFLOW_DOCK_PROBE=1` | 启动 1s 后 dump Dock 的 AX 布局到日志 |
-| `ZEROFLOW_SWITCHER_DEBUG=1` | 启动 1s 后 dump 一次窗口列表（数量、按 app 分组、是否含最小化窗口）+ 打印「⌘⇥ tap 是否已安装」到日志 |
-| `ZEROFLOW_DOCKPREVIEW_DEBUG=1` | 打印 Dock 悬停预览的命中/展示/隐藏决策与 Dock 项缓存重建日志 |
+| `ZEROFLOW_SWITCHER_DEBUG=1` | 启动 1s 后 dump 窗口列表 + ⌘⇥ tap 安装状态,并输出事件级日志 |
+| `ZEROFLOW_DOCKPREVIEW_DEBUG=1` | 打印 Dock 悬停预览的命中/展示/隐藏决策日志 |
+| `ZEROFLOW_NOTCH_DEBUG=1` | 打印灵动岛刘海探测/弹出/收起决策日志 |
+| `ZEROFLOW_NOTCH_FAKE=1` | 在主屏合成伪刘海(宽 180/高 24),便于无刘海机器调试面板 |
 | `ZEROFLOW_FAKE_PERMISSION=1` | 跳过真实权限检测(视为已授权) |
+
+## 项目架构
+
+SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/App Group 设置。依赖方向:`ZeroflowApp` → `MenuBarController` / Views → Services → 系统框架;`SettingsStore` 全局单例,Views 与 Services 经 Combine 通知订阅设置变化。
+
+### 五条模块链
+
+- **截图链**:`GlobalHotkeyManager`(Carbon 热键,受 `screenshotEnabled` 总开关控制)→ `CaptureCoordinator`(权限→遮罩→捕获→编辑页,`isActive` 防重入)→ `ScreenCapture`(ScreenCaptureKit,按 displayID 缓存 `SCContentFilter`)→ `CaptureOverlayView`(选区遮罩)→ `EditorView`(编辑页)。
+- **窗口管理族**(切换器与 Dock 预览共用):`WindowList`(CGWindowList 枚举 + 幽灵过滤 + 窗口级 MRU + 无窗口 app 占位)→ `PhantomWindowDetector`(幽灵判定,对齐 AltTab)/ `WindowActivityTracker`(AX 焦点维护 MRU)/ `WindowThumbnailer`(SkyLight 抓缩略图,能截最小化/离屏)/ `WindowActivator`(跨 Space 前台激活)/ `WindowOps`(卡片操作);消费方 `CommandTabSwitcher`(⌘⇥ 面板)与 `DockHoverPreviewController` + `DockPreviewPanel`。`CGSWindowServer` 是上述私有 API 的 dlsym 桥,启动需预热。
+- **Dock**:`DockClickMinimizer`(单击最小化),开关变化经通知启停 CGEventTap。
+- **灵动岛**:`NotchHotspotController`(listen-only CGEventTap + idle→pending→visible 状态机;由公开 API 推导刘海热区:`safeAreaInsets.top` + `auxiliaryTopLeftArea`/`auxiliaryTopRightArea` 间隙)→ `NotchPanel`(非激活 NSPanel,固定深色 HUD,宽 560/日历列固定原宽,顶边贴刘海下缘,圆角 16pt≈屏幕圆角(无公开 API);背景=液态玻璃 NSGlassEffectView(macOS 26+,不透明度设置控制染色深浅)/旧系统磨砂,内容嵌在 contentView 内;无内容模块时显示「添加显示内容」引导跳设置)→ `NotchCalendarViewModel` → `CalendarService`(EventKit,macOS 14 全量授权;后台线程查询)。悬停 ≥ 延时(设置项)或单击热区弹出,点击面板外/Esc/移出热区∪面板/切 Space/睡眠/屏幕变化收起;无刘海或未授权则静默不生效。
+- **FinderSync 桥**:主 app(非沙盒)与扩展(沙盒)经 App Group 的共享文件通信——设置 plist `finder-sync-settings.plist`、命令请求 `finder-command-*.plist` + 分布式通知,自定义命令由主 app `FinderCommandRunner` 代执行;`FinderSyncReloader` 自愈陈旧扩展实例。**不要用 `UserDefaults(suiteName:)` 读 App Group**——原因及全部沙盒/登记坑见 `PITFALLS_DEV.md`。
+- **基础**:`AccessibilityPermission` / `ScreenRecordingPermission`(权限检测)、`ZSLog`(日志,stderr + `/tmp/zeroflow.log`)、`L10n`(国际化:UI 文案一律 `L10n.tr("中文")` 作 key,新增文案需同步 `Resources/Translations.json`)。
+
+### 编辑页不变量(`EditorView` + `EditDocument`)
+
+- 所有元素存**图像坐标**;与视图坐标互换必须走 `toView`/`toImage`(及 Rect 版本),不得直接用视图坐标。
+- `CanvasElement` 4 case:stroke / bubble / shape / mosaic;仅 bubble / shape 可选中、移动、缩放、删除。
+- 任何修改前先 `snapshotBeforeChange()`(撤销/重做栈上限 50);**BubbleElement / ShapeElement 的 id 不可换**,重设状态须 `init(id:)` 沿用原 id,否则选中/拖动簿记全失效。
+- 马赛克:画布绘制、临时笔划、导出共用 `MosaicOverlayCache`(按半径缓存像素化叠加图),改绘制时保持三处一致。
+- `exportedImage()` 用 AppKit 按原图尺寸重绘、不依赖视图层级,改绘制逻辑必须同步它。
+
+### 设置与工程
+
+- 全部 UserDefaults key 与默认值集中在 `SettingsStore.Keys` 枚举;`screenshotEnabled` 关 = 热键不注册 + 菜单置灰 + 捕获忽略。
+- **新增 .swift 文件自动纳入编译**(工程用 `PBXFileSystemSynchronizedRootGroup`),不要手改 pbxproj 加文件;新增 target 才需手改 pbxproj(当前仅 FinderSyncExtension 一个扩展 target,已配好)。
+
+## 目录索引
+
+### `Zeroflow/`(主 app target,非沙盒)
+
+| 文件 | 职责 |
+|---|---|
+| `ZeroflowApp.swift` | `@main` 入口:手动建 `NSApplication`,装配服务与 `MenuBarController` |
+
+### `Zeroflow/MenuBar/`
+
+| 文件 | 职责 |
+|---|---|
+| `MenuBarController.swift` | 菜单栏图标与菜单(立即截图/最近截图/设置/退出);debug 环境变量在此触发 |
+
+### `Zeroflow/Models/`
+
+| 文件 | 职责 |
+|---|---|
+| `EditDocument.swift` | 画布文档模型:`CanvasElement` 4 类元素、图像坐标、撤销/重做栈 |
+| `L10n.swift` | 语言枚举(跟随系统/zh-Hans/en/ja)+ `L10n.tr` 查 `Translations.json`,缺 key 回退中文原文 |
+| `SettingsStore.swift` | 全部设置项:`Keys` 常量与默认值、`@Published` 属性、App Group plist 桥接 FinderSync |
+| `ShortcutKey.swift` | 快捷键值类型与三组默认键(截图 ⌘⇧S;切换器 ⌘⇥ / ⌥`) |
+
+### `Zeroflow/Services/`
+
+| 文件 | 职责 |
+|---|---|
+| `AccessibilityPermission.swift` | 辅助功能权限检测与引导跳系统设置 |
+| `AXWindow.swift` | AX 窗口元素查找:`_AXUIElementGetWindow` 精确匹配(禁 bounds 模糊兜底)、remote-token 暴力枚举 |
+| `CalendarService.swift` | EventKit 门面:授权状态/请求(macOS 14 全量)、区间日程查询(未授权返回 [],后台线程调用) |
+| `CaptureCoordinator.swift` | 截图流程协调:权限→遮罩→捕获→编辑页,`isActive` 防重入 |
+| `CGSWindowServer.swift` | SkyLight/CGS 私有 API dlsym 桥:SLS 批量枚举、Space 拓扑、跨 Space 激活 |
+| `CommandTabSwitcher.swift` | ⌘⇥ 切换器:CGEventTap 拦截 + 会话键盘(⇥/⇧⇥/方向键)+ 悬停卡片操作 |
+| `DockClickMinimizer.swift` | Dock 单击最小化:CGEventTap + Dock AX 命中 |
+| `DockHoverPreviewController.swift` | Dock 悬停预览:listen-only CGEventTap + idle→pending→visible 状态机(generation 作废) |
+| `FinderCommandRunner.swift` | 代执行扩展转交的自定义命令:请求文件 + 分布式通知 IPC,启动消化积压(>30s 丢弃) |
+| `FinderSyncReloader.swift` | 陈旧扩展自愈:pluginkit ignore→use election 循环重载(Sequoia/Tahoe bug) |
+| `GlobalHotkeyManager.swift` | Carbon 全局热键注册/注销,受 `screenshotEnabled` 总开关控制 |
+| `NotchHotspotController.swift` | 灵动岛:listen-only CGEventTap 悬停/单击刘海热区弹出面板,状态机 + 收起重弹抑制 + 全局隐藏触发(切 Space/睡眠/屏幕变化) |
+| `PhantomWindowDetector.swift` | 幽灵窗口判定(对齐 AltTab cgsVerdict + AX subrole 兜底) |
+| `ScreenCapture.swift` | ScreenCaptureKit 截屏,按 displayID 缓存 `SCContentFilter` |
+| `WindowActivator.swift` | 跨 app 窗口激活:还原最小化 → SLP 置前 → makeKey → AX main/raise(探针验证) |
+| `WindowActivityTracker.swift` | 窗口级 MRU:AX 焦点通知 + app 激活/Space 切换补记 |
+| `WindowList.swift` | CGWindowList 枚举 + 幽灵过滤 + MRU 排序 + 无窗口 app 占位卡;`SwitcherWindow` 模型 |
+| `WindowOps.swift` | 卡片窗口操作(退出/关闭/最小化/全屏);本 app 窗口必须走主线程 NSWindow(AX 后台线程会崩) |
+| `WindowThumbnailer.swift` | SkyLight `CGSHWCaptureWindowList` 抓缩略图(含最小化/离屏),缓存 + 节流 + 降级 |
+| `ZSLog.swift` | 统一日志(stderr + `/tmp/zeroflow.log`) |
+
+### `Zeroflow/Views/`
+
+| 文件 | 职责 |
+|---|---|
+| `AccessibilityPermissionRow.swift` | 辅助功能权限状态与引导行(Dock / 切换 两标签页共用) |
+| `CaptureOverlayView.swift` | 全屏选区遮罩(SwiftUI 包 NSView) |
+| `DockPreviewPanel.swift` | Dock 悬停预览面板(非激活 NSPanel)+ `DockPreviewViewModel` |
+| `EditorView.swift` | 截图编辑页(单一 ~1400 行文件):6 种工具 + 画布交互 + 键盘 + 导出 |
+| `NotchPanelView.swift` | 灵动岛面板:月视图日历(今日高亮/日程打点/翻月/当日日程列表)+ 未授权引导,`NotchPanel` 非激活 NSPanel + `NotchCalendarViewModel` |
+| `SaveDirectoryRow.swift` | 保存目录行:路径显示 / 选择 / 打开 |
+| `SettingsView.swift` | 设置窗口:7 个标签页(截图/通用/切换/Dock/Dock 预览/灵动岛/右键菜单) |
+| `ShortcutRecorderView.swift` | 快捷键录制控件(截图页用,录制期间挂起全局热键) |
+| `WindowCardView.swift` | 窗口缩略图卡片(切换器瓦片与 Dock 预览共用 UI) |
+| `WindowSwitcherPanel.swift` | ⌘⇥ 切换器面板(瓦片网格 + 选中)+ `WindowSwitcherViewModel` |
+
+### `Zeroflow/Resources/`
+
+| 文件 | 职责 |
+|---|---|
+| `Translations.json` | 三语文案表(中文 key → zh-Hans/en/ja) |
+
+### `FinderSyncExtension/`(沙盒扩展 target,App Group `8NHN73Q43T.com.zeroflow.app`)
+
+| 文件 | 职责 |
+|---|---|
+| `FinderSync.swift` | Finder 右键菜单(新建文件/自定义命令);读共享 plist 取设置;`CustomCommandRunner` 写请求文件 + 广播通知,主 app 未运行时拉起它 |
+
+### 仓库根目录与脚本
+
+| 文件 | 职责 |
+|---|---|
+| `create_release_tag.sh` | 发布脚本:切 main → 计算下一 patch tag → 推送触发 CI |
+| `scripts/install-findersync.sh` | FinderSync 扩展一键登记/启用(处理 pkd 僵死与 LS 残留) |
+| `.github/workflows/build.yml` | Build & Release CI(编译检查 / tag 发 DMG) |
+
+非源码:`Zeroflow.entitlements`、`FinderSyncExtension/{Info.plist, entitlements}`(App Group 与沙盒授权)、`Resources/Assets.xcassets`。

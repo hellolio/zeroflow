@@ -9,47 +9,90 @@ enum SettingsTab: String, CaseIterable {
     case switcher = "切换"
     case dock = "Dock"
     case dockPreview = "Dock 预览"
+    case notch = "灵动岛"
     case finder = "右键菜单"
 
     var title: String { L10n.tr(rawValue) }
 }
 
 struct SettingsView: View {
+    /// 跨窗口跳转：外部（如灵动岛面板「添加显示内容」）先置此值再发通知，窗口首次打开时消费
+    static var pendingTab: SettingsTab?
+
     @StateObject private var store = SettingsStore.shared
     @State private var selectedTab: SettingsTab = .screenshot
 
     var body: some View {
-        VStack(spacing: 0) {
-            Picker("", selection: $selectedTab) {
+        HStack(spacing: 0) {
+            // 左侧：纵向标签栏（仿系统设置）
+            VStack(alignment: .leading, spacing: 4) {
                 ForEach(SettingsTab.allCases, id: \.self) { tab in
-                    Text(tab.title).tag(tab)
+                    sidebarRow(tab)
+                }
+                Spacer()
+            }
+            .padding(10)
+            .frame(width: 168)
+
+            Divider()
+
+            // 右侧：当前标签的详细设置（Form .grouped 自带滚动）
+            Group {
+                switch selectedTab {
+                case .general:
+                    generalTab
+                case .screenshot:
+                    screenshotTab
+                case .switcher:
+                    switcherTab
+                case .dock:
+                    dockTab
+                case .dockPreview:
+                    dockPreviewTab
+                case .notch:
+                    notchTab
+                case .finder:
+                    finderTab
                 }
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .padding(.bottom, 12)
-
-            switch selectedTab {
-            case .general:
-                generalTab
-            case .screenshot:
-                screenshotTab
-            case .switcher:
-                switcherTab
-            case .dock:
-                dockTab
-            case .dockPreview:
-                dockPreviewTab
-            case .finder:
-                finderTab
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(minWidth: 520, minHeight: 560)
-        .padding()
+        .frame(minWidth: 760, minHeight: 560)
         // 无权限触发截图时自动跳到「截图」标签页，让权限引导直接可见
         .onReceive(NotificationCenter.default.publisher(for: .zeroflowOpenSettings)) { _ in
             selectedTab = .screenshot
         }
+        .onReceive(NotificationCenter.default.publisher(for: .zeroflowOpenNotchSettings)) { _ in
+            Self.pendingTab = nil
+            selectedTab = .notch
+        }
+        // 窗口首次打开时（通知先于视图存在）消费外部预置的标签页
+        .onAppear {
+            if let tab = Self.pendingTab {
+                Self.pendingTab = nil
+                selectedTab = tab
+            }
+        }
+    }
+
+    private func sidebarRow(_ tab: SettingsTab) -> some View {
+        let selected = selectedTab == tab
+        return Button {
+            selectedTab = tab
+        } label: {
+            Text(tab.title)
+                .font(.system(size: 13, weight: selected ? .medium : .regular))
+                .foregroundColor(selected ? .white : .primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(selected ? Color(nsColor: .controlAccentColor) : .clear)
+                )
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - 截图
@@ -239,6 +282,82 @@ struct SettingsView: View {
                         .foregroundColor(.secondary)
                 } header: {
                     Text(L10n.tr("屏幕录制权限"))
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    // MARK: - 灵动岛
+
+    private var notchTab: some View {
+        Form {
+            Section {
+                Toggle(L10n.tr("启用灵动岛"), isOn: $store.notchEnabled)
+                    .onChange(of: store.notchEnabled) { enabled in
+                        guard enabled else { return }
+                        if !AccessibilityPermission.isGranted {
+                            AccessibilityPermission.requestAuthorization()
+                        }
+                    }
+            } header: {
+                Text(L10n.tr("启用"))
+            } footer: {
+                Text(L10n.tr("鼠标悬停或单击屏幕顶部刘海区域，从刘海向下弹出日历面板；点击面板外部或按 Esc 收起。仅支持带刘海的机型。"))
+            }
+
+            if store.notchEnabled {
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("悬停延时")) {
+                            Text("\(store.notchHoverDelayMs) ms")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.notchHoverDelayMs) },
+                            set: { store.notchHoverDelayMs = Int($0) }
+                        ), in: 100...1000, step: 50)
+                    }
+                } header: {
+                    Text(L10n.tr("选项"))
+                } footer: {
+                    Text(L10n.tr("鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。"))
+                }
+
+                Section {
+                    Toggle(L10n.tr("日历"), isOn: $store.notchShowCalendar)
+                } header: {
+                    Text(L10n.tr("显示内容"))
+                } footer: {
+                    Text(L10n.tr("弹出面板中显示的内容模块。全部关闭时，面板仍会弹出并提示添加显示内容。"))
+                }
+
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("不透明度")) {
+                            Text("\(store.notchPanelOpacity)%")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.notchPanelOpacity) },
+                            set: { store.notchPanelOpacity = Int($0) }
+                        ), in: 30...100, step: 5)
+                    }
+                } header: {
+                    Text(L10n.tr("面板"))
+                } footer: {
+                    Text(L10n.tr("macOS 26 及以上使用液态玻璃面板背景，旧系统为系统磨砂；不透明度数值越小越透明。重新弹出面板后生效。"))
+                }
+
+                Section {
+                    AccessibilityPermissionRow(message: L10n.tr("需要「辅助功能」权限才能监测刘海悬停"))
+                    Text(L10n.tr("该权限与 Dock 预览等功能共用，若已开启则此处直接显示绿色。"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } header: {
+                    Text(L10n.tr("权限"))
                 }
             }
         }

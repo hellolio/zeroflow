@@ -4,6 +4,9 @@ import SwiftUI
 extension Notification.Name {
     /// 请求打开设置窗口（如无截屏权限时引导授权）
     static let zeroflowOpenSettings = Notification.Name("zeroflow.openSettings")
+
+    /// 请求打开设置窗口并跳到「灵动岛」标签页（面板空态引导按钮）
+    static let zeroflowOpenNotchSettings = Notification.Name("zeroflow.openNotchSettings")
 }
 
 /// 菜单栏控制器：常驻菜单栏，提供「设置」与「退出」
@@ -21,6 +24,12 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
             self,
             selector: #selector(openSettings),
             name: .zeroflowOpenSettings,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(openSettings),
+            name: .zeroflowOpenNotchSettings,
             object: nil
         )
         NotificationCenter.default.addObserver(
@@ -58,6 +67,9 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
 
         // Dock 悬停预览：按开关初始状态启停（开关变化由 DockHoverPreviewController 自行监听恢复）
         DockHoverPreviewController.shared.reapply()
+
+        // 灵动岛刘海面板：按开关初始状态启停（开关变化由 NotchHotspotController 自行监听恢复）
+        NotchHotspotController.shared.reapply()
 
         // 右键菜单扩展自愈：Sequoia/Tahoe 下 FinderSync 扩展更新后常有「已启用但右键菜单
         // 不出现」的陈旧实例问题，启动时若已启用则重载一次，保证右键菜单立即可用。
@@ -170,7 +182,7 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
                 contentViewController: NSHostingController(rootView: SettingsView())
             )
             window.title = L10n.tr("zeroflow 设置")
-            window.setContentSize(NSSize(width: 560, height: 640))
+            window.setContentSize(NSSize(width: 860, height: 640))
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             window.center()

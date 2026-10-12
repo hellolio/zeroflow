@@ -31,6 +31,10 @@ final class SettingsStore: ObservableObject {
         static let finderCmdEnabled = "finderCmdEnabled"
         static let finderCmdTitle = "finderCmdTitle"
         static let finderCmdCommand = "finderCmdCommand"
+        static let notchEnabled = "notchEnabled"
+        static let notchHoverDelayMs = "notchHoverDelayMs"
+        static let notchShowCalendar = "notchShowCalendar"
+        static let notchPanelOpacity = "notchPanelOpacity"
     }
 
     private let defaults: UserDefaults
@@ -101,6 +105,10 @@ final class SettingsStore: ObservableObject {
             Keys.finderCmdEnabled: false,
             Keys.finderCmdTitle: Self.defaultFinderCmdTitle,
             Keys.finderCmdCommand: Self.defaultFinderCmdCommand,
+            Keys.notchEnabled: false,
+            Keys.notchHoverDelayMs: 200,
+            Keys.notchShowCalendar: true,
+            Keys.notchPanelOpacity: 80,
         ])
         _launchAtLogin = Published(initialValue: defaults.bool(forKey: Keys.launchAtLogin))
         _saveDirectory = Published(initialValue: defaults.string(forKey: Keys.saveDirectory) ?? Self.defaultSaveDirectory)
@@ -116,6 +124,10 @@ final class SettingsStore: ObservableObject {
         _finderCmdEnabled = Published(initialValue: defaults.bool(forKey: Keys.finderCmdEnabled))
         _finderCmdTitle = Published(initialValue: defaults.string(forKey: Keys.finderCmdTitle) ?? Self.defaultFinderCmdTitle)
         _finderCmdCommand = Published(initialValue: defaults.string(forKey: Keys.finderCmdCommand) ?? Self.defaultFinderCmdCommand)
+        _notchEnabled = Published(initialValue: defaults.bool(forKey: Keys.notchEnabled))
+        _notchHoverDelayMs = Published(initialValue: defaults.integer(forKey: Keys.notchHoverDelayMs))
+        _notchShowCalendar = Published(initialValue: defaults.bool(forKey: Keys.notchShowCalendar))
+        _notchPanelOpacity = Published(initialValue: defaults.integer(forKey: Keys.notchPanelOpacity))
         _shortcut = Published(initialValue: Self.loadShortcut(from: defaults))
         _cmdTabShortcut = Published(initialValue: Self.loadCmdTabShortcut(from: defaults))
         _appLanguage = Published(initialValue: AppLanguage(rawValue: defaults.string(forKey: Keys.appLanguage) ?? "") ?? .system)
@@ -390,6 +402,40 @@ final class SettingsStore: ObservableObject {
         didSet {
             defaults.set(finderCmdCommand, forKey: Keys.finderCmdCommand)
             syncFinderSharedSettings()
+        }
+    }
+
+    // MARK: - 灵动岛
+
+    @Published var notchEnabled: Bool {
+        didSet {
+            defaults.set(notchEnabled, forKey: Keys.notchEnabled)
+            NotificationCenter.default.post(
+                name: NotchHotspotController.didChangeNotification,
+                object: nil,
+                userInfo: ["enabled": notchEnabled]
+            )
+        }
+    }
+
+    /// 悬停刘海多久后弹出面板（毫秒）；单击刘海可立即弹出
+    @Published var notchHoverDelayMs: Int {
+        didSet {
+            defaults.set(notchHoverDelayMs, forKey: Keys.notchHoverDelayMs)
+        }
+    }
+
+    /// 显示内容模块：日历。全部关闭时面板仍会弹出，显示「添加显示内容」引导
+    @Published var notchShowCalendar: Bool {
+        didSet {
+            defaults.set(notchShowCalendar, forKey: Keys.notchShowCalendar)
+        }
+    }
+
+    /// 面板不透明度（%）：100 = 完全不透明，越小越透明
+    @Published var notchPanelOpacity: Int {
+        didSet {
+            defaults.set(notchPanelOpacity, forKey: Keys.notchPanelOpacity)
         }
     }
 
