@@ -1,0 +1,149 @@
+name: Build and Release
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # Build the app on macOS.
+  # push/PR -> compile check + app zip artifact (for manual testing)
+  # tag v*  -> ad-hoc signed Release build -> DMG -> artifact for the release job
+  build:
+    name: Build (macOS)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Ad-hoc signing (no Apple certificate available on CI):
+      # keeps the sandbox + App Group entitlements of the FinderSync extension
+      # and makes the binaries runnable on Apple Silicon.
+      - name: Build
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project Zeroflow.xcodeproj \
+            -scheme Zeroflow \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM= \
+            build
+
+      # The product path is not always deterministic (may land in
+      # ArchiveIntermediates), so locate it and export APP_PATH.
+      - name: Locate app bundle
+        run: |
+          set -euo pipefail
+          APP="build/Build/Products/Release/Zeroflow.app"
+          if [ ! -d "$APP" ]; then
+            APP="$(find build/Build -type d -name 'Zeroflow.app' -path '*Release*' | head -n 1)"
+          fi
+          if [ ! -d "$APP" ]; then
+            echo "::error::Zeroflow.app not found under build/Build"
+            exit 1
+          fi
+          echo "APP_PATH=$APP" >> "$GITHUB_ENV"
+
+      - name: Verify code signature
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          set -euo pipefail
+          codesign --verify --deep --strict "$APP_PATH"
+          codesign -dv "$APP_PATH/Contents/PlugIns/FinderSyncExtension.appex"
+
+      - name: Package app zip
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        run: ditto -c -k --keepParent --sequesterRsrc "$APP_PATH" Zeroflow-macos.zip
+
+      - name: Upload app artifact
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: Zeroflow-macos
+          path: Zeroflow-macos.zip
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Install create-dmg
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        run: brew install create-dmg
+
+      - name: Create DMG
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          STAGING="staging"
+          mkdir -p "$STAGING"
+          ditto "$APP_PATH" "$STAGING/Zeroflow.app"
+          create-dmg \
+            --volname "Zeroflow $VERSION" \
+            --background dmg_bg.png \
+            --window-size 660 400 \
+            --icon-size 128 \
+            --icon "Zeroflow.app" 160 210 \
+            --app-drop-link 500 210 \
+            --hide-extension "Zeroflow.app" \
+            --skip-junk \
+            "Zeroflow-$VERSION.dmg" \
+            "$STAGING"
+
+      - name: Upload DMG artifact
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: Zeroflow-dmg
+          path: Zeroflow-*.dmg
+          if-no-files-found: error
+          retention-days: 7
+
+  # Create GitHub Release when a version tag is pushed
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Zeroflow ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            ## 安装
+
+            1. 下载 `Zeroflow-*.dmg`，打开后将 Zeroflow 拖入「应用程序」。
+            2. 应用未做开发者签名/公证，首次打开若提示「已损坏，无法打开」或「无法验证开发者」，任选其一：
+               - 前往 系统设置 → 隐私与安全性 → 点击「仍要打开」。
+               - 或终端执行 `xattr -cr /Applications/Zeroflow.app` 后再打开；
+          files: |
+            artifacts/**/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

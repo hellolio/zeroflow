@@ -50,6 +50,17 @@ open build/Build/Products/Debug/Zeroflow.app
 
 > 新建源文件放入 `Zeroflow/` 目录即自动纳入编译，无需改 pbxproj。
 
+CI（`.github/workflows/build.yml`）：推送/PR 到 main 触发编译检查并上传 app zip artifact；打 `v*` tag 会用 Release 配置构建、打包 DMG 并自动发布到 GitHub Releases。
+
+## 下载安装
+
+从 [Releases](https://github.com/hellolio/zeroflow/releases) 下载最新的 `Zeroflow-x.x.x.dmg`，打开后将 Zeroflow 拖入「应用程序」。
+
+> 应用目前未做开发者签名/公证，首次打开时 Gatekeeper 可能提示「已损坏，无法打开」或「无法验证开发者」。任选其一解决：
+>
+> - 终端执行 `xattr -cr /Applications/Zeroflow.app` 后再打开；
+> - 或前往 系统设置 → 隐私与安全性 → 找到 Zeroflow 的拦截提示 → 点「仍要打开」。
+
 ## License
 
 [MIT](LICENSE)
