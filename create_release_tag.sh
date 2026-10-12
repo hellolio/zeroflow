@@ -1,6 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# 记录原始分支和工作区状态
+ORIGINAL_BRANCH=$(git branch --show-current)
+STASH_CREATED=false
+
+# 保存未提交的修改（包括未跟踪文件）
+if [[ -n "$(git status --porcelain)" ]]; then
+    git stash push --include-untracked -m "temporary-release-stash"
+    STASH_CREATED=true
+fi
+
+# 无论发布成功与否，都恢复原始分支和工作区
+cleanup() {
+    local exit_code=$?
+
+    trap - EXIT
+
+    if [[ -n "$ORIGINAL_BRANCH" ]]; then
+        git switch "$ORIGINAL_BRANCH" || {
+            echo "错误：无法恢复原始分支 $ORIGINAL_BRANCH" >&2
+            exit 1
+        }
+    fi
+
+    if [[ "$STASH_CREATED" == true ]]; then
+        git stash pop || {
+            echo "错误：无法自动恢复工作区修改，请手动执行 git stash list" >&2
+            exit 1
+        }
+    fi
+
+    exit "$exit_code"
+}
+trap cleanup EXIT
+
 # 切换到 main 分支并更新
 git switch main
 git pull --ff-only origin main
