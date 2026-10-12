@@ -101,7 +101,6 @@ jobs:
             --icon "Zeroflow.app" 160 210 \
             --app-drop-link 500 210 \
             --hide-extension "Zeroflow.app" \
-            --skip-junk \
             "Zeroflow-$VERSION.dmg" \
             "$STAGING"
 
