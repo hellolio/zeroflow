@@ -116,7 +116,7 @@ final class SettingsStore: ObservableObject {
             Keys.notchShowMusic: false,
             Keys.notchResourceItems: NotchResourceItem.allRawValues,
             Keys.notchMaxWidth: 680,
-            Keys.notchMaxHeight: 560,
+            Keys.notchMaxHeight: 600,
         ])
         _launchAtLogin = Published(initialValue: defaults.bool(forKey: Keys.launchAtLogin))
         _saveDirectory = Published(initialValue: defaults.string(forKey: Keys.saveDirectory) ?? Self.defaultSaveDirectory)
