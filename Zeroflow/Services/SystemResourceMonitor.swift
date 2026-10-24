@@ -46,7 +46,7 @@ struct NotchResourceSample {
     var gpuPercent: Double?
 }
 
-/// 各资源项的近期采样序列,供面板迷你趋势图使用;
+/// 各资源项的近期采样序列,供面板迷你趋势图(磁盘/网络)使用;
 /// 百分比项存 0–100,速率项存字节/秒(视图内按窗口内峰值归一化)
 struct NotchResourceHistory {
     var cpu: [Double] = []
@@ -58,13 +58,17 @@ struct NotchResourceHistory {
 
 /// 灵动岛「系统资源」采样:CPU(host_processor_info)/内存(host_statistics64)/
 /// 网络(sysctl NET_RT_IFLIST2)/磁盘(IOKit IOBlockStorageDriver 统计)/GPU(IOAccelerator
-/// PerformanceStatistics)。全部免 root、无权限要求;面板可见时才开始采样。
+/// PerformanceStatistics)。全部免 root、无权限要求;仅面板可见期间采样,弹出时先建基线
+/// 并在 0.4s 后快速补采,让速率项(CPU/磁盘/网络)首值不等固定 2s 间隔。
 final class SystemResourceMonitor: ObservableObject {
     static let shared = SystemResourceMonitor()
 
     private static let debug = ProcessInfo.processInfo.environment["ZEROFLOW_NOTCH_DEBUG"] == "1"
     /// 采样间隔(s)
     private static let interval: TimeInterval = 2
+    /// 弹出后快速补采间隔(s)：速率项需两次采样差值,若只等固定间隔首值要 2s 才出现;
+    /// 建基线后 0.4s 先补采一次,之后由固定间隔接管
+    private static let warmupDelay: TimeInterval = 0.4
 
     @Published private(set) var sample = NotchResourceSample()
     @Published private(set) var history = NotchResourceHistory()
@@ -73,6 +77,7 @@ final class SystemResourceMonitor: ObservableObject {
     static let historyMaxPoints = 30
 
     private var timer: Timer?
+    private var warmupTimer: Timer?
     private var busy = false
     private let queue = DispatchQueue(label: "zeroflow.notch.resources", qos: .utility)
 
@@ -102,9 +107,19 @@ final class SystemResourceMonitor: ObservableObject {
             RunLoop.main.add(t, forMode: .common)
             timer = t
             tick()
+            // 快速补采:首次 tick 只建基线(速率项返回 nil,UI 显示「—」),0.4s 后补采一次
+            // 即得首个速率值;面板若已隐藏(timer == nil)则补采自动作废
+            let w = Timer(timeInterval: Self.warmupDelay, repeats: false) { [weak self] _ in
+                guard let self, self.timer != nil else { return }
+                self.tick()
+            }
+            RunLoop.main.add(w, forMode: .common)
+            warmupTimer = w
         } else {
             timer?.invalidate()
             timer = nil
+            warmupTimer?.invalidate()
+            warmupTimer = nil
             // 清基线,重新显示后重新累计速率(计数器可能被系统重置);趋势历史同步清空
             lastCPUTicks = nil
             lastDisk = nil

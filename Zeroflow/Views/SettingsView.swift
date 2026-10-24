@@ -389,7 +389,7 @@ struct SettingsView: View {
                     } header: {
                         Text(L10n.tr("资源项"))
                     } footer: {
-                        Text(L10n.tr("系统资源模块中显示的项目；数值旁的曲线为最近约 1 分钟的使用率趋势。"))
+                        Text(L10n.tr("系统资源模块中显示的项目；CPU/内存/GPU 显示用量进度条（灰色为总量），磁盘/网络数值旁的曲线为最近约 1 分钟的速率趋势。"))
                     }
                 }
 

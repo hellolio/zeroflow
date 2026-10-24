@@ -415,9 +415,17 @@ struct NotchContentView: View {
             Text(item.title)
                 .font(.system(size: 12))
                 .foregroundColor(.secondary)
-            ResourceSparkline(normalizedValues: normalizedHistory(item))
-                .frame(maxWidth: .infinity)
-                .frame(height: 16)
+            // 百分比项（CPU/内存/GPU）= 用量进度条：灰轨道=总量 100%，彩色填充=当前用量；
+            // 速率项（磁盘/网络）无固定满格，保留迷你趋势图
+            if isPercentItem(item) {
+                ResourceProgressBar(progress: normalizedProgress(item))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 16)
+            } else {
+                ResourceSparkline(normalizedValues: normalizedHistory(item))
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 16)
+            }
             Text(resourceValue(item))
                 .font(.system(size: 12, weight: .medium))
                 .monospacedDigit()
@@ -426,7 +434,28 @@ struct NotchContentView: View {
         }
     }
 
-    /// 迷你趋势图数据：百分比项除以 100；速率项按窗口内峰值归一化（峰值下限 200KB/s 防除零全矮）
+    /// 百分比项（CPU/内存/GPU）用进度条展示用量占比；磁盘/网络为速率无固定满格，走趋势图
+    private func isPercentItem(_ item: NotchResourceItem) -> Bool {
+        switch item {
+        case .cpu, .memory, .gpu: return true
+        case .disk, .network: return false
+        }
+    }
+
+    /// 百分比项当前用量 0–1；nil = 暂不可用（只显示空轨道，数值列同步显示「—」）
+    private func normalizedProgress(_ item: NotchResourceItem) -> Double? {
+        let s = resources.sample
+        switch item {
+        case .cpu: return s.cpuPercent.map { min(1, max(0, $0 / 100)) }
+        case .gpu: return s.gpuPercent.map { min(1, max(0, $0 / 100)) }
+        case .memory:
+            guard let used = s.memUsedBytes, let total = s.memTotalBytes, total > 0 else { return nil }
+            return min(1, max(0, Double(used) / Double(total)))
+        case .disk, .network: return nil
+        }
+    }
+
+    /// 迷你趋势图数据（现仅速率项 磁盘/网络 消费）：速率项按窗口内峰值归一化（峰值下限 200KB/s 防除零全矮）
     private func normalizedHistory(_ item: NotchResourceItem) -> [Double] {
         func normalize(_ values: [Double], scale: Double) -> [Double] {
             values.map { min(1, max(0, $0 / scale)) }
@@ -755,6 +784,27 @@ struct NotchContentView: View {
                 .frame(maxHeight: 240)
             }
         }
+    }
+}
+
+/// 百分比资源项（CPU/内存/GPU）的用量进度条：灰色轨道 = 总量 100%（恒显完整宽度），
+/// 彩色填充 = 当前用量（左→右），一眼区分已用/未用
+private struct ResourceProgressBar: View {
+    let progress: Double?
+
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.primary.opacity(0.25))
+                if let progress, progress > 0 {
+                    Capsule()
+                        .fill(Color.accentColor)
+                        .frame(width: proxy.size.width * min(1, max(0, progress)))
+                }
+            }
+        }
+        .frame(height: 5)
     }
 }
 

@@ -609,10 +609,10 @@
     "en": "Resource Items",
     "ja": "リソース項目"
   },
-  "系统资源模块中显示的项目；数值旁的曲线为最近约 1 分钟的使用率趋势。": {
-    "zh-Hans": "系统资源模块中显示的项目；数值旁的曲线为最近约 1 分钟的使用率趋势。",
-    "en": "Items shown in the System Resources module; the curve beside each value shows roughly the last minute of usage.",
-    "ja": "システムリソースモジュールに表示する項目。数値の横の曲線は直近約 1 分の使用率の推移です。"
+  "系统资源模块中显示的项目；CPU/内存/GPU 显示用量进度条（灰色为总量），磁盘/网络数值旁的曲线为最近约 1 分钟的速率趋势。": {
+    "zh-Hans": "系统资源模块中显示的项目；CPU/内存/GPU 显示用量进度条（灰色为总量），磁盘/网络数值旁的曲线为最近约 1 分钟的速率趋势。",
+    "en": "Items shown in the System Resources module; CPU/Memory/GPU show a usage bar (gray = total), while the curves beside Disk/Network show roughly the last minute of transfer rate.",
+    "ja": "システムリソースモジュールに表示する項目。CPU/メモリ/GPU は使用率バー（灰色は全体量）を表示し、ディスク/ネットワークの数値の横の曲線は直近約 1 分の転送速度の推移です。"
   },
   "最大宽度": {
     "zh-Hans": "最大宽度",
