@@ -609,10 +609,25 @@
     "en": "Resource Items",
     "ja": "リソース項目"
   },
-  "系统资源模块中显示的项目。": {
-    "zh-Hans": "系统资源模块中显示的项目。",
-    "en": "Items shown in the System Resources module.",
-    "ja": "システムリソースモジュールに表示する項目。"
+  "系统资源模块中显示的项目；数值旁的曲线为最近约 1 分钟的使用率趋势。": {
+    "zh-Hans": "系统资源模块中显示的项目；数值旁的曲线为最近约 1 分钟的使用率趋势。",
+    "en": "Items shown in the System Resources module; the curve beside each value shows roughly the last minute of usage.",
+    "ja": "システムリソースモジュールに表示する項目。数値の横の曲線は直近約 1 分の使用率の推移です。"
+  },
+  "最大宽度": {
+    "zh-Hans": "最大宽度",
+    "en": "Maximum Width",
+    "ja": "最大幅"
+  },
+  "最大高度": {
+    "zh-Hans": "最大高度",
+    "en": "Maximum Height",
+    "ja": "最大高さ"
+  },
+  "鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。显示 2 个内容模块时面板固定为最大尺寸（两卡片各占一半宽度），单模块时按内容收缩。": {
+    "zh-Hans": "鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。显示 2 个内容模块时面板固定为最大尺寸（两卡片各占一半宽度），单模块时按内容收缩。",
+    "en": "How long the pointer must stay on the notch before the panel appears; clicking the notch opens it instantly. With 2 content modules the panel uses the maximum size (each card takes half the width); with a single module it shrinks to fit its content.",
+    "ja": "ホバーしてからパネルが表示されるまでの時間。ノッチをクリックすると即座に開きます。コンテンツモジュールを 2 つ表示する場合はパネルが最大サイズで固定され（各カードが幅の半分ずつ）、1 つの場合は内容に合わせて収縮します。"
   },
   "弹出面板中显示的内容模块，最多同时显示 2 个。全部关闭时，面板仍会弹出并提示添加显示内容。": {
     "zh-Hans": "弹出面板中显示的内容模块，最多同时显示 2 个。全部关闭时，面板仍会弹出并提示添加显示内容。",

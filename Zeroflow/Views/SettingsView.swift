@@ -335,10 +335,32 @@ struct SettingsView: View {
                             set: { store.notchHoverDelayMs = Int($0) }
                         ), in: 100...1000, step: 50)
                     }
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("最大宽度")) {
+                            Text("\(store.notchMaxWidth) pt")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.notchMaxWidth) },
+                            set: { store.notchMaxWidth = Int($0) }
+                        ), in: 420...1200, step: 10)
+                    }
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(L10n.tr("最大高度")) {
+                            Text("\(store.notchMaxHeight) pt")
+                                .monospacedDigit()
+                                .foregroundColor(.secondary)
+                        }
+                        Slider(value: Binding(
+                            get: { Double(store.notchMaxHeight) },
+                            set: { store.notchMaxHeight = Int($0) }
+                        ), in: 240...1000, step: 20)
+                    }
                 } header: {
                     Text(L10n.tr("选项"))
                 } footer: {
-                    Text(L10n.tr("鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。"))
+                    Text(L10n.tr("鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出。显示 2 个内容模块时面板固定为最大尺寸（两卡片各占一半宽度），单模块时按内容收缩。"))
                 }
 
                 Section {
@@ -367,7 +389,7 @@ struct SettingsView: View {
                     } header: {
                         Text(L10n.tr("资源项"))
                     } footer: {
-                        Text(L10n.tr("系统资源模块中显示的项目。"))
+                        Text(L10n.tr("系统资源模块中显示的项目；数值旁的曲线为最近约 1 分钟的使用率趋势。"))
                     }
                 }
 

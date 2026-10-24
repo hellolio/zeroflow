@@ -46,6 +46,16 @@ struct NotchResourceSample {
     var gpuPercent: Double?
 }
 
+/// 各资源项的近期采样序列,供面板迷你趋势图使用;
+/// 百分比项存 0–100,速率项存字节/秒(视图内按窗口内峰值归一化)
+struct NotchResourceHistory {
+    var cpu: [Double] = []
+    var memory: [Double] = []
+    var gpu: [Double] = []
+    var disk: [Double] = []
+    var network: [Double] = []
+}
+
 /// 灵动岛「系统资源」采样:CPU(host_processor_info)/内存(host_statistics64)/
 /// 网络(sysctl NET_RT_IFLIST2)/磁盘(IOKit IOBlockStorageDriver 统计)/GPU(IOAccelerator
 /// PerformanceStatistics)。全部免 root、无权限要求;面板可见时才开始采样。
@@ -57,6 +67,10 @@ final class SystemResourceMonitor: ObservableObject {
     private static let interval: TimeInterval = 2
 
     @Published private(set) var sample = NotchResourceSample()
+    @Published private(set) var history = NotchResourceHistory()
+
+    /// 历史序列容量(2s 采样间隔 → 约 1 分钟窗口)
+    static let historyMaxPoints = 30
 
     private var timer: Timer?
     private var busy = false
@@ -91,11 +105,12 @@ final class SystemResourceMonitor: ObservableObject {
         } else {
             timer?.invalidate()
             timer = nil
-            // 清基线,重新显示后重新累计速率(计数器可能被系统重置)
+            // 清基线,重新显示后重新累计速率(计数器可能被系统重置);趋势历史同步清空
             lastCPUTicks = nil
             lastDisk = nil
             lastNet = [:]
             lastNetAt = nil
+            history = NotchResourceHistory()
         }
     }
 
@@ -109,11 +124,38 @@ final class SystemResourceMonitor: ObservableObject {
                 self.busy = false
                 guard self.timer != nil else { return }
                 self.sample = s
+                self.appendHistory(s)
             }
         }
     }
 
     // MARK: - 采样(后台线程)
+
+    /// 追加本次采样到历史序列(主线程)。某项本次不可用时沿用上一值,保持趋势线连续
+    private func appendHistory(_ s: NotchResourceSample) {
+        let memPercent: Double? = {
+            guard let used = s.memUsedBytes, let total = s.memTotalBytes, total > 0 else { return nil }
+            return Double(used) / Double(total) * 100
+        }()
+        let diskBps: Double? = (s.diskReadBps == nil && s.diskWriteBps == nil)
+            ? nil : Double((s.diskReadBps ?? 0) + (s.diskWriteBps ?? 0))
+        let netBps: Double? = (s.netDownBps == nil && s.netUpBps == nil)
+            ? nil : Double((s.netDownBps ?? 0) + (s.netUpBps ?? 0))
+        history = NotchResourceHistory(
+            cpu: Self.push(history.cpu, s.cpuPercent),
+            memory: Self.push(history.memory, memPercent),
+            gpu: Self.push(history.gpu, s.gpuPercent),
+            disk: Self.push(history.disk, diskBps),
+            network: Self.push(history.network, netBps)
+        )
+    }
+
+    private static func push(_ array: [Double], _ value: Double?) -> [Double] {
+        var array = array
+        array.append(value ?? array.last ?? 0)
+        if array.count > historyMaxPoints { array.removeFirst(array.count - historyMaxPoints) }
+        return array
+    }
 
     private func collect() -> NotchResourceSample {
         var s = NotchResourceSample()
