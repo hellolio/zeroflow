@@ -101,3 +101,8 @@
 - **Pitfall:** `kIOBlockStorageDriverStatisticsKey` 等按符号用报 "cannot find in scope";内存采样 count 直接用常量或拍脑袋会返回 KERN_INVALID_ARGUMENT。
 - **Cause:** 这些键是 IOKit 头文件里的字符串宏(`#define kIOBlockStorageDriverStatisticsKey "Statistics"`,读/写键为 `"Bytes (Read)"`/`"Bytes (Write)"`),Swift 侧不导入;`HOST_VM_INFO64_COUNT` 也是宏。
 - **Prevention:** IOKit 键直接写字符串值(真实值查 SDK 头文件 `IOKit.framework/Headers/storage/IOBlockStorageDriver.h`);`mach_msg_type_number_t(MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size)` 自算 count。资源监控数据源速记(macOS 27 实测,全免 root):CPU=host_processor_info 两次 ticks 差值;内存已用=active+inactive+speculative+wired+compressor−purgeable−external(≈活动监视器「内存已用」,≠top 的 PhysMem used=总−free,后者含缓存文件,别拿来对数);网络=sysctl NET_RT_IFLIST2 的 if_data64 逐接口差值(排除 IFT_LOOP);磁盘=IOService("IOBlockStorageDriver") 注册表 "Statistics" 的读写字节差值;GPU=IOAccelerator "PerformanceStatistics" 的 "Device Utilization %"(本机存在,瞬时值无需差分;备用 "GPU Activity(%)")。`swiftc | head` 会因管道 SIGPIPE 杀掉编译器且 `&&` 拿到的是 head 的退出码,验证脚本要重定向到文件再 grep。
+
+## DEV-021: macOS 窗口 frame 弹簧动画无公开 API,需主线程定时器积分实现
+- **Pitfall:** 灵动岛面板要做 iPhone 式「从刘海长出/缩回」的弹簧动画,`NSAnimationContext` 只支持贝塞尔 `CAMediaTimingFunction`,`CASpringTimingFunction` 在 macOS 不公开,窗口 frame 无法用系统弹簧曲线动画。
+- **Cause:** NSWindow 经 animator() 可动画的属性走 Core Animation 但只暴露贝塞尔曲线;UIKit 语义的弹簧参数(response/dampingFraction)动画必须自己积分。
+- **Prevention:** 主线程 120Hz `Timer` 对弹簧微分方程半隐式欧拉积分(k=(2π/response)²,c=2ζ√k)后直接 `setFrame(_:display:)`(dt 远小于稳定域 2/ω 不会发散);打断续接需用各分量当前值与速度重建弹簧、作废旧动画的 completion(否则收起的 orderOut 会在重展开后误触发);Timer 必须加进 `.common` mode,否则面板按钮的事件跟踪期间动画冻结。参考 `NotchPanelView.swift` 的 `NotchSpringAnimator`。
