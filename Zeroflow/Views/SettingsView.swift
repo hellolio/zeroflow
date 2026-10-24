@@ -290,6 +290,22 @@ struct SettingsView: View {
 
     // MARK: - 灵动岛
 
+    /// 已勾选 2 个内容模块时禁用未勾选的开关（面板最多同时显示 2 个）
+    private var isMaxNotchModulesSelected: Bool {
+        [store.notchShowCalendar, store.notchShowResources, store.notchShowMusic].filter { $0 }.count >= 2
+    }
+
+    /// 增减资源项并写回（Store 端按固定顺序过滤）
+    private func toggleNotchResourceItem(_ item: NotchResourceItem, on: Bool) {
+        var items = store.notchResourceItems
+        if on {
+            if !items.contains(item.rawValue) { items.append(item.rawValue) }
+        } else {
+            items.removeAll { $0 == item.rawValue }
+        }
+        store.notchResourceItems = items
+    }
+
     private var notchTab: some View {
         Form {
             Section {
@@ -327,28 +343,32 @@ struct SettingsView: View {
 
                 Section {
                     Toggle(L10n.tr("日历"), isOn: $store.notchShowCalendar)
+                        .disabled(isMaxNotchModulesSelected && !store.notchShowCalendar)
+                    Toggle(L10n.tr("系统资源"), isOn: $store.notchShowResources)
+                        .disabled(isMaxNotchModulesSelected && !store.notchShowResources)
+                    Toggle(L10n.tr("正在播放"), isOn: $store.notchShowMusic)
+                        .disabled(isMaxNotchModulesSelected && !store.notchShowMusic)
                 } header: {
                     Text(L10n.tr("显示内容"))
                 } footer: {
-                    Text(L10n.tr("弹出面板中显示的内容模块。全部关闭时，面板仍会弹出并提示添加显示内容。"))
+                    Text(L10n.tr("弹出面板中显示的内容模块，最多同时显示 2 个。全部关闭时，面板仍会弹出并提示添加显示内容。"))
                 }
 
-                Section {
-                    VStack(alignment: .leading, spacing: 6) {
-                        LabeledContent(L10n.tr("不透明度")) {
-                            Text("\(store.notchPanelOpacity)%")
-                                .monospacedDigit()
-                                .foregroundColor(.secondary)
+                if store.notchShowResources {
+                    Section {
+                        ForEach(NotchResourceItem.allCases) { item in
+                            Toggle(isOn: Binding(
+                                get: { store.notchResourceItems.contains(item.rawValue) },
+                                set: { on in toggleNotchResourceItem(item, on: on) }
+                            )) {
+                                Text(item.title)
+                            }
                         }
-                        Slider(value: Binding(
-                            get: { Double(store.notchPanelOpacity) },
-                            set: { store.notchPanelOpacity = Int($0) }
-                        ), in: 30...100, step: 5)
+                    } header: {
+                        Text(L10n.tr("资源项"))
+                    } footer: {
+                        Text(L10n.tr("系统资源模块中显示的项目。"))
                     }
-                } header: {
-                    Text(L10n.tr("面板"))
-                } footer: {
-                    Text(L10n.tr("macOS 26 及以上使用液态玻璃面板背景，旧系统为系统磨砂；不透明度数值越小越透明。重新弹出面板后生效。"))
                 }
 
                 Section {

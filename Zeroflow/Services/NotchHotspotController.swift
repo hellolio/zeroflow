@@ -444,6 +444,8 @@ final class NotchHotspotController {
             guard let self else { return }
             self.panel?.orderOut(nil)
             self.panelShown = false
+            SystemResourceMonitor.shared.setActive(false)
+            NowPlayingMonitor.shared.setActive(false)
         }
     }
 
@@ -474,11 +476,22 @@ final class NotchHotspotController {
         let panel = ensurePanel()
         panel.present(hotspotTL: detected.hotspotTL, screen: detected.screen, model: viewModel)
         panelShown = true
+        startMonitors()
         lock.lock()
         panelFrameTL = toTopLeftCoords(panel.frame)
         lock.unlock()
         if Self.debug {
             ZSLog("Notch: show gen=\(gen) hotspot=\(detected.hotspotTL) panel=\(panel.frame)")
+        }
+    }
+
+    /// 按当前启用模块启动数据轮询（仅面板可见期间运行，hidePanel 时全部停止）
+    private func startMonitors() {
+        if SettingsStore.shared.notchShowResources {
+            SystemResourceMonitor.shared.setActive(true)
+        }
+        if SettingsStore.shared.notchShowMusic {
+            NowPlayingMonitor.shared.setActive(true)
         }
     }
 

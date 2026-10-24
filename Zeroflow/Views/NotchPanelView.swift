@@ -224,27 +224,56 @@ final class NotchCalendarViewModel: ObservableObject {
     }
 }
 
-/// 灵动岛面板内容：日历列（月历 + 当日日程）贴左，预留右侧空白区；
-/// 无内容模块时显示「添加显示内容」引导。宽度 = 面板宽，日历列固定原尺寸不随宽度拉伸。
+/// 灵动岛面板内容：已启用的内容模块横排（日历 / 系统资源 / 正在播放，最多同时 2 个），
+/// 无模块时显示「添加显示内容」引导。各列宽度固定，面板宽度按内容自适应。
 struct NotchContentView: View {
     @ObservedObject var model: NotchCalendarViewModel
+    /// 显示宽度：nil = 测量模式（自然内容宽）；正式展示由 NotchPanel 传入面板宽并整体居中
+    var displayWidth: CGFloat? = nil
+
+    @ObservedObject private var resources = SystemResourceMonitor.shared
+    @ObservedObject private var music = NowPlayingMonitor.shared
 
     private let accent = Color.accentColor
     private static let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     /// 日历列宽度（面板加宽前的内容宽，保持原比例）
     private static let calendarColumnWidth: CGFloat = 332
+    /// 系统资源列宽
+    private static let resourcesColumnWidth: CGFloat = 224
+    /// 正在播放列宽
+    private static let musicColumnWidth: CGFloat = 224
+
+    /// 内容模块（固定顺序，最多同时显示 2 个；超出部分在设置页禁用开关）
+    private enum Module: CaseIterable {
+        case calendar
+        case resources
+        case music
+    }
 
     var body: some View {
-        // 单模块居中；后续多模块在 HStack 内并排、整体居中
         HStack(alignment: .top, spacing: 16) {
-            if SettingsStore.shared.notchShowCalendar {
-                calendarColumn
-            } else {
-                emptyState
+            ForEach(visibleModules, id: \.self) { module in
+                moduleView(module)
             }
         }
         .padding(.vertical, 14)
-        .frame(width: NotchPanel.preferredWidth, alignment: .center)
+        .frame(width: displayWidth, alignment: .center)
+    }
+
+    private var visibleModules: [Module] {
+        var enabled: [Module] = []
+        if SettingsStore.shared.notchShowCalendar { enabled.append(.calendar) }
+        if SettingsStore.shared.notchShowResources { enabled.append(.resources) }
+        if SettingsStore.shared.notchShowMusic { enabled.append(.music) }
+        return Array(enabled.prefix(2))
+    }
+
+    @ViewBuilder private func moduleView(_ module: Module) -> some View {
+        switch module {
+        case .calendar: calendarColumn
+        case .resources: resourcesColumn
+        case .music: musicColumn
+        }
     }
 
     private var calendarColumn: some View {
@@ -270,6 +299,205 @@ struct NotchContentView: View {
             .controlSize(.small)
         }
         .padding(.vertical, 16)
+    }
+
+    // MARK: - 系统资源模块
+
+    private var resourcesColumn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            moduleHeader("cpu", L10n.tr("系统资源"))
+            ForEach(enabledResourceItems, id: \.self) { item in
+                HStack(spacing: 8) {
+                    Text(item.title)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                    Spacer(minLength: 8)
+                    Text(resourceValue(item))
+                        .font(.system(size: 12, weight: .medium))
+                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+            }
+        }
+        .frame(width: Self.resourcesColumnWidth, alignment: .leading)
+    }
+
+    private var enabledResourceItems: [NotchResourceItem] {
+        SettingsStore.shared.notchResourceItems.compactMap { NotchResourceItem(rawValue: $0) }
+    }
+
+    private func resourceValue(_ item: NotchResourceItem) -> String {
+        let s = resources.sample
+        switch item {
+        case .cpu:
+            return s.cpuPercent.map { String(format: "%.0f%%", $0) } ?? "—"
+        case .memory:
+            guard let used = s.memUsedBytes else { return "—" }
+            guard let total = s.memTotalBytes else { return SystemResourceMonitor.formatBytes(used) }
+            return "\(SystemResourceMonitor.formatBytes(used)) / \(SystemResourceMonitor.formatBytes(total))"
+        case .disk:
+            let text = "\(L10n.tr("读")) \(SystemResourceMonitor.formatBps(s.diskReadBps)) · \(L10n.tr("写")) \(SystemResourceMonitor.formatBps(s.diskWriteBps))"
+            return (s.diskReadBps == nil && s.diskWriteBps == nil) ? "—" : text
+        case .network:
+            let text = "↓ \(SystemResourceMonitor.formatBps(s.netDownBps)) · ↑ \(SystemResourceMonitor.formatBps(s.netUpBps))"
+            return (s.netDownBps == nil && s.netUpBps == nil) ? "—" : text
+        case .gpu:
+            return s.gpuPercent.map { String(format: "%.0f%%", $0) } ?? "—"
+        }
+    }
+
+    // MARK: - 正在播放模块
+
+    private var musicColumn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            moduleHeader("music.note", L10n.tr("正在播放"))
+            if let info = music.nowPlaying {
+                musicBody(info)
+            } else {
+                Text(L10n.tr("没有正在播放的音乐"))
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+                    .padding(.top, 2)
+            }
+        }
+        .frame(width: Self.musicColumnWidth, alignment: .leading)
+    }
+
+    private func musicBody(_ info: NowPlayingInfo) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                appIcon(info)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(info.appName ?? L10n.tr("未知应用"))
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(info.isPlaying ? Color.green : Color.secondary.opacity(0.5))
+                            .frame(width: 5, height: 5)
+                        Text(info.isPlaying ? L10n.tr("正在播放") : L10n.tr("已暂停"))
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+
+            Text(info.title)
+                .font(.system(size: 13, weight: .semibold))
+                .lineLimit(2)
+
+            musicSubtitle(info)
+
+            if let progress = musicProgress(info) {
+                VStack(alignment: .leading, spacing: 3) {
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
+                            Capsule().fill(Color.primary.opacity(0.15))
+                            Capsule().fill(Color.accentColor)
+                                .frame(width: max(2, proxy.size.width * progress))
+                        }
+                    }
+                    .frame(height: 3)
+                    HStack {
+                        Text(Self.timeText(info.elapsed ?? 0))
+                        Spacer()
+                        Text(Self.timeText(info.duration ?? 0))
+                    }
+                    .font(.system(size: 10))
+                    .monospacedDigit()
+                    .foregroundColor(.secondary)
+                }
+            }
+
+            HStack(spacing: 18) {
+                musicButton("backward.fill", L10n.tr("上一首"), disabled: !music.controlsAvailable) {
+                    NowPlayingMonitor.shared.send(.previous)
+                }
+                musicButton(info.isPlaying ? "pause.fill" : "play.fill",
+                            info.isPlaying ? L10n.tr("暂停") : L10n.tr("播放"),
+                            disabled: !music.controlsAvailable) {
+                    NowPlayingMonitor.shared.send(.togglePlay)
+                }
+                musicButton("forward.fill", L10n.tr("下一首"), disabled: !music.controlsAvailable) {
+                    NowPlayingMonitor.shared.send(.next)
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+
+    @ViewBuilder private func musicSubtitle(_ info: NowPlayingInfo) -> some View {
+        let parts = [info.artist, info.album].compactMap { $0 }
+        if !parts.isEmpty {
+            Text(parts.joined(separator: " · "))
+                .font(.system(size: 11))
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        }
+    }
+
+    private func musicProgress(_ info: NowPlayingInfo) -> Double? {
+        guard let duration = info.duration, duration > 0, let elapsed = info.elapsed else { return nil }
+        return min(1, max(0, elapsed / duration))
+    }
+
+    private static func timeText(_ t: Double) -> String {
+        let total = Int(max(0, t))
+        let h = total / 3600, m = (total % 3600) / 60, s = total % 60
+        if h > 0 { return String(format: "%d:%02d:%02d", h, m, s) }
+        return String(format: "%d:%02d", m, s)
+    }
+
+    private func appIcon(_ info: NowPlayingInfo) -> some View {
+        Group {
+            if let bid = info.appBundleID, let icon = Self.icon(forBundleID: bid) {
+                Image(nsImage: icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+            } else {
+                Image(systemName: "music.note")
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(width: 22, height: 22)
+    }
+
+    private static let iconCache = NSCache<NSString, NSImage>()
+
+    private static func icon(forBundleID bid: String) -> NSImage? {
+        if let cached = iconCache.object(forKey: bid as NSString) { return cached }
+        guard let app = NSWorkspace.shared.runningApplications.first(where: { $0.bundleIdentifier == bid }),
+              let icon = app.icon else { return nil }
+        iconCache.setObject(icon, forKey: bid as NSString)
+        return icon
+    }
+
+    private func musicButton(_ symbol: String, _ label: String, disabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(disabled ? Color.secondary.opacity(0.4) : .primary)
+                .frame(width: 26, height: 22)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(disabled)
+        .help(label)
+    }
+
+    private func moduleHeader(_ icon: String, _ title: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.secondary)
+            Text(title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.secondary)
+            Spacer()
+        }
     }
 
     private var header: some View {
@@ -413,12 +641,14 @@ struct NotchContentView: View {
 /// 悬停/点击/Esc 判定全部由 NotchHotspotController 的 listen-only tap 完成，
 /// 本面板只负责内容展示（不成为 key，无键盘交互）。
 final class NotchPanel: NSPanel {
-    static let preferredWidth: CGFloat = 560
+    /// 面板宽度 = 内容模块自然宽 + 左右各 44pt 呼吸边距，钳制在 [min, max]
+    static let minWidth: CGFloat = 420
+    static let maxWidth: CGFloat = 680
     /// 圆角半径（≈Mac 屏幕圆角；屏幕圆角无公开 API 可查询）
     static let cornerRadius: CGFloat = 16
 
     init() {
-        super.init(contentRect: NSRect(x: 0, y: 0, width: Self.preferredWidth, height: 200),
+        super.init(contentRect: NSRect(x: 0, y: 0, width: Self.minWidth, height: 200),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         self.level = .screenSaver
         self.isOpaque = false
@@ -437,26 +667,32 @@ final class NotchPanel: NSPanel {
 
     /// 依据刘海热区（主屏左上原点坐标）重建内容、测尺寸、定位并滑入显示。
     /// 面板顶边贴刘海下边缘（热区竖向范围 = 刘海竖向范围）、水平居中刘海；
-    /// 每次 present 重建 contentView（模型重置到今天，同时取最新透明度/内容设置）。
+    /// 每次 present 重建 contentView（模型重置到今天，同时取最新内容设置）。
     func present(hotspotTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
-        // 用临时视图测量内容高度（正式 contentView 由玻璃/磨砂容器包裹）
+        // 先用自然宽度测量内容，再按模块组合计算面板宽、以该宽重测高度
         let measuring = NSHostingView(rootView: NotchContentView(model: model))
         measuring.layoutSubtreeIfNeeded()
-        var size = measuring.fittingSize
-        size = NSSize(width: Self.preferredWidth,
-                      height: max(120, min(ceil(size.height), screen.frame.height - 80)))
-        contentView = makeContentView(model: model)
-        setContentSize(size)
+        let natural = measuring.fittingSize
+        // 内容左右各留 44pt 呼吸边距（与最小宽下单日历布局的比例一致）
+        let width = Self.clamp(ceil(natural.width) + 88,
+                               Self.minWidth,
+                               min(Self.maxWidth, screen.frame.width - 40))
+        let sized = NSHostingView(rootView: NotchContentView(model: model, displayWidth: width))
+        sized.layoutSubtreeIfNeeded()
+        let height = max(120, min(ceil(sized.fittingSize.height), screen.frame.height - 80))
+        contentView = makeContentView(model: model, width: width)
+        setContentSize(NSSize(width: width, height: height))
 
-        let x = Self.clamp(hotspotTL.midX - size.width / 2,
-                           screen.frame.minX + 8, screen.frame.maxX - size.width - 8)
+        let x = Self.clamp(hotspotTL.midX - width / 2,
+                           screen.frame.minX + 8, screen.frame.maxX - width - 8)
         // 热区 TL 坐标最大 y = 刘海下边缘；转回 Cocoa 坐标作为面板顶边
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
-        let finalOrigin = NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - size.height)
+        let finalOrigin = NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - height)
         // 从刘海后方 12pt 处滑入；NSWindow 只有 frame 可动画（animator().setFrameOrigin 无效，
         // 面板会停在起始位置），必须用 animator().setFrame(_:display:)
-        let startFrame = NSRect(origin: NSPoint(x: finalOrigin.x, y: finalOrigin.y + 12), size: size)
-        let finalFrame = NSRect(origin: finalOrigin, size: size)
+        let startFrame = NSRect(origin: NSPoint(x: finalOrigin.x, y: finalOrigin.y + 12),
+                                size: NSSize(width: width, height: height))
+        let finalFrame = NSRect(origin: finalOrigin, size: NSSize(width: width, height: height))
         setFrame(startFrame, display: false)
         alphaValue = 0
         orderFront(nil)
@@ -470,16 +706,14 @@ final class NotchPanel: NSPanel {
     }
 
     /// 液态玻璃背景（macOS 26+）或磨砂底（旧系统）包裹内容，圆角≈屏幕圆角。
-    /// 透明度经玻璃染色深浅控制——直接对玻璃设 alphaValue 会连内容一起变透明。
-    private func makeContentView(model: NotchCalendarViewModel) -> NSView {
-        let hosting = NSHostingView(rootView: NotchContentView(model: model))
+    /// 不透明度不再可调：使用系统默认外观（玻璃不染色、磨砂不降 alpha）。
+    private func makeContentView(model: NotchCalendarViewModel, width: CGFloat) -> NSView {
+        let hosting = NSHostingView(rootView: NotchContentView(model: model, displayWidth: width))
         hosting.translatesAutoresizingMaskIntoConstraints = false
-        let opacity = Double(SettingsStore.shared.notchPanelOpacity) / 100
         if #available(macOS 26.0, *) {
             let glass = NSGlassEffectView()
             glass.cornerRadius = Self.cornerRadius
             glass.style = .regular
-            glass.tintColor = NSColor.black.withAlphaComponent(opacity * 0.35)
             glass.contentView = hosting
             pinEdges(of: hosting, to: glass)
             return glass
@@ -492,7 +726,6 @@ final class NotchPanel: NSPanel {
         frost.layer?.cornerRadius = Self.cornerRadius
         frost.layer?.cornerCurve = .continuous
         frost.layer?.masksToBounds = true
-        frost.alphaValue = opacity
         frost.addSubview(hosting)
         pinEdges(of: hosting, to: frost)
         return frost
