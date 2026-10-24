@@ -894,10 +894,10 @@ final class NotchPanel: NSPanel {
     static let minHeight: CGFloat = 120
     /// 圆角半径（≈Mac 屏幕圆角；屏幕圆角无公开 API 可查询）
     static let cornerRadius: CGFloat = 16
-    /// 展开 alpha 淡入响应（快速显形，避免深色 HUD 在黑色刘海上突兀浮现）
-    static let alphaInResponse: TimeInterval = 0.15
-    /// 收起 alpha 淡出响应（比展开慢，缩回刘海的过程中基本保持可见）
-    static let alphaOutResponse: TimeInterval = 0.3
+    /// alpha 跟随展开进度：进行到 50% 时完全显形（前期半透明，「从刘海长出」全程可见）
+    static let alphaInSpan: CGFloat = 0.5
+    /// alpha 跟随收缩进度：全程线性淡出，缩回刘海时恰好消失（黑底上无感收尾）
+    static let alphaOutSpan: CGFloat = 1.0
 
     private lazy var springAnimator = NotchSpringAnimator(panel: self)
 
@@ -1033,7 +1033,7 @@ final class NotchPanel: NSPanel {
             orderFront(nil)
             invalidateShadow()
         }
-        springAnimator.animate(to: finalFrame, alpha: 1, alphaResponse: Self.alphaInResponse)
+        springAnimator.animate(to: finalFrame, alpha: 1, fadeSpan: Self.alphaInSpan)
     }
 
     /// 收起：弹簧缩回刘海矩形并淡出，动画结束才 orderOut。控制器状态在 hidePanel 即时更新，
@@ -1041,7 +1041,7 @@ final class NotchPanel: NSPanel {
     func dismiss(notchTL: CGRect) {
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
         springAnimator.animate(to: cocoaNotchFrame(notchTL: notchTL, unionMaxY: unionMaxY),
-                               alpha: 0, alphaResponse: Self.alphaOutResponse) { [weak self] in
+                               alpha: 0, fadeSpan: Self.alphaOutSpan) { [weak self] in
             self?.orderOut(nil)
         }
     }
@@ -1114,17 +1114,18 @@ final class NotchPanel: NSPanel {
     }
 }
 
-/// iOS 风格弹簧动画驱动器（驱动 NotchPanel 的窗口 frame 与 alpha）。
+/// iOS 风格弹簧动画驱动器（驱动 NotchPanel 的窗口 frame；alpha 跟随几何进度渐显/渐隐）。
 /// macOS 对窗口 frame 没有公开的弹簧动画 API（NSAnimationContext 仅支持贝塞尔曲线，
 /// animator() 可动画属性的限制见 PITFALLS_DEV.md DEV-016），这里在主线程用定时器对弹簧
 /// 微分方程做半隐式欧拉积分后直接 setFrame。response + dampingFraction 语义同 UIKit，
 /// dampingFraction < 1 带过冲回弹。
-/// 动画进行中再次 animate：各分量以当前值/速度为起点重定向（展开↔收起互相打断无缝续接），
-/// 旧动画未执行的 completion 作废。
+/// alpha 不走独立曲线：独立快速淡入会让早期生长不可见（感知成「从一侧滑入」，DEV-022），
+/// 改为按尺寸进度渐显/渐隐。动画进行中再次 animate：各分量以当前值/速度为起点重定向
+/// （展开↔收起互相打断无缝续接），旧动画未执行的 completion 作废。
 private final class NotchSpringAnimator {
-    /// frame 弹簧：0.4s 响应、阻尼比 0.8（轻微回弹，接近 iPhone 灵动岛的手感）
-    static let frameResponse: TimeInterval = 0.4
-    static let frameDampingFraction: CGFloat = 0.8
+    /// frame 弹簧：0.5s 响应、阻尼比 0.72（展开过程全程可见 + 明显回弹）
+    static let frameResponse: TimeInterval = 0.5
+    static let frameDampingFraction: CGFloat = 0.72
 
     private struct Spring {
         var value: CGFloat
@@ -1162,11 +1163,19 @@ private final class NotchSpringAnimator {
         }
     }
 
-    /// 分量顺序：x, y, width, height, alpha
+    /// 分量顺序：x, y, width, height（alpha 由几何进度推导，不单独积分）
     private var springs: [Spring]?
     private var completion: (() -> Void)?
     private var timer: Timer?
     private weak var panel: NotchPanel?
+    /// alpha = captured + (target − captured) × clamp(尺寸进度 / fadeSpan, 0, 1)
+    private var startWidth: CGFloat = 0
+    private var startHeight: CGFloat = 0
+    private var targetWidth: CGFloat = 0
+    private var targetHeight: CGFloat = 0
+    private var capturedAlpha: CGFloat = 1
+    private var targetAlpha: CGFloat = 1
+    private var fadeSpan: CGFloat = 1
 
     init(panel: NotchPanel) {
         self.panel = panel
@@ -1176,36 +1185,42 @@ private final class NotchSpringAnimator {
         timer?.invalidate()
     }
 
-    /// 启动/重定向动画。alpha 传 nil = 保持进行中的 alpha 目标（无动画则保持当前 alpha）。
-    /// 必须主线程调用（setFrame）。
+    /// 启动/重定向动画。alpha 传 nil = 保持在途的 alpha 目标（无在途动画则保持当前 alpha）。
+    /// fadeSpan：alpha 到位所需的几何进度比例（1 = 与展开同步）。必须主线程调用（setFrame）。
     func animate(to targetFrame: NSRect, alpha targetAlpha: CGFloat? = nil,
-                 alphaResponse: TimeInterval = 0.15, completion: (() -> Void)? = nil) {
+                 fadeSpan span: CGFloat = 1, completion: (() -> Void)? = nil) {
         guard let panel else { return }
         self.completion = nil // 被打断动画的收尾作废
 
+        let inFlight = springs != nil
         let frame = panel.frame
-        let previous = springs?.count == 5 ? springs : nil
-        let alphaTarget = targetAlpha ?? previous?[4].target ?? panel.alphaValue
+        let previous = springs?.count == 4 ? springs : nil
 
-        func make(_ index: Int, _ initial: CGFloat, _ target: CGFloat, _ response: TimeInterval,
-                  _ dampingFraction: CGFloat, _ valueEpsilon: CGFloat, _ velocityEpsilon: CGFloat) -> Spring {
+        startWidth = frame.width
+        startHeight = frame.height
+        targetWidth = targetFrame.width
+        targetHeight = targetFrame.height
+        capturedAlpha = panel.alphaValue
+        // refit（alpha nil）时保留在途 alpha 目标，避免展开中途淡入被冻结在半透明
+        self.targetAlpha = targetAlpha ?? (inFlight ? self.targetAlpha : panel.alphaValue)
+        fadeSpan = span
+
+        func make(_ index: Int, _ initial: CGFloat, _ target: CGFloat) -> Spring {
             if let previous {
                 // 打断续接：沿用该分量当前的值与速度
                 return Spring(value: previous[index].value, velocity: previous[index].velocity,
-                              target: target, response: response, dampingFraction: dampingFraction,
-                              valueEpsilon: valueEpsilon, velocityEpsilon: velocityEpsilon)
+                              target: target, response: Self.frameResponse,
+                              dampingFraction: Self.frameDampingFraction, valueEpsilon: 0.5, velocityEpsilon: 5)
             }
-            return Spring(value: initial, velocity: 0, target: target, response: response,
-                          dampingFraction: dampingFraction, valueEpsilon: valueEpsilon,
-                          velocityEpsilon: velocityEpsilon)
+            return Spring(value: initial, velocity: 0, target: target, response: Self.frameResponse,
+                          dampingFraction: Self.frameDampingFraction, valueEpsilon: 0.5, velocityEpsilon: 5)
         }
 
         springs = [
-            make(0, frame.minX, targetFrame.minX, Self.frameResponse, Self.frameDampingFraction, 0.5, 5),
-            make(1, frame.minY, targetFrame.minY, Self.frameResponse, Self.frameDampingFraction, 0.5, 5),
-            make(2, frame.width, targetFrame.width, Self.frameResponse, Self.frameDampingFraction, 0.5, 5),
-            make(3, frame.height, targetFrame.height, Self.frameResponse, Self.frameDampingFraction, 0.5, 5),
-            make(4, panel.alphaValue, alphaTarget, alphaResponse, 1, 0.005, 0.05),
+            make(0, frame.minX, targetFrame.minX),
+            make(1, frame.minY, targetFrame.minY),
+            make(2, frame.width, targetFrame.width),
+            make(3, frame.height, targetFrame.height),
         ]
         self.completion = completion
         startTimerIfNeeded()
@@ -1244,13 +1259,31 @@ private final class NotchSpringAnimator {
         self.springs = springs
         panel.setFrame(NSRect(x: springs[0].value, y: springs[1].value,
                               width: springs[2].value, height: springs[3].value), display: true)
-        panel.alphaValue = springs[4].value
+        panel.alphaValue = progressAlpha(width: springs[2].value, height: springs[3].value)
         if allSettled {
             stopTimer()
             let completion = self.completion
             self.completion = nil
             completion?()
         }
+    }
+
+    /// alpha 随几何进度渐显/渐隐：进度 = 当前尺寸离开本次动画起点的比例（宽优先，宽没动用高；
+    /// 同参数弹簧各分量归一化进度相同，取宽即整 frame 进度），
+    /// alpha = captured + (target − captured) × clamp(进度 / fadeSpan, 0, 1)。
+    /// 打断时 captured = 当前 alpha、起点 = 当前尺寸，故续接无跳变。
+    private func progressAlpha(width: CGFloat, height: CGFloat) -> CGFloat {
+        let dw = targetWidth - startWidth
+        let dh = targetHeight - startHeight
+        var progress: CGFloat = 1
+        if abs(dw) > 0.5 {
+            progress = (width - startWidth) / dw
+        } else if abs(dh) > 0.5 {
+            progress = (height - startHeight) / dh
+        }
+        progress = min(1, max(0, progress))
+        let t = min(1, progress / max(0.05, fadeSpan))
+        return capturedAlpha + (targetAlpha - capturedAlpha) * t
     }
 
     private func stopTimer() {

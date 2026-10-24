@@ -106,3 +106,8 @@
 - **Pitfall:** 灵动岛面板要做 iPhone 式「从刘海长出/缩回」的弹簧动画,`NSAnimationContext` 只支持贝塞尔 `CAMediaTimingFunction`,`CASpringTimingFunction` 在 macOS 不公开,窗口 frame 无法用系统弹簧曲线动画。
 - **Cause:** NSWindow 经 animator() 可动画的属性走 Core Animation 但只暴露贝塞尔曲线;UIKit 语义的弹簧参数(response/dampingFraction)动画必须自己积分。
 - **Prevention:** 主线程 120Hz `Timer` 对弹簧微分方程半隐式欧拉积分(k=(2π/response)²,c=2ζ√k)后直接 `setFrame(_:display:)`(dt 远小于稳定域 2/ω 不会发散);打断续接需用各分量当前值与速度重建弹簧、作废旧动画的 completion(否则收起的 orderOut 会在重展开后误触发);Timer 必须加进 `.common` mode,否则面板按钮的事件跟踪期间动画冻结。参考 `NotchPanelView.swift` 的 `NotchSpringAnimator`。
+
+## DEV-022: 窗口弹簧动画里 alpha 走独立快速淡入,会把「生长」动画感知成「从一侧滑入」
+- **Pitfall:** 灵动岛面板做「从刘海长出」弹簧动画,frame 用弹簧、alpha 用独立的 0.15s 快速淡入:用户看到的是半透明面板从一侧快速滑到位 + 渐显,完全不是「从刘海逐渐长大」,方向感全错。
+- **Cause:** 弹簧位移前 ~15% 时间就走完 85% 路程,独立淡入结束时可变大半已展开;肉眼能捕捉的只剩后段残留位移( leading 边缘扫过),感知成滑入。弹性动画里透明度与几何分开调,时序感知必然错位。
+- **Prevention:** alpha 跟随几何进度推导(alpha = captured + (target−captured)×clamp(尺寸进度/fadeSpan)),打断时 captured=当前 alpha、起点=当前尺寸即无跳变;展开 fadeSpan≈0.5(前半程半透明、全程可见生长),收起 fadeSpan=1(全程可见收缩、缩到刘海黑底上恰好消失)。参考 `NotchSpringAnimator.progressAlpha`。
