@@ -493,7 +493,8 @@ final class NotchHotspotController {
         startMonitors()
         startDayEventsRefit(model: viewModel)
         lock.lock()
-        panelFrameTL = toTopLeftCoords(panel.frame)
+        // 用弹簧目标 frame，而非 present() 返回时刻的瞬时 frame（动画刚从刘海开始）
+        panelFrameTL = toTopLeftCoords(panel.targetFrame)
         lock.unlock()
         if Self.debug {
             ZSLog("Notch: show gen=\(gen) hotspot=\(detected.hotspotTL) panel=\(panel.frame)")
@@ -542,7 +543,7 @@ final class NotchHotspotController {
         guard visible, let panel, let model, let presented = lastPresented else { return }
         panel.refit(hotspotTL: presented.hotspotTL, screen: presented.screen, model: model)
         lock.lock()
-        panelFrameTL = toTopLeftCoords(panel.frame)
+        panelFrameTL = toTopLeftCoords(panel.targetFrame)
         lock.unlock()
     }
 
