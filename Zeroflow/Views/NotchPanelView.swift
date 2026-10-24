@@ -885,7 +885,8 @@ private struct ResourceSparkline: View {
 }
 
 /// 灵动岛面板：非激活 borderless 面板，深色 HUD 磨砂，以 iOS 风格弹簧动画从刘海
-/// 「生长」展开、收起时缩回刘海（NotchSpringAnimator 驱动 frame + alpha）。
+/// 「生长」展开、收起时缩回刘海（NotchSpringAnimator 只驱动 frame，全程不透明：
+/// 形状在刘海形药丸↔长方形间弹簧互变，无透明度渐变）。
 /// 悬停/点击/Esc 判定全部由 NotchHotspotController 的 listen-only tap 完成，
 /// 本面板只负责内容展示（不成为 key，无键盘交互）。
 final class NotchPanel: NSPanel {
@@ -894,11 +895,6 @@ final class NotchPanel: NSPanel {
     static let minHeight: CGFloat = 120
     /// 圆角半径（≈Mac 屏幕圆角；屏幕圆角无公开 API 可查询）
     static let cornerRadius: CGFloat = 16
-    /// alpha 跟随展开进度：进行到 50% 时完全显形（前期半透明，「从刘海长出」全程可见）
-    static let alphaInSpan: CGFloat = 0.5
-    /// alpha 跟随收缩进度：全程线性淡出，缩回刘海时恰好消失（黑底上无感收尾）
-    static let alphaOutSpan: CGFloat = 1.0
-
     private lazy var springAnimator = NotchSpringAnimator(panel: self)
 
     init() {
@@ -1015,7 +1011,8 @@ final class NotchPanel: NSPanel {
         let layout = Self.computeLayout(screen: screen, model: model)
         contentView = makeContentView(model: model, width: layout.width, height: layout.height,
                                       cardNaturals: layout.naturals, scale: layout.scale)
-        setContentSize(NSSize(width: layout.width, height: layout.height))
+        // 注意：这里不 setContentSize —— 它是瞬时几何赋值，打断路径上会把窗口尺寸直接
+        // 跳到终值（原点锚定、另一侧瞬移），产生整块平移感（DEV-023）；尺寸交给弹簧 setFrame
 
         let x = Self.clamp(hotspotTL.midX - layout.width / 2,
                            screen.frame.minX + 8, screen.frame.maxX - layout.width - 8)
@@ -1024,24 +1021,26 @@ final class NotchPanel: NSPanel {
         let finalFrame = NSRect(x: x, y: unionMaxY - hotspotTL.maxY - layout.height,
                                 width: layout.width, height: layout.height)
         if isVisible {
-            // 收起动画被打断（快速反复进出）：不重放，从当前 frame/alpha 无缝续接展开
+            // 收起动画被打断（快速反复进出）：不重放、不触碰窗口几何，只重定向弹簧，
+            // 从当前 frame/速度无缝续接展开
             invalidateShadow()
         } else {
-            // 起始 frame = 刘海矩形（盖住刘海，深色 HUD 与黑色刘海衔接）→ 弹簧展开 ≈ 刘海长大
+            // 起始 frame = 刘海矩形：不透明深色 HUD 正好盖住黑色刘海（出现无感），
+            // 从刘海形状向下、向两侧弹簧生长成长方形，全程无透明度变化
             setFrame(cocoaNotchFrame(notchTL: notchTL, unionMaxY: unionMaxY), display: false)
-            alphaValue = 0
+            alphaValue = 1
             orderFront(nil)
             invalidateShadow()
         }
-        springAnimator.animate(to: finalFrame, alpha: 1, fadeSpan: Self.alphaInSpan)
+        springAnimator.animate(to: finalFrame)
     }
 
-    /// 收起：弹簧缩回刘海矩形并淡出，动画结束才 orderOut。控制器状态在 hidePanel 即时更新，
+    /// 收起：全程不透明，弹簧缩回刘海矩形（形状从长方形变回刘海形状），动画结束才 orderOut
+    /// （终点覆盖黑色刘海，消失无感）。控制器状态在 hidePanel 即时更新，
     /// 期间再 present 会从当前 frame 无缝续接展开（本方法的 orderOut 已作废，不会执行）。
     func dismiss(notchTL: CGRect) {
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
-        springAnimator.animate(to: cocoaNotchFrame(notchTL: notchTL, unionMaxY: unionMaxY),
-                               alpha: 0, fadeSpan: Self.alphaOutSpan) { [weak self] in
+        springAnimator.animate(to: cocoaNotchFrame(notchTL: notchTL, unionMaxY: unionMaxY)) { [weak self] in
             self?.orderOut(nil)
         }
     }
@@ -1063,7 +1062,7 @@ final class NotchPanel: NSPanel {
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
         let target = NSRect(origin: NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - layout.height),
                             size: NSSize(width: layout.width, height: layout.height))
-        // 同款弹簧（alpha 保持当前值不变），与展开/收起手感一致
+        // 同款弹簧，与展开/收起手感一致
         springAnimator.animate(to: target)
         invalidateShadow()
     }
@@ -1114,14 +1113,15 @@ final class NotchPanel: NSPanel {
     }
 }
 
-/// iOS 风格弹簧动画驱动器（驱动 NotchPanel 的窗口 frame；alpha 跟随几何进度渐显/渐隐）。
+/// iOS 风格弹簧动画驱动器（只驱动 NotchPanel 的窗口 frame，透明度恒定、不参与动画）。
 /// macOS 对窗口 frame 没有公开的弹簧动画 API（NSAnimationContext 仅支持贝塞尔曲线，
 /// animator() 可动画属性的限制见 PITFALLS_DEV.md DEV-016），这里在主线程用定时器对弹簧
 /// 微分方程做半隐式欧拉积分后直接 setFrame。response + dampingFraction 语义同 UIKit，
 /// dampingFraction < 1 带过冲回弹。
-/// alpha 不走独立曲线：独立快速淡入会让早期生长不可见（感知成「从一侧滑入」，DEV-022），
-/// 改为按尺寸进度渐显/渐隐。动画进行中再次 animate：各分量以当前值/速度为起点重定向
-/// （展开↔收起互相打断无缝续接），旧动画未执行的 completion 作废。
+/// 「刘海生长/缩回」全程必须不透明：任何 alpha 淡入淡出都会让早期生长不可见、
+/// 被感知成「从一侧滑入」（DEV-022），形状渐变本身就是全部视觉效果。
+/// 动画进行中再次 animate：各分量以当前值/速度为起点重定向（展开↔收起互相打断无缝续接），
+/// 旧动画未执行的 completion 作废。
 private final class NotchSpringAnimator {
     /// frame 弹簧：0.5s 响应、阻尼比 0.72（展开过程全程可见 + 明显回弹）
     static let frameResponse: TimeInterval = 0.5
@@ -1163,19 +1163,11 @@ private final class NotchSpringAnimator {
         }
     }
 
-    /// 分量顺序：x, y, width, height（alpha 由几何进度推导，不单独积分）
+    /// 分量顺序：x, y, width, height
     private var springs: [Spring]?
     private var completion: (() -> Void)?
     private var timer: Timer?
     private weak var panel: NotchPanel?
-    /// alpha = captured + (target − captured) × clamp(尺寸进度 / fadeSpan, 0, 1)
-    private var startWidth: CGFloat = 0
-    private var startHeight: CGFloat = 0
-    private var targetWidth: CGFloat = 0
-    private var targetHeight: CGFloat = 0
-    private var capturedAlpha: CGFloat = 1
-    private var targetAlpha: CGFloat = 1
-    private var fadeSpan: CGFloat = 1
 
     init(panel: NotchPanel) {
         self.panel = panel
@@ -1185,25 +1177,13 @@ private final class NotchSpringAnimator {
         timer?.invalidate()
     }
 
-    /// 启动/重定向动画。alpha 传 nil = 保持在途的 alpha 目标（无在途动画则保持当前 alpha）。
-    /// fadeSpan：alpha 到位所需的几何进度比例（1 = 与展开同步）。必须主线程调用（setFrame）。
-    func animate(to targetFrame: NSRect, alpha targetAlpha: CGFloat? = nil,
-                 fadeSpan span: CGFloat = 1, completion: (() -> Void)? = nil) {
+    /// 启动/重定向动画（只驱动窗口 frame）。必须主线程调用（setFrame）。
+    func animate(to targetFrame: NSRect, completion: (() -> Void)? = nil) {
         guard let panel else { return }
         self.completion = nil // 被打断动画的收尾作废
 
-        let inFlight = springs != nil
         let frame = panel.frame
         let previous = springs?.count == 4 ? springs : nil
-
-        startWidth = frame.width
-        startHeight = frame.height
-        targetWidth = targetFrame.width
-        targetHeight = targetFrame.height
-        capturedAlpha = panel.alphaValue
-        // refit（alpha nil）时保留在途 alpha 目标，避免展开中途淡入被冻结在半透明
-        self.targetAlpha = targetAlpha ?? (inFlight ? self.targetAlpha : panel.alphaValue)
-        fadeSpan = span
 
         func make(_ index: Int, _ initial: CGFloat, _ target: CGFloat) -> Spring {
             if let previous {
@@ -1259,31 +1239,12 @@ private final class NotchSpringAnimator {
         self.springs = springs
         panel.setFrame(NSRect(x: springs[0].value, y: springs[1].value,
                               width: springs[2].value, height: springs[3].value), display: true)
-        panel.alphaValue = progressAlpha(width: springs[2].value, height: springs[3].value)
         if allSettled {
             stopTimer()
             let completion = self.completion
             self.completion = nil
             completion?()
         }
-    }
-
-    /// alpha 随几何进度渐显/渐隐：进度 = 当前尺寸离开本次动画起点的比例（宽优先，宽没动用高；
-    /// 同参数弹簧各分量归一化进度相同，取宽即整 frame 进度），
-    /// alpha = captured + (target − captured) × clamp(进度 / fadeSpan, 0, 1)。
-    /// 打断时 captured = 当前 alpha、起点 = 当前尺寸，故续接无跳变。
-    private func progressAlpha(width: CGFloat, height: CGFloat) -> CGFloat {
-        let dw = targetWidth - startWidth
-        let dh = targetHeight - startHeight
-        var progress: CGFloat = 1
-        if abs(dw) > 0.5 {
-            progress = (width - startWidth) / dw
-        } else if abs(dh) > 0.5 {
-            progress = (height - startHeight) / dh
-        }
-        progress = min(1, max(0, progress))
-        let t = min(1, progress / max(0.05, fadeSpan))
-        return capturedAlpha + (targetAlpha - capturedAlpha) * t
     }
 
     private func stopTimer() {
