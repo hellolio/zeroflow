@@ -55,7 +55,7 @@ SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/A
 - **截图链**:`GlobalHotkeyManager`(Carbon 热键,受 `screenshotEnabled` 总开关控制)→ `CaptureCoordinator`(权限→遮罩→捕获→编辑页,`isActive` 防重入)→ `ScreenCapture`(ScreenCaptureKit,按 displayID 缓存 `SCContentFilter`)→ `CaptureOverlayView`(选区遮罩)→ `EditorView`(编辑页)。
 - **窗口管理族**(切换器与 Dock 预览共用):`WindowList`(CGWindowList 枚举 + 幽灵过滤 + 窗口级 MRU + 无窗口 app 占位)→ `PhantomWindowDetector`(幽灵判定,对齐 AltTab)/ `WindowActivityTracker`(AX 焦点维护 MRU)/ `WindowThumbnailer`(SkyLight 抓缩略图,能截最小化/离屏)/ `WindowActivator`(跨 Space 前台激活)/ `WindowOps`(卡片操作);消费方 `CommandTabSwitcher`(⌘⇥ 面板)与 `DockHoverPreviewController` + `DockPreviewPanel`。`CGSWindowServer` 是上述私有 API 的 dlsym 桥,启动需预热。
 - **Dock**:`DockClickMinimizer`(单击最小化),开关变化经通知启停 CGEventTap。
-- **灵动岛**:`NotchHotspotController`(listen-only CGEventTap + idle→pending→visible 状态机;由公开 API 推导刘海热区:`safeAreaInsets.top` + `auxiliaryTopLeftArea`/`auxiliaryTopRightArea` 间隙)→ `NotchPanel`(非激活 NSPanel,固定深色 HUD,宽 560/日历列固定原宽,顶边贴刘海下缘,圆角 16pt≈屏幕圆角(无公开 API);背景=液态玻璃 NSGlassEffectView(macOS 26+,不透明度设置控制染色深浅)/旧系统磨砂,内容嵌在 contentView 内;无内容模块时显示「添加显示内容」引导跳设置)→ `NotchCalendarViewModel` → `CalendarService`(EventKit,macOS 14 全量授权;后台线程查询)。悬停 ≥ 延时(设置项)或单击热区弹出,点击面板外/Esc/移出热区∪面板/切 Space/睡眠/屏幕变化收起;无刘海或未授权则静默不生效。
+- **灵动岛**:`NotchHotspotController`(listen-only CGEventTap + idle→pending→visible 状态机;由公开 API 推导刘海热区:`safeAreaInsets.top` + `auxiliaryTopLeftArea`/`auxiliaryTopRightArea` 间隙)→ `NotchPanel`(非激活 NSPanel,固定深色 HUD,宽:双模块取设置最大宽(`notchMaxWidth` 420–1200)/单模块按内容收缩(下限 420×120);高:内容驱动、上限设置最大高(`notchMaxHeight` 240–1000),日历日程列表装不下在剩余空间滚动(文字不缩),日程加载/切换后自适应重测面板高度(refit),系统资源卡拉伸至驱动卡高度、行均匀分布,仅固定部分超限才整体缩小;各模块包圆角半透明卡片背景,双卡片各占一半宽;顶边贴刘海下缘,圆角 16pt≈屏幕圆角(无公开 API);背景=液态玻璃 NSGlassEffectView(macOS 26+,系统默认外观不染色)/旧系统磨砂;无内容模块时显示「添加显示内容」引导跳设置)→ `NotchCalendarViewModel` → `CalendarService`(EventKit,macOS 14 全量授权;后台线程查询)。内容模块横排最多 2 个:日历 / 系统资源(`SystemResourceMonitor`:CPU host_processor_info、内存 host_statistics64、网络 NET_RT_IFLIST2、磁盘 IOBlockStorageDriver、GPU IOAccelerator,全免 root;维护近 30 点采样历史供磁盘/网络 sparkline,CPU/内存/GPU 为用量进度条(灰轨道=100%);弹出后 0.4s 快速补采使速率项首值即显)/ 正在播放(`NowPlayingMonitor`:MRNowPlayingRequest 类属性轮询,类不可用降级 osascript;控制走 MRMediaRemoteSendCommand)。悬停 ≥ 延时(设置项)或单击热区弹出,点击面板外/Esc/移出热区∪面板/切 Space/睡眠/屏幕变化收起;无刘海或未授权则静默不生效。
 - **FinderSync 桥**:主 app(非沙盒)与扩展(沙盒)经 App Group 的共享文件通信——设置 plist `finder-sync-settings.plist`、命令请求 `finder-command-*.plist` + 分布式通知,自定义命令由主 app `FinderCommandRunner` 代执行;`FinderSyncReloader` 自愈陈旧扩展实例。**不要用 `UserDefaults(suiteName:)` 读 App Group**——原因及全部沙盒/登记坑见 `PITFALLS_DEV.md`。
 - **基础**:`AccessibilityPermission` / `ScreenRecordingPermission`(权限检测)、`ZSLog`(日志,stderr + `/tmp/zeroflow.log`)、`L10n`(国际化:UI 文案一律 `L10n.tr("中文")` 作 key,新增文案需同步 `Resources/Translations.json`)。
 
@@ -111,6 +111,8 @@ SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/A
 | `FinderSyncReloader.swift` | 陈旧扩展自愈:pluginkit ignore→use election 循环重载(Sequoia/Tahoe bug) |
 | `GlobalHotkeyManager.swift` | Carbon 全局热键注册/注销,受 `screenshotEnabled` 总开关控制 |
 | `NotchHotspotController.swift` | 灵动岛:listen-only CGEventTap 悬停/单击刘海热区弹出面板,状态机 + 收起重弹抑制 + 全局隐藏触发(切 Space/睡眠/屏幕变化) |
+| `SystemResourceMonitor.swift` | 灵动岛系统资源采样:CPU/内存/网络/磁盘/GPU,仅面板可见期间 2s 轮询(弹出后 0.4s 快速补采首个速率值),各源免 root(IOKit 注册表 + mach + sysctl) |
+| `NowPlayingMonitor.swift` | 灵动岛正在播放:MRNowPlayingRequest 类属性轮询(降级 osascript JXA 子进程),MRMediaRemoteSendCommand 播放控制 |
 | `PhantomWindowDetector.swift` | 幽灵窗口判定(对齐 AltTab cgsVerdict + AX subrole 兜底) |
 | `ScreenCapture.swift` | ScreenCaptureKit 截屏,按 displayID 缓存 `SCContentFilter` |
 | `WindowActivator.swift` | 跨 app 窗口激活:还原最小化 → SLP 置前 → makeKey → AX main/raise(探针验证) |
@@ -128,7 +130,7 @@ SwiftUI 视图 + AppKit/CG/AX(含私有 API dlsym 桥)服务层 + UserDefaults/A
 | `CaptureOverlayView.swift` | 全屏选区遮罩(SwiftUI 包 NSView) |
 | `DockPreviewPanel.swift` | Dock 悬停预览面板(非激活 NSPanel)+ `DockPreviewViewModel` |
 | `EditorView.swift` | 截图编辑页(单一 ~1400 行文件):6 种工具 + 画布交互 + 键盘 + 导出 |
-| `NotchPanelView.swift` | 灵动岛面板:月视图日历(今日高亮/日程打点/翻月/当日日程列表)+ 未授权引导,`NotchPanel` 非激活 NSPanel + `NotchCalendarViewModel` |
+| `NotchPanelView.swift` | 灵动岛面板:内容模块横排(月视图日历/系统资源列表/正在播放含播放控制),`NotchPanel` 非激活 NSPanel 宽高内容自适应(日程加载后自适应重测) + `NotchCalendarViewModel` |
 | `SaveDirectoryRow.swift` | 保存目录行:路径显示 / 选择 / 打开 |
 | `SettingsView.swift` | 设置窗口:7 个标签页(截图/通用/切换/Dock/Dock 预览/灵动岛/右键菜单) |
 | `ShortcutRecorderView.swift` | 快捷键录制控件(截图页用,录制期间挂起全局热键) |
