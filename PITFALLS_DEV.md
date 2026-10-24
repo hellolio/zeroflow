@@ -101,3 +101,18 @@
 - **Pitfall:** `kIOBlockStorageDriverStatisticsKey` 等按符号用报 "cannot find in scope";内存采样 count 直接用常量或拍脑袋会返回 KERN_INVALID_ARGUMENT。
 - **Cause:** 这些键是 IOKit 头文件里的字符串宏(`#define kIOBlockStorageDriverStatisticsKey "Statistics"`,读/写键为 `"Bytes (Read)"`/`"Bytes (Write)"`),Swift 侧不导入;`HOST_VM_INFO64_COUNT` 也是宏。
 - **Prevention:** IOKit 键直接写字符串值(真实值查 SDK 头文件 `IOKit.framework/Headers/storage/IOBlockStorageDriver.h`);`mach_msg_type_number_t(MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size)` 自算 count。资源监控数据源速记(macOS 27 实测,全免 root):CPU=host_processor_info 两次 ticks 差值;内存已用=active+inactive+speculative+wired+compressor−purgeable−external(≈活动监视器「内存已用」,≠top 的 PhysMem used=总−free,后者含缓存文件,别拿来对数);网络=sysctl NET_RT_IFLIST2 的 if_data64 逐接口差值(排除 IFT_LOOP);磁盘=IOService("IOBlockStorageDriver") 注册表 "Statistics" 的读写字节差值;GPU=IOAccelerator "PerformanceStatistics" 的 "Device Utilization %"(本机存在,瞬时值无需差分;备用 "GPU Activity(%)")。`swiftc | head` 会因管道 SIGPIPE 杀掉编译器且 `&&` 拿到的是 head 的退出码,验证脚本要重定向到文件再 grep。
+
+## DEV-021: macOS 窗口 frame 弹簧动画无公开 API,需主线程定时器积分实现
+- **Pitfall:** 灵动岛面板要做 iPhone 式「从刘海长出/缩回」的弹簧动画,`NSAnimationContext` 只支持贝塞尔 `CAMediaTimingFunction`,`CASpringTimingFunction` 在 macOS 不公开,窗口 frame 无法用系统弹簧曲线动画。
+- **Cause:** NSWindow 经 animator() 可动画的属性走 Core Animation 但只暴露贝塞尔曲线;UIKit 语义的弹簧参数(response/dampingFraction)动画必须自己积分。
+- **Prevention:** 主线程 120Hz `Timer` 对弹簧微分方程半隐式欧拉积分(k=(2π/response)²,c=2ζ√k)后直接 `setFrame(_:display:)`(dt 远小于稳定域 2/ω 不会发散);打断续接需用各分量当前值与速度重建弹簧、作废旧动画的 completion(否则收起的 orderOut 会在重展开后误触发);Timer 必须加进 `.common` mode,否则面板按钮的事件跟踪期间动画冻结。参考 `NotchPanelView.swift` 的 `NotchSpringAnimator`。
+
+## DEV-022: 窗口弹簧动画里 alpha 走独立快速淡入,会把「生长」动画感知成「从一侧滑入」
+- **Pitfall:** 灵动岛面板做「从刘海长出」弹簧动画,frame 用弹簧、alpha 用独立的 0.15s 快速淡入:用户看到的是半透明面板从一侧快速滑到位 + 渐显,完全不是「从刘海逐渐长大」,方向感全错。
+- **Cause:** 弹簧位移前 ~15% 时间就走完 85% 路程,独立淡入结束时可变大半已展开;肉眼能捕捉的只剩后段残留位移( leading 边缘扫过),感知成滑入。弹性动画里透明度与几何分开调,时序感知必然错位。
+- **Prevention:** 「刘海生长/缩回」动画全程不透明(深色 HUD 起点盖住黑色刘海,出现/消失都无感,形状渐变本身就是全部视觉),透明度完全不参与动画;若别的窗口必须有淡入淡出,alpha 须由几何进度推导而非独立时长,打断时以当前值续接。
+
+## DEV-023: 打断在途窗口动画时,严禁 setContentSize/setFrame 直接改窗口尺寸
+- **Pitfall:** 面板「收起弹簧未播完→再次弹出」走打断路径时调用了 `setContentSize`(最终尺寸):窗口几何绕过弹簧直接跳变(尺寸瞬间到位、按原点锚定另一侧瞬移),随后位置再弹簧滑到位 → 用户看到「全尺寸面板从屏幕一侧平移到中间」,与弹簧动画预期完全不符。
+- **Cause:** `setContentSize`/`setFrame` 是瞬时几何赋值;打断场景窗口处于中间态,直接改尺寸等于把「在途位移」换成「瞬移 + 平移收尾」。`setContentSize` 还按窗口原点(左下)锚定缩放,另一侧边缘瞬移,平移感更明显。
+- **Prevention:** 打断动画只做一件事——弹簧目标重定向(以当前值/速度续接);任何路径都不要在动画在途时用 `setContentSize`/`setFrame` 改尺寸。`present` 的起始定位(setFrame 刘海矩形)只放在「窗口不可见」的全新展开分支。参考 `NotchPanel.present`。

@@ -3,7 +3,7 @@ import ApplicationServices
 import Combine
 import CoreGraphics
 
-/// 灵动岛：悬停/单击刘海区域，从刘海向下弹出磨砂面板（v1 内容 = 日历月视图）。
+/// 灵动岛：悬停/单击刘海区域，磨砂面板以 iOS 风格弹簧从刘海「生长」展开/缩回（v1 内容 = 日历月视图）。
 ///
 /// 实现要点（结构仿 `DockHoverPreviewController`）：
 /// - listen-only CGEventTap 监听 mouseMoved / mouseDown / keyDown，绝不吞事件：
@@ -64,8 +64,8 @@ final class NotchHotspotController {
     private var panelShown = false
     private var notchScreen: NSScreen?
     private var dayEventsCancellable: AnyCancellable?
-    /// 最近一次 present 的热区/屏幕（日程变化后 refit 复用）
-    private var lastPresented: (screen: NSScreen, hotspotTL: CGRect)?
+    /// 最近一次 present 的热区/刘海矩形/屏幕（日程变化后 refit 复用；收起动画缩回刘海用 notchTL）
+    private var lastPresented: (screen: NSScreen, hotspotTL: CGRect, notchTL: CGRect)?
 
     // MARK: - 基础设施
 
@@ -446,18 +446,24 @@ final class NotchHotspotController {
         ZSLog("Notch: hide (\(reason))")
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.panel?.orderOut(nil)
+            let notchTL = self.lastPresented?.notchTL
             self.panelShown = false
             self.dayEventsCancellable = nil
             self.lastPresented = nil
             SystemResourceMonitor.shared.setActive(false)
             NowPlayingMonitor.shared.setActive(false)
+            // 视觉收起交给面板：弹簧缩回刘海再 orderOut；期间再 present 会无缝续接展开
+            if let notchTL {
+                self.panel?.dismiss(notchTL: notchTL)
+            } else {
+                self.panel?.orderOut(nil)
+            }
         }
     }
 
     // MARK: - 展示（主线程）
 
-    /// 悬停延时到期 / 单击热区：主线程重建面板内容并滑入显示
+    /// 悬停延时到期 / 单击热区：主线程重建面板内容并以弹簧动画从刘海展开显示
     private func presentPanel(showGen gen: Int) {
         lock.lock()
         guard gen == showGen, phase == .pending else {
@@ -480,13 +486,15 @@ final class NotchHotspotController {
         let viewModel = ensureModel()
         viewModel.reset()
         let panel = ensurePanel()
-        panel.present(hotspotTL: detected.hotspotTL, screen: detected.screen, model: viewModel)
+        panel.present(hotspotTL: detected.hotspotTL, notchTL: detected.notchTL,
+                      screen: detected.screen, model: viewModel)
         panelShown = true
-        lastPresented = (detected.screen, detected.hotspotTL)
+        lastPresented = (detected.screen, detected.hotspotTL, detected.notchTL)
         startMonitors()
         startDayEventsRefit(model: viewModel)
         lock.lock()
-        panelFrameTL = toTopLeftCoords(panel.frame)
+        // 用弹簧目标 frame，而非 present() 返回时刻的瞬时 frame（动画刚从刘海开始）
+        panelFrameTL = toTopLeftCoords(panel.targetFrame)
         lock.unlock()
         if Self.debug {
             ZSLog("Notch: show gen=\(gen) hotspot=\(detected.hotspotTL) panel=\(panel.frame)")
@@ -535,7 +543,7 @@ final class NotchHotspotController {
         guard visible, let panel, let model, let presented = lastPresented else { return }
         panel.refit(hotspotTL: presented.hotspotTL, screen: presented.screen, model: model)
         lock.lock()
-        panelFrameTL = toTopLeftCoords(panel.frame)
+        panelFrameTL = toTopLeftCoords(panel.targetFrame)
         lock.unlock()
     }
 
@@ -543,7 +551,7 @@ final class NotchHotspotController {
 
     /// 探测刘海屏并计算热区。无刘海返回 nil；ZEROFLOW_NOTCH_FAKE=1 时在主屏合成伪刘海。
     @discardableResult
-    private func refreshHotspot() -> (screen: NSScreen, hotspotTL: CGRect)? {
+    private func refreshHotspot() -> (screen: NSScreen, hotspotTL: CGRect, notchTL: CGRect)? {
         let detected = detectNotch()
         notchScreen = detected?.screen
         lock.lock()
@@ -552,7 +560,7 @@ final class NotchHotspotController {
         return detected
     }
 
-    private func detectNotch() -> (screen: NSScreen, hotspotTL: CGRect)? {
+    private func detectNotch() -> (screen: NSScreen, hotspotTL: CGRect, notchTL: CGRect)? {
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
         for screen in NSScreen.screens {
             let barHeight: CGFloat
@@ -578,7 +586,7 @@ final class NotchHotspotController {
             if Self.debug {
                 ZSLog("Notch: detect screen=\(screen.localizedName) notchTL=\(notchTL) hotspot=\(hotspot)")
             }
-            return (screen, hotspot)
+            return (screen, hotspotTL: hotspot, notchTL: notchTL)
         }
         return nil
     }

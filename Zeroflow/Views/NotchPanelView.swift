@@ -884,7 +884,9 @@ private struct ResourceSparkline: View {
     }
 }
 
-/// 灵动岛面板：非激活 borderless 面板，深色 HUD 磨砂，从刘海正下方滑入。
+/// 灵动岛面板：非激活 borderless 面板，深色 HUD 磨砂，以 iOS 风格弹簧动画从刘海
+/// 「生长」展开、收起时缩回刘海（NotchSpringAnimator 只驱动 frame，全程不透明：
+/// 形状在刘海形药丸↔长方形间弹簧互变，无透明度渐变）。
 /// 悬停/点击/Esc 判定全部由 NotchHotspotController 的 listen-only tap 完成，
 /// 本面板只负责内容展示（不成为 key，无键盘交互）。
 final class NotchPanel: NSPanel {
@@ -893,6 +895,12 @@ final class NotchPanel: NSPanel {
     static let minHeight: CGFloat = 120
     /// 圆角半径（≈Mac 屏幕圆角；屏幕圆角无公开 API 可查询）
     static let cornerRadius: CGFloat = 16
+    private lazy var springAnimator = NotchSpringAnimator(panel: self)
+    /// 弹簧正在趋向的目标 frame（present/refit/dismiss 更新）。
+    /// 控制器保活/点击判定用这个，而不是 present() 返回时刻的瞬时 frame：
+    /// 展开动画从刘海矩形开始，那一刻的真实 frame 还是刘海大小（DEV-024 修复后
+    /// 窗口尺寸真实可变，原来「present 后 frame 已是终值」的隐含前提不再成立）。
+    private(set) var targetFrame: NSRect = .zero
 
     init() {
         super.init(contentRect: NSRect(x: 0, y: 0, width: Self.minWidth, height: 200),
@@ -1000,39 +1008,63 @@ final class NotchPanel: NSPanel {
                            naturals: [], scale: 1)
     }
 
-    /// 依据刘海热区（主屏左上原点坐标）重建内容、测尺寸、定位并滑入显示。
+    /// 依据刘海热区（主屏左上原点坐标）重建内容、测尺寸、定位，并从刘海矩形「生长」展开。
     /// 面板顶边贴刘海下边缘（热区竖向范围 = 刘海竖向范围）、水平居中刘海；
     /// 每次 present 重建 contentView（模型重置到今天，同时取最新内容设置）。
     /// 尺寸决策见 computeLayout（日程异步加载完成后的高度修正走 refit）。
-    func present(hotspotTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
+    func present(hotspotTL: CGRect, notchTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
         let layout = Self.computeLayout(screen: screen, model: model)
         contentView = makeContentView(model: model, width: layout.width, height: layout.height,
                                       cardNaturals: layout.naturals, scale: layout.scale)
-        setContentSize(NSSize(width: layout.width, height: layout.height))
+        // 注意：这里不 setContentSize —— 它是瞬时几何赋值，打断路径上会把窗口尺寸直接
+        // 跳到终值（原点锚定、另一侧瞬移），产生整块平移感（DEV-023）；尺寸交给弹簧 setFrame
 
         let x = Self.clamp(hotspotTL.midX - layout.width / 2,
                            screen.frame.minX + 8, screen.frame.maxX - layout.width - 8)
         // 热区 TL 坐标最大 y = 刘海下边缘；转回 Cocoa 坐标作为面板顶边
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
-        let finalOrigin = NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - layout.height)
-        // 从刘海后方 12pt 处滑入；NSWindow 只有 frame 可动画（animator().setFrameOrigin 无效，
-        // 面板会停在起始位置），必须用 animator().setFrame(_:display:)
-        let startFrame = NSRect(origin: NSPoint(x: finalOrigin.x, y: finalOrigin.y + 12),
-                                size: NSSize(width: layout.width, height: layout.height))
-        let finalFrame = NSRect(origin: finalOrigin, size: NSSize(width: layout.width, height: layout.height))
-        setFrame(startFrame, display: false)
-        alphaValue = 0
-        orderFront(nil)
-        invalidateShadow()
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.18
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            animator().setFrame(finalFrame, display: true)
-            animator().alphaValue = 1
+        let finalFrame = NSRect(x: x, y: unionMaxY - hotspotTL.maxY - layout.height,
+                                width: layout.width, height: layout.height)
+        targetFrame = finalFrame
+        if isVisible {
+            // 收起动画被打断（快速反复进出）：不重放、不触碰窗口几何，只重定向弹簧，
+            // 从当前 frame/速度无缝续接展开
+            invalidateShadow()
+        } else {
+            // 起始 frame = 刘海中心的半尺寸迷你药丸（嵌在刘海内），弹簧生长成长方形；
+            // 全程不透明（DEV-022），形状渐变本身就是全部视觉效果
+            setFrame(cocoaNotchFrame(notchTL: notchTL, unionMaxY: unionMaxY), display: false)
+            alphaValue = 1
+            orderFront(nil)
+            invalidateShadow()
+        }
+        springAnimator.animate(to: finalFrame)
+    }
+
+    /// 收起：全程不透明，弹簧缩回刘海中心的半尺寸迷你药丸，动画结束才 orderOut。
+    /// 控制器状态在 hidePanel 即时更新，期间再 present 会从当前 frame 无缝续接展开
+    /// （本方法的 orderOut 已作废，不会执行）。
+    func dismiss(notchTL: CGRect) {
+        let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
+        let notchFrame = cocoaNotchFrame(notchTL: notchTL, unionMaxY: unionMaxY)
+        targetFrame = notchFrame
+        springAnimator.animate(to: notchFrame, collapse: true) { [weak self] in
+            self?.orderOut(nil)
         }
     }
 
-    /// 日程加载/切换后重算布局并调整面板：顶边贴刘海不动（向下生长/收缩），带短动画。
+    /// 刘海矩形（主屏左上原点坐标）→ Cocoa 坐标（面板盖在刘海正上方）
+    /// 刘海矩形（主屏左上原点坐标）→ Cocoa 坐标。展开起点/收起终点：以刘海中心为锚
+    /// 缩到一半尺寸的迷你药丸（嵌在刘海内的初始形态），从它弹簧生长/缩回后消失。
+    private func cocoaNotchFrame(notchTL: CGRect, unionMaxY: CGFloat) -> NSRect {
+        let half = NSSize(width: notchTL.width / 2, height: notchTL.height / 2)
+        return NSRect(x: notchTL.midX - half.width / 2,
+                      y: unionMaxY - notchTL.midY - half.height / 2,
+                      width: half.width,
+                      height: half.height)
+    }
+
+    /// 日程加载/切换后重算布局并调整面板：顶边贴刘海不动（向下生长/收缩），同款弹簧动画。
     /// contentView 按新尺寸重建；尺寸不变时跳过。
     func refit(hotspotTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
         let layout = Self.computeLayout(screen: screen, model: model)
@@ -1044,16 +1076,19 @@ final class NotchPanel: NSPanel {
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
         let target = NSRect(origin: NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - layout.height),
                             size: NSSize(width: layout.width, height: layout.height))
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.15
-            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            animator().setFrame(target, display: true)
-        }
+        targetFrame = target
+        // 同款弹簧，与展开/收起手感一致
+        springAnimator.animate(to: target)
         invalidateShadow()
     }
 
-    /// 液态玻璃背景（macOS 26+）或磨砂底（旧系统）包裹内容，圆角≈屏幕圆角。
+    /// 液态玻璃背景（macOS 26+）或磨砂底（旧系统），内容以 autoresizing 跟随铺满，圆角≈屏幕圆角。
     /// 不透明度不再可调：使用系统默认外观（玻璃不染色、磨砂不降 alpha）。
+    ///
+    /// 结构红线（DEV-024）：hosting 必须以 addSubview + autoresizingMask 跟随容器，
+    /// 绝不能赋给 glass.contentView、绝不能对 hosting 用 Auto Layout 约束——
+    /// SwiftUI 固定 .frame 尺寸会经约束/玻璃层反向钳制窗口尺寸，setFrame 的宽高
+    /// 被静默锁死（只有原点生效），「从刘海生长」就退化成全尺寸面板平移。
     private func makeContentView(model: NotchCalendarViewModel, width: CGFloat, height: CGFloat,
                                  cardNaturals: [CGSize], scale: CGFloat) -> NSView {
         let hosting = NSHostingView(rootView: NotchContentView(model: model,
@@ -1061,13 +1096,13 @@ final class NotchPanel: NSPanel {
                                                                displayHeight: height,
                                                                cardNaturals: cardNaturals,
                                                                cardScale: scale))
-        hosting.translatesAutoresizingMaskIntoConstraints = false
         if #available(macOS 26.0, *) {
             let glass = NSGlassEffectView()
             glass.cornerRadius = Self.cornerRadius
             glass.style = .regular
-            glass.contentView = hosting
-            pinEdges(of: hosting, to: glass)
+            glass.addSubview(hosting)
+            hosting.frame = glass.bounds
+            hosting.autoresizingMask = [.width, .height]
             return glass
         }
         let frost = NSVisualEffectView()
@@ -1079,21 +1114,179 @@ final class NotchPanel: NSPanel {
         frost.layer?.cornerCurve = .continuous
         frost.layer?.masksToBounds = true
         frost.addSubview(hosting)
-        pinEdges(of: hosting, to: frost)
+        hosting.frame = frost.bounds
+        hosting.autoresizingMask = [.width, .height]
         return frost
-    }
-
-    private func pinEdges(of view: NSView, to container: NSView) {
-        NSLayoutConstraint.activate([
-            view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            view.topAnchor.constraint(equalTo: container.topAnchor),
-            view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-        ])
     }
 
     private static func clamp(_ value: CGFloat, _ minValue: CGFloat, _ maxValue: CGFloat) -> CGFloat {
         guard maxValue >= minValue else { return minValue }
         return min(max(value, minValue), maxValue)
+    }
+}
+
+/// iOS 风格弹簧动画驱动器（只驱动 NotchPanel 的窗口 frame，透明度恒定、不参与动画）。
+/// macOS 对窗口 frame 没有公开的弹簧动画 API（NSAnimationContext 仅支持贝塞尔曲线，
+/// animator() 可动画属性的限制见 PITFALLS_DEV.md DEV-016），这里在主线程用定时器对弹簧
+/// 微分方程做半隐式欧拉积分后直接 setFrame。response + dampingFraction 语义同 UIKit，
+/// dampingFraction < 1 带过冲回弹。分量差异化调参见 expandTuning/collapseTuning。
+/// 「刘海生长/缩回」全程必须不透明：任何 alpha 淡入淡出都会让早期生长不可见、
+/// 被感知成「从一侧滑入」（DEV-022），形状渐变本身就是全部视觉效果。
+/// 动画进行中再次 animate：各分量以当前值/速度为起点重定向（展开↔收起互相打断无缝续接），
+/// 旧动画未执行的 completion 作废。
+private final class NotchSpringAnimator {
+    /// 分量弹簧调参（response + 阻尼比），顺序对齐 springs：x, y, width, height。
+    /// 灵动岛式液体拉伸：宽先冲出（带过冲）、高慢半拍平滑下填、位置快速就位几乎不晃；
+    /// 单一组参数（四分量同步、阻尼比 0.72 过冲仅 ~4%）会被感知成线性生长。
+    private struct SpringTuning {
+        let response: TimeInterval
+        let dampingFraction: CGFloat
+    }
+    /// 展开/重定向
+    private static let expandTuning: [SpringTuning] = [
+        .init(response: 0.32, dampingFraction: 0.90),   // x
+        .init(response: 0.32, dampingFraction: 0.90),   // y
+        .init(response: 0.38, dampingFraction: 0.72),   // width：先冲出，~5% 过冲
+        .init(response: 0.52, dampingFraction: 0.78),   // height：慢半拍跟上
+    ]
+    /// 收起：宽度更快折回，更利落
+    private static let collapseTuning: [SpringTuning] = [
+        .init(response: 0.32, dampingFraction: 0.90),   // x
+        .init(response: 0.32, dampingFraction: 0.90),   // y
+        .init(response: 0.32, dampingFraction: 0.72),   // width：更快收拢
+        .init(response: 0.52, dampingFraction: 0.78),   // height
+    ]
+    /// settle 阈值：收紧到 0.25pt / 2pt·s⁻¹，避免尾部带速急停的微顿
+    private static let valueEpsilon: CGFloat = 0.25
+    private static let velocityEpsilon: CGFloat = 2
+
+    private struct Spring {
+        var value: CGFloat
+        var velocity: CGFloat
+        let target: CGFloat
+        let stiffness: CGFloat
+        let damping: CGFloat
+        let valueEpsilon: CGFloat
+        let velocityEpsilon: CGFloat
+
+        init(value: CGFloat, velocity: CGFloat, target: CGFloat, response: TimeInterval,
+             dampingFraction: CGFloat, valueEpsilon: CGFloat, velocityEpsilon: CGFloat) {
+            self.value = value
+            self.velocity = velocity
+            self.target = target
+            // k = (2π/response)²，c = 2ζ√k（response/dampingFraction 同 UIKit 语义）
+            let k = pow(2 * CGFloat.pi / max(0.01, CGFloat(response)), 2)
+            self.stiffness = k
+            self.damping = 2 * dampingFraction * sqrt(k)
+            self.valueEpsilon = valueEpsilon
+            self.velocityEpsilon = velocityEpsilon
+        }
+
+        /// 半隐式欧拉一步（dt 远小于稳定域 2/ω，帧率抖动不发散）
+        func stepped(dt: CGFloat) -> Spring {
+            var s = self
+            let force = -stiffness * (s.value - target) - damping * s.velocity
+            s.velocity += force * dt
+            s.value += s.velocity * dt
+            return s
+        }
+
+        var settled: Bool {
+            abs(value - target) < valueEpsilon && abs(velocity) < velocityEpsilon
+        }
+    }
+
+    /// 分量顺序：x, y, width, height
+    private var springs: [Spring]?
+    private var completion: (() -> Void)?
+    private var timer: Timer?
+    private weak var panel: NotchPanel?
+
+    init(panel: NotchPanel) {
+        self.panel = panel
+    }
+
+    deinit {
+        timer?.invalidate()
+    }
+
+    /// 启动/重定向动画（只驱动窗口 frame）。必须主线程调用（setFrame）。
+    /// collapse = 收起方向（宽度弹簧加速，折回更利落）。
+    func animate(to targetFrame: NSRect, collapse: Bool = false, completion: (() -> Void)? = nil) {
+        guard let panel else { return }
+        self.completion = nil // 被打断动画的收尾作废
+
+        let frame = panel.frame
+        let previous = springs?.count == 4 ? springs : nil
+        let tuning = collapse ? Self.collapseTuning : Self.expandTuning
+
+        func make(_ index: Int, _ initial: CGFloat, _ target: CGFloat) -> Spring {
+            if let previous {
+                // 打断续接：沿用该分量当前的值与速度
+                return Spring(value: previous[index].value, velocity: previous[index].velocity,
+                              target: target, response: tuning[index].response,
+                              dampingFraction: tuning[index].dampingFraction,
+                              valueEpsilon: Self.valueEpsilon, velocityEpsilon: Self.velocityEpsilon)
+            }
+            return Spring(value: initial, velocity: 0, target: target, response: tuning[index].response,
+                          dampingFraction: tuning[index].dampingFraction,
+                          valueEpsilon: Self.valueEpsilon, velocityEpsilon: Self.velocityEpsilon)
+        }
+
+        springs = [
+            make(0, frame.minX, targetFrame.minX),
+            make(1, frame.minY, targetFrame.minY),
+            make(2, frame.width, targetFrame.width),
+            make(3, frame.height, targetFrame.height),
+        ]
+        self.completion = completion
+        startTimerIfNeeded()
+    }
+
+    private func startTimerIfNeeded() {
+        guard timer == nil else { return }
+        var t: Timer?
+        t = Timer(timeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in
+            guard let self else { t?.invalidate(); return }
+            self.tick()
+        }
+        // .common：面板内按钮按下等事件跟踪期间动画不冻结
+        RunLoop.main.add(t!, forMode: .common)
+        timer = t
+    }
+
+    private func tick() {
+        guard let panel, var springs else {
+            stopTimer()
+            return
+        }
+        let dt: CGFloat = 1 / 120
+        var allSettled = true
+        for i in springs.indices {
+            if !springs[i].settled {
+                springs[i] = springs[i].stepped(dt: dt)
+            }
+            if springs[i].settled {
+                springs[i].value = springs[i].target
+                springs[i].velocity = 0
+            } else {
+                allSettled = false
+            }
+        }
+        self.springs = springs
+        panel.setFrame(NSRect(x: springs[0].value, y: springs[1].value,
+                              width: springs[2].value, height: springs[3].value), display: true)
+        if allSettled {
+            stopTimer()
+            let completion = self.completion
+            self.completion = nil
+            completion?()
+        }
+    }
+
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+        springs = nil
     }
 }
