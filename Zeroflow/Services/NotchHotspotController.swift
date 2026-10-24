@@ -1,5 +1,6 @@
 import AppKit
 import ApplicationServices
+import Combine
 import CoreGraphics
 
 /// 灵动岛：悬停/单击刘海区域，从刘海向下弹出磨砂面板（v1 内容 = 日历月视图）。
@@ -62,6 +63,9 @@ final class NotchHotspotController {
     private var model: NotchCalendarViewModel?
     private var panelShown = false
     private var notchScreen: NSScreen?
+    private var dayEventsCancellable: AnyCancellable?
+    /// 最近一次 present 的热区/屏幕（日程变化后 refit 复用）
+    private var lastPresented: (screen: NSScreen, hotspotTL: CGRect)?
 
     // MARK: - 基础设施
 
@@ -444,6 +448,8 @@ final class NotchHotspotController {
             guard let self else { return }
             self.panel?.orderOut(nil)
             self.panelShown = false
+            self.dayEventsCancellable = nil
+            self.lastPresented = nil
             SystemResourceMonitor.shared.setActive(false)
             NowPlayingMonitor.shared.setActive(false)
         }
@@ -476,7 +482,9 @@ final class NotchHotspotController {
         let panel = ensurePanel()
         panel.present(hotspotTL: detected.hotspotTL, screen: detected.screen, model: viewModel)
         panelShown = true
+        lastPresented = (detected.screen, detected.hotspotTL)
         startMonitors()
+        startDayEventsRefit(model: viewModel)
         lock.lock()
         panelFrameTL = toTopLeftCoords(panel.frame)
         lock.unlock()
@@ -507,6 +515,28 @@ final class NotchHotspotController {
         let model = NotchCalendarViewModel()
         self.model = model
         return model
+    }
+
+    /// 日历模块可见时订阅日程变化：日程异步加载完成 / 切换选中日期后重测面板高度
+    /// （面板尺寸在日程加载前测量，首次弹出与切换日期都靠这里补齐真实高度）
+    private func startDayEventsRefit(model: NotchCalendarViewModel) {
+        dayEventsCancellable = nil
+        guard NotchContentView.orderedVisibleModules.contains(.calendar) else { return }
+        dayEventsCancellable = model.$dayEvents
+            .removeDuplicates()
+            .sink { [weak self] _ in self?.refitPanel() }
+    }
+
+    /// 重测面板：顶边贴刘海不动，只调高度；同步保活判定用的 panelFrameTL
+    private func refitPanel() {
+        lock.lock()
+        let visible = phase == .visible
+        lock.unlock()
+        guard visible, let panel, let model, let presented = lastPresented else { return }
+        panel.refit(hotspotTL: presented.hotspotTL, screen: presented.screen, model: model)
+        lock.lock()
+        panelFrameTL = toTopLeftCoords(panel.frame)
+        lock.unlock()
     }
 
     // MARK: - 刘海探测（主线程）

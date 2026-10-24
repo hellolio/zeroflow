@@ -3,7 +3,7 @@ import AppKit
 import EventKit
 
 /// 灵动岛面板的一条日程（主线程由 EKEvent 转换生成）
-struct NotchEventItem: Identifiable {
+struct NotchEventItem: Identifiable, Equatable {
     let id: String
     let title: String
     let timeText: String
@@ -225,8 +225,9 @@ final class NotchCalendarViewModel: ObservableObject {
 }
 
 /// 灵动岛面板内容：已启用的内容模块横排（日历 / 系统资源 / 正在播放，最多同时 2 个），
-/// 无模块时显示「添加显示内容」引导。双卡片时两卡片各占一半宽（面板取用户设置的最大尺寸），
-/// 单卡片时按内容自然尺寸收缩；内容超出卡片槽位时整体等比缩小以完整显示；
+/// 无模块时显示「添加显示内容」引导。双卡片时两卡片各占一半宽，面板高由内容驱动
+/// （上限 = 设置最大高）；系统资源卡拉伸到驱动卡高度、行均匀分布；日历日程列表
+/// 装得下完整展开、装不下在剩余空间滚动（文字不缩放），仅固定部分也超限时才整体缩小；
 /// 各模块包圆角半透明卡片背景。
 struct NotchContentView: View {
     @ObservedObject var model: NotchCalendarViewModel
@@ -238,6 +239,12 @@ struct NotchContentView: View {
     var modulesOverride: [Module]? = nil
     /// 测量双卡片拉伸高度时指定列宽；nil = 按自然宽/拉伸规则
     var columnWidthOverride: CGFloat? = nil
+    /// 测量系统资源卡拉伸高度时指定列高；nil = 按自然高
+    var columnHeightOverride: CGFloat? = nil
+    /// 测量日历卡日程列表的最大高度；nil = 不限制（渲染时靠面板高度约束滚动）
+    var dayListMaxHeight: CGFloat? = nil
+    /// 测量日历卡固定部分高度时收起日程列表（只留选中日标题）
+    var collapseDayEvents = false
     /// 各卡片的自然尺寸（含卡片内边距，由 NotchPanel 测量传入，顺序对齐可见模块）
     var cardNaturals: [CGSize] = []
     /// 卡片内容等比缩放系数（≤1，由 NotchPanel 按槽位与自然尺寸计算）
@@ -293,13 +300,23 @@ struct NotchContentView: View {
     static var visibleModuleCount: Int { orderedVisibleModules.count }
 
     /// 测量单个模块卡片的尺寸（含卡片内边距，不含面板内边距）。
-    /// columnWidth 非 nil 时以该列宽测量（双卡片按拉伸宽测高）。
-    static func measureCardSize(index: Int, columnWidth: CGFloat?, model: NotchCalendarViewModel) -> CGSize {
+    /// columnWidth 非 nil 时以该列宽测量（双卡片按拉伸宽测高）；
+    /// columnHeight 非 nil 时以该列高测量（资源卡拉伸到驱动卡高度）；
+    /// dayListMaxHeight / collapseDayEvents 用于日历卡的全高/固定高两档测量。
+    static func measureCardSize(index: Int,
+                                columnWidth: CGFloat?,
+                                columnHeight: CGFloat? = nil,
+                                dayListMaxHeight: CGFloat? = nil,
+                                collapseDayEvents: Bool = false,
+                                model: NotchCalendarViewModel) -> CGSize {
         let modules = orderedVisibleModules
         guard index < modules.count else { return .zero }
         let view = NotchContentView(model: model,
                                     modulesOverride: [modules[index]],
-                                    columnWidthOverride: columnWidth)
+                                    columnWidthOverride: columnWidth,
+                                    columnHeightOverride: columnHeight,
+                                    dayListMaxHeight: dayListMaxHeight,
+                                    collapseDayEvents: collapseDayEvents)
         let host = NSHostingView(rootView: view)
         host.layoutSubtreeIfNeeded()
         return CGSize(width: max(1, host.fittingSize.width - outerHPadding * 2),
@@ -339,15 +356,17 @@ struct NotchContentView: View {
         }
     }
 
-    /// 正式渲染：卡片背景填满槽位，内容按 cardScale 等比缩放后顶部居中，保证完整显示
+    /// 正式渲染：卡片背景填满槽位，内容按 cardScale 等比缩放后贴顶
+    /// （缩放锚点 = 顶部，留白只出现在底部），高度取卡片的渲染目标高
+    /// （完整高或压缩到槽高的滚动高，由 NotchPanel.computeLayout 决定）
     private func renderedCard(_ module: Module, index: Int) -> some View {
         let natural = index < cardNaturals.count ? cardNaturals[index] : CGSize(width: 100, height: 100)
         let slot = cardSlotSize
         return moduleView(module)
             .padding(Self.cardPadding)
             .frame(width: isDualLayout ? slot.width : natural.width,
-                   height: natural.height)
-            .scaleEffect(cardScale)
+                   height: natural.height, alignment: .top)
+            .scaleEffect(cardScale, anchor: .top)
             .frame(width: slot.width, height: slot.height, alignment: .top)
             .background(cardBackground)
     }
@@ -399,14 +418,20 @@ struct NotchContentView: View {
 
     // MARK: - 系统资源模块
 
+    /// 资源行拉伸条件：测量时指定列高，或正式渲染双卡片（卡片槽高由面板决定）
+    private var stretchResourceRows: Bool { columnHeightOverride != nil || stretchForRender }
+
     private var resourcesColumn: some View {
         VStack(alignment: .leading, spacing: 8) {
             moduleHeader("cpu", L10n.tr("系统资源"))
             ForEach(enabledResourceItems, id: \.self) { item in
                 resourceRow(item)
+                    // 拉伸时各行平分剩余高度（标题固定顶部），行内内容垂直居中
+                    .frame(maxHeight: stretchResourceRows ? .infinity : nil)
             }
         }
         .frame(width: renderColumnWidth(Self.resourcesColumnWidth))
+        .frame(height: columnHeightOverride)
         .frame(maxWidth: stretchForRender ? .infinity : nil, alignment: .leading)
     }
 
@@ -736,52 +761,59 @@ struct NotchContentView: View {
         }
     }
 
+    /// 选中日详情：标题 + 授权提示/日程列表。列表高度弹性——面板装得下就完整展开，
+    /// 装不下就压缩到剩余空间内滚动（文字不缩放）；collapseDayEvents 仅用于测量
+    /// 日历固定部分高度（收起列表，只留标题）
     @ViewBuilder private var daySection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(model.selectedTitle)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.secondary)
 
-            if !model.isAuthorized && model.authStatus != .notDetermined {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(L10n.tr("未获准访问日历，无法显示日程。"))
+            if !collapseDayEvents {
+                if !model.isAuthorized && model.authStatus != .notDetermined {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(L10n.tr("未获准访问日历，无法显示日程。"))
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                        Button(L10n.tr("前往设置")) {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.privacy?Privacy_Calendars") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        }
+                        .controlSize(.small)
+                    }
+                } else if model.dayEvents.isEmpty {
+                    Text(L10n.tr("没有日程"))
                         .font(.system(size: 12))
                         .foregroundColor(.secondary)
-                    Button(L10n.tr("前往设置")) {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.privacy?Privacy_Calendars") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                    .controlSize(.small)
-                }
-            } else if model.dayEvents.isEmpty {
-                Text(L10n.tr("没有日程"))
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 6)
-            } else {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ForEach(model.dayEvents) { item in
-                            HStack(alignment: .top, spacing: 8) {
-                                RoundedRectangle(cornerRadius: 1.5)
-                                    .fill(Color(nsColor: item.color))
-                                    .frame(width: 3, height: 28)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(item.title)
-                                        .font(.system(size: 12, weight: .medium))
-                                        .lineLimit(2)
-                                    Text(item.timeText)
-                                        .font(.system(size: 11))
-                                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 6)
+                } else {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(model.dayEvents) { item in
+                                HStack(alignment: .top, spacing: 8) {
+                                    RoundedRectangle(cornerRadius: 1.5)
+                                        .fill(Color(nsColor: item.color))
+                                        .frame(width: 3, height: 28)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(item.title)
+                                            .font(.system(size: 12, weight: .medium))
+                                            .lineLimit(2)
+                                        Text(item.timeText)
+                                            .font(.system(size: 11))
+                                            .foregroundColor(.secondary)
+                                    }
                                 }
                             }
                         }
+                        .padding(.vertical, 1)
                     }
-                    .padding(.vertical, 1)
+                    // 高度不设上限：测量时由 dayListMaxHeight 兜底，渲染时靠面板高度约束
+                    // 压缩到剩余空间内滚动（文字保持原大）
+                    .frame(maxHeight: dayListMaxHeight)
                 }
-                .frame(maxHeight: 240)
             }
         }
     }
@@ -880,62 +912,114 @@ final class NotchPanel: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 
+    /// 面板布局决策结果（present 与 refit 共用）
+    private struct PanelLayout {
+        let width: CGFloat
+        let height: CGFloat
+        let naturals: [CGSize]
+        let scale: CGFloat
+    }
+
+    /// 尺寸决策：
+    /// - 宽：双卡片 = 设置最大宽（两卡片各占一半）；单卡片 = 内容自然宽（上下限钳制）；
+    /// - 高：内容驱动（最高卡片的渲染目标高 + 面板内边距），上限钳制到设置最大高/屏幕。
+    ///   日历卡日程列表装得下就完整展开；装不下压到槽高、列表在剩余空间滚动（文字不缩放）；
+    ///   仅固定部分（收起日程）也超槽时才整体等比缩小兕底；
+    /// - 双卡片时系统资源卡拉伸到驱动卡目标高测量（渲染时行均匀分布填满卡片）。
+    private static func computeLayout(screen: NSScreen, model: NotchCalendarViewModel) -> PanelLayout {
+        let maxW = min(CGFloat(SettingsStore.shared.notchMaxWidth), screen.frame.width - 40)
+        let maxH = min(CGFloat(SettingsStore.shared.notchMaxHeight), screen.frame.height - 80)
+        let outerH = NotchContentView.outerHPadding
+        let outerV = NotchContentView.outerVPadding
+        let modules = NotchContentView.orderedVisibleModules
+        let slotH = max(1, maxH - outerV * 2)
+
+        // 日历卡两档测量：全高（日程全展开，测量上限放大）/ 固定高（收起日程列表）
+        func calendarHeights(index: Int, columnWidth: CGFloat?) -> (full: CGFloat, fixed: CGFloat, naturalWidth: CGFloat) {
+            let full = NotchContentView.measureCardSize(index: index, columnWidth: columnWidth,
+                                                        dayListMaxHeight: 2000, model: model)
+            let fixed = NotchContentView.measureCardSize(index: index, columnWidth: columnWidth,
+                                                         collapseDayEvents: true, model: model)
+            return (full.height, fixed.height, full.width)
+        }
+        // 渲染目标高：日程装得下用全高；装不下压到槽高（日程滚动）；固定部分也超槽则保持固定高（缩小兕底）
+        func renderTarget(full: CGFloat, fixed: CGFloat) -> CGFloat {
+            fixed >= slotH ? max(1, fixed) : max(1, min(full, slotH))
+        }
+
+        if modules.count >= 2 {
+            let slotW = (maxW - outerH * 2 - NotchContentView.cardGap) / 2
+            let columnW = slotW - NotchContentView.cardPadding * 2
+            var naturals = Array(repeating: CGSize.zero, count: modules.count)
+            var targets: [CGFloat] = Array(repeating: 0, count: modules.count)
+            // 先测非资源卡（日历/正在播放）目标高，面板高度由其中最高者驱动
+            for (i, module) in modules.enumerated() where module != .resources {
+                if module == .calendar {
+                    let h = calendarHeights(index: i, columnWidth: columnW)
+                    targets[i] = renderTarget(full: h.full, fixed: h.fixed)
+                    naturals[i] = CGSize(width: h.naturalWidth, height: targets[i])
+                } else {
+                    let natural = NotchContentView.measureCardSize(index: i, columnWidth: columnW, model: model)
+                    targets[i] = renderTarget(full: natural.height, fixed: natural.height)
+                    naturals[i] = CGSize(width: natural.width, height: targets[i])
+                }
+            }
+            // 资源卡拉伸到驱动卡目标高测量，渲染时与驱动卡等高
+            for (i, module) in modules.enumerated() where module == .resources {
+                let natural = NotchContentView.measureCardSize(index: i, columnWidth: columnW,
+                                                               columnHeight: max(1, targets.max() ?? slotH),
+                                                               model: model)
+                targets[i] = natural.height
+                naturals[i] = natural
+            }
+            let scale = min(1, slotH / max(1, targets.max() ?? slotH))
+            let height = Self.clamp(scale * max(1, targets.max() ?? slotH) + outerV * 2,
+                                    min(Self.minHeight, maxH), maxH)
+            return PanelLayout(width: maxW, height: height, naturals: naturals, scale: scale)
+        }
+        if modules.count == 1 {
+            let naturalWidth: CGFloat
+            let target: CGFloat
+            if modules[0] == .calendar {
+                let h = calendarHeights(index: 0, columnWidth: nil)
+                naturalWidth = h.naturalWidth
+                target = renderTarget(full: h.full, fixed: h.fixed)
+            } else {
+                let natural = NotchContentView.measureCardSize(index: 0, columnWidth: nil, model: model)
+                naturalWidth = natural.width
+                target = renderTarget(full: natural.height, fixed: natural.height)
+            }
+            let scale = min(1, (maxW - outerH * 2) / max(1, naturalWidth), slotH / target)
+            let width = Self.clamp(naturalWidth * scale + outerH * 2, min(Self.minWidth, maxW), maxW)
+            let height = Self.clamp(target * scale + outerV * 2, min(Self.minHeight, maxH), maxH)
+            return PanelLayout(width: width, height: height,
+                               naturals: [CGSize(width: naturalWidth, height: target)], scale: scale)
+        }
+        return PanelLayout(width: Self.clamp(outerH * 2, min(Self.minWidth, maxW), maxW),
+                           height: Self.clamp(outerV * 2, min(Self.minHeight, maxH), maxH),
+                           naturals: [], scale: 1)
+    }
+
     /// 依据刘海热区（主屏左上原点坐标）重建内容、测尺寸、定位并滑入显示。
     /// 面板顶边贴刘海下边缘（热区竖向范围 = 刘海竖向范围）、水平居中刘海；
     /// 每次 present 重建 contentView（模型重置到今天，同时取最新内容设置）。
-    /// 尺寸：双卡片 = 设置的最大宽高（屏幕内钳制），两卡片各占一半宽；
-    /// 单卡片 = 内容自然尺寸（上限钳制，下限 minWidth/minHeight）。
-    /// 内容超出卡片槽位时整体等比缩小（scaleEffect），保证完整显示、比例不变。
+    /// 尺寸决策见 computeLayout（日程异步加载完成后的高度修正走 refit）。
     func present(hotspotTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
-        let maxW = min(CGFloat(SettingsStore.shared.notchMaxWidth), screen.frame.width - 40)
-        let maxH = min(CGFloat(SettingsStore.shared.notchMaxHeight), screen.frame.height - 80)
-        let count = NotchContentView.visibleModuleCount
-        let width: CGFloat
-        let height: CGFloat
-        let scale: CGFloat
-        let naturals: [CGSize]
-        if count >= 2 {
-            // 双卡片：面板固定为最大尺寸；以拉伸宽测各卡自然高，按最高卡片等比缩小以完整显示
-            let slotW = (maxW - NotchContentView.outerHPadding * 2 - NotchContentView.cardGap) / 2
-            let columnW = slotW - NotchContentView.cardPadding * 2
-            naturals = (0..<count).map {
-                NotchContentView.measureCardSize(index: $0, columnWidth: columnW, model: model)
-            }
-            let slotH = max(1, maxH - NotchContentView.outerVPadding * 2)
-            scale = min(1, slotH / max(1, naturals.map(\.height).max() ?? slotH))
-            width = maxW
-            height = maxH
-        } else if count == 1 {
-            // 单卡片：按内容自然尺寸收缩（上限钳制）；超限时等比缩小，面板随之同步收缩
-            let natural = NotchContentView.measureCardSize(index: 0, columnWidth: nil, model: model)
-            scale = min(1,
-                        (maxW - NotchContentView.outerHPadding * 2) / natural.width,
-                        (maxH - NotchContentView.outerVPadding * 2) / natural.height)
-            naturals = [natural]
-            width = Self.clamp(natural.width * scale + NotchContentView.outerHPadding * 2,
-                               min(Self.minWidth, maxW), maxW)
-            height = Self.clamp(natural.height * scale + NotchContentView.outerVPadding * 2,
-                                min(Self.minHeight, maxH), maxH)
-        } else {
-            naturals = []
-            scale = 1
-            width = Self.clamp(NotchContentView.outerHPadding * 2, min(Self.minWidth, maxW), maxW)
-            height = Self.clamp(NotchContentView.outerVPadding * 2, min(Self.minHeight, maxH), maxH)
-        }
-        contentView = makeContentView(model: model, width: width, height: height,
-                                      cardNaturals: naturals, scale: scale)
-        setContentSize(NSSize(width: width, height: height))
+        let layout = Self.computeLayout(screen: screen, model: model)
+        contentView = makeContentView(model: model, width: layout.width, height: layout.height,
+                                      cardNaturals: layout.naturals, scale: layout.scale)
+        setContentSize(NSSize(width: layout.width, height: layout.height))
 
-        let x = Self.clamp(hotspotTL.midX - width / 2,
-                           screen.frame.minX + 8, screen.frame.maxX - width - 8)
+        let x = Self.clamp(hotspotTL.midX - layout.width / 2,
+                           screen.frame.minX + 8, screen.frame.maxX - layout.width - 8)
         // 热区 TL 坐标最大 y = 刘海下边缘；转回 Cocoa 坐标作为面板顶边
         let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
-        let finalOrigin = NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - height)
+        let finalOrigin = NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - layout.height)
         // 从刘海后方 12pt 处滑入；NSWindow 只有 frame 可动画（animator().setFrameOrigin 无效，
         // 面板会停在起始位置），必须用 animator().setFrame(_:display:)
         let startFrame = NSRect(origin: NSPoint(x: finalOrigin.x, y: finalOrigin.y + 12),
-                                size: NSSize(width: width, height: height))
-        let finalFrame = NSRect(origin: finalOrigin, size: NSSize(width: width, height: height))
+                                size: NSSize(width: layout.width, height: layout.height))
+        let finalFrame = NSRect(origin: finalOrigin, size: NSSize(width: layout.width, height: layout.height))
         setFrame(startFrame, display: false)
         alphaValue = 0
         orderFront(nil)
@@ -946,6 +1030,26 @@ final class NotchPanel: NSPanel {
             animator().setFrame(finalFrame, display: true)
             animator().alphaValue = 1
         }
+    }
+
+    /// 日程加载/切换后重算布局并调整面板：顶边贴刘海不动（向下生长/收缩），带短动画。
+    /// contentView 按新尺寸重建；尺寸不变时跳过。
+    func refit(hotspotTL: CGRect, screen: NSScreen, model: NotchCalendarViewModel) {
+        let layout = Self.computeLayout(screen: screen, model: model)
+        guard abs(layout.height - frame.height) > 0.5 || abs(layout.width - frame.width) > 0.5 else { return }
+        contentView = makeContentView(model: model, width: layout.width, height: layout.height,
+                                      cardNaturals: layout.naturals, scale: layout.scale)
+        let x = Self.clamp(hotspotTL.midX - layout.width / 2,
+                           screen.frame.minX + 8, screen.frame.maxX - layout.width - 8)
+        let unionMaxY = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }.maxY
+        let target = NSRect(origin: NSPoint(x: x, y: unionMaxY - hotspotTL.maxY - layout.height),
+                            size: NSSize(width: layout.width, height: layout.height))
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.15
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            animator().setFrame(target, display: true)
+        }
+        invalidateShadow()
     }
 
     /// 液态玻璃背景（macOS 26+）或磨砂底（旧系统）包裹内容，圆角≈屏幕圆角。
