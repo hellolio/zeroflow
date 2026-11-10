@@ -178,6 +178,7 @@
 - **Prevention:** 想「不激活 app 也能打字」,`styleMask` 用 `.borderless + .nonactivatingPanel`、`canBecomeKey = true`、`becomesKeyOnlyIfNeeded = false`,`makeKeyAndOrderFront` 后断言 `isKeyWindow == true`(本项目其余面板故意保持 false,别顺手改);兜底分支一旦 `NSApp.activate`,真的会抢走前台,必须记住 `previousApp` 并在收起/粘贴前 `NSRunningApplication.activate` 还原,否则合成 ⌘V 会打到自己身上;方向键/回车/esc 用 `NSEvent.addLocalMonitorForEvents(.keyDown)` 按 `event.window === panel` 拦截并吞掉,其余按键放行给 SwiftUI `TextField`(输入法搜索依赖它)。
 
 ## DEV-036: 面板贴插入点弹出：AX 坐标是「主屏左上为原点」，且必须在面板成为 key 之前取
+> **已废弃**：剪贴板面板已改为鼠标定位，不再取插入点；本条仅作历史记录。
 - **Pitfall:** 用 `kAXFocusedUIElementAttribute` + `AXBoundsForRange` 拿 caret 矩形后直接当 Cocoa 坐标用,面板出现在屏幕另一半;或热键里先 `makeKeyAndOrderFront` 再取焦点,拿到的永远是面板自己的搜索框,锚点跑到面板上。
 - **Cause:** AX 的全屏坐标原点在主屏**左上角**(y 向下),Cocoa 原点在主屏**左下角**;非激活面板一旦成为 key window,系统焦点即转移,`AXFocusedUIElement` 变成我们的 `TextField`。
 - **Prevention:** 坐标换算 `cocoaY = NSScreen.screens[0].frame.maxY - axRect.maxY`,并用 `NSScreen.screens` 的 `frame.intersects` 判断落屏;取 caret 的时机固定在 `makeKeyAndOrderFront` **之前**,并用 `AXUIElementGetPid != 自己` 兜底跳过自身;`AXUIElementSetMessagingTimeout(0.25)` 防目标 app 卡死拖住热键;密码框(`AXSecureTextField`)直接放弃定位;拿不到 caret 时按「元素 frame → 鼠标位置」降级。
@@ -213,3 +214,13 @@
 - **Cause:** ① 0 与 1 落在同一次 SwiftUI 更新事务里会被合并成终态，「跳变」从未发生；② `onAppear` 不保证首帧 0 已经上屏（`NSHostingView` 挂载与首次提交常合并）；③ `hosting.rootView` 整体换值会换身份，隐式动画不跨身份插值；④ 旧卡若按新布局重排（列宽/内容高跟着变），滑动过程中还会变形。
 - **Prevention:** 进度不要交给 SwiftUI 自己起跳：面板持有 `CardSlideDriver`（`ObservableObject` + `@Published progress`），由 `NotchSpringAnimator` 的同一个 120Hz 时钟积分一路 slide 弹簧（response 0.32 / ζ1.0，临界阻尼零过冲），切卡时 `applyLayoutFrame`（形状弹簧）与 `animateSlide` 同轮启动；`allSettled` 必须同时看形状和 slide，否则形状无位移/先落定时 `stopTimer` 会把 slide 一起停掉。SwiftUI 侧只让两个 `SlideCard` 包装视图 `@ObservedObject` 观察进度（整个 `NotchContentView` 不要观察，避免日历/资源卡按 120Hz 重算），offset 公式：旧卡 `-step*travel*progress`、新卡 `step*travel*(1-progress)`。`CardSlide` 在切换时冻结 `travel = max(两卡宽)+24` 与 `viewportWidth = max(两卡宽)`；`contentSlot` 用 `.frame(width: viewportWidth, height: cardSlotHeight).clipped()` 再 `.frame(maxWidth: .infinity)`，裁在卡片区边界、顶部条/箭头不动。旧卡用「切换前几何」原样渲染（card/contentHeight/scale，列宽由卡宽反推）。方向语义：step = -1（上一张 / 左箭头 / 左滑）旧卡向右出、新卡自左入；+1 反向。双指方向要先把 delta 归一到同一基准：系统按自然滚动设置翻转 `scrollingDeltaX`，`isDirectionInvertedFromDevice == true` 时取原值、false 时取反；本机实测（自然滚动开，inverted=true）双指左滑累积为**正**、右滑为负，所以归一后 **> 0 才是左滑** → step -1（与左箭头完全一致），< 0 → +1。别按「左滑 = 负 delta」的直觉写映射——macOS 上报的符号与直觉相反；实机日志 `Notch swipe: raw dx=... inverted=... acc=... step=...` 是唯一可靠依据。断点：`present` 里 `slideDriver.progress = 1` + `cancelSlide()`；滑动落定后 `finishSlide()` 只走 `updateContentView` 清掉旧卡；`isSliding` 期间控制器忽略新的切换请求（连点不把当前卡瞬移回中心）。
 - **Note（本机验证手段）:** 这个环境里 `AXIsProcessTrusted()` 为 false，脚本点不了箭头；`screencapture` 与 `CGWindowListCreateImage` 都只返回空白/白图（缺屏幕录制权限），逐帧抓屏对比也不可行。要肉眼验证就用 `ZEROFLOW_NOTCH_SHOW=1` 起一个临时实例手动点箭头/双指滑动，别把「定时器自动切卡」这类测试钩子留在代码里。
+
+## DEV-043: 面板 contentView 从裸 hosting 换成容器后，`contentView?.fittingSize` 会失效
+- **Pitfall:** 给面板加玻璃背景（`glass + hosting` 兄弟结构）时把 `contentView` 从 `NSHostingView` 换成普通容器，随后 `centerOnMouseScreen` / `layoutAndPosition` 里用 `contentView?.fittingSize` 量内容尺寸会拿到 0/旧值——容器一般只装子视图、没有 Auto Layout 依赖，fittingSize 不等于 SwiftUI 的自然尺寸。
+- **Cause:** `fittingSize` 走的是约束/内在内容尺寸链，裸 `NSHostingView` 有 SwiftUI 内容的内在尺寸，容器没有。
+- **Prevention:** 液态玻璃面板统一用一个 `PanelHostingContainer`（玻璃垫底 + hosting autoresizing 跟随，DEV-037），并暴露 `contentFittingSize = hosting.fittingSize`；面板定位/定窗改量这个值，别再依赖 `contentView?.fittingSize`。玻璃层位置要么 autoresizing、要么在容器 `layout()` 里按 bounds 重设（内缩量也要在此补齐，否则尺寸变了玻璃边距不跟随）。
+
+## DEV-044: 新 SDK(27.x) 下合成鼠标事件的 API 形态变化
+- **Pitfall:** Dock 快捷键弹出功能里检查「鼠标是否按住」时用老的 C 函数 `CGEventSourceButtonState(.combinedSessionState, .left)` 编译报错；顺手补的 `.middle` 也报 `CGMouseButton has no member 'middle'`。
+- **Cause:** 新 SDK 把 CoreGraphics 事件源的全局 C 函数换成了 `CGEventSource` 的实例/类型方法（`CGEventSource.buttonState(_:button:)`），且 Swift 侧 `CGMouseButton` 只暴露 `.left`/`.right`（`kCGMouseButtonMiddle` 其实存在但没桥接成 case，中键由右键 tap 监听覆盖即可）。
+- **Prevention:** 新 SDK 写合成事件相关代码时，事件源状态查询一律用 `CGEventSource(button/key)State(_ stateID:)` 系实例 API；遇到 `has been replaced by` 的报错直接改用提示的新形式，别套老 C 函数名。另：8 个 `(1 << CGEventType.xxx.rawValue)` 的 OR 长链别再包一层 `CGEventMask(...)` 括号函数调用，拆成 `let mask: CGEventMask = ... | ...` 逐行写，否则「compiler unable to type-check in reasonable time」。

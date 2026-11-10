@@ -24,11 +24,18 @@ final class SettingsStore: ObservableObject {
         static let saveDirectory = "saveDirectory"
         static let askSaveLocation = "askSaveLocation"
         static let screenshotEnabled = "screenshotEnabled"
+        static let editorGlassBackground = "editorGlassBackground"
         static let dockClickMinimize = "dockClickMinimize"
+        static let dockPeekEnabled = "dockPeekEnabled"
+        static let dockPeekShortcutKeyCode = "dockPeekShortcut.keyCode"
+        static let dockPeekShortcutModifiers = "dockPeekShortcut.modifiers"
+        static let dockPeekHoldMs = "dockPeekHoldMs"
         static let dockPreviewEnabled = "dockPreviewEnabled"
         static let dockPreviewHoverDelayMs = "dockPreviewHoverDelayMs"
+        static let dockPreviewGlassBackground = "dockPreviewGlassBackground"
         static let cmdTabSwitcherEnabled = "cmdTabSwitcherEnabled"
         static let windowSwitcherShowWindowlessApps = "windowSwitcherShowWindowlessApps"
+        static let windowSwitcherGlassBackground = "windowSwitcherGlassBackground"
         static let cmdTabShortcutKeyCode = "cmdTabShortcut.keyCode"
         static let cmdTabShortcutModifiers = "cmdTabShortcut.modifiers"
         static let appLanguage = "appLanguage"
@@ -39,6 +46,7 @@ final class SettingsStore: ObservableObject {
         static let finderCmdCommand = "finderCmdCommand"
         static let notchEnabled = "notchEnabled"
         static let notchHoverDelayMs = "notchHoverDelayMs"
+        static let notchGlassBackground = "notchGlassBackground"
         static let notchTriggerMode = "notchTriggerMode"
         static let notchShowCalendar = "notchShowCalendar"
         static let notchShowResources = "notchShowResources"
@@ -107,11 +115,18 @@ final class SettingsStore: ObservableObject {
             Keys.saveDirectory: Self.defaultSaveDirectory,
             Keys.askSaveLocation: false,
             Keys.screenshotEnabled: false,
+            Keys.editorGlassBackground: true,
             Keys.dockClickMinimize: false,
+            Keys.dockPeekEnabled: false,
+            Keys.dockPeekShortcutKeyCode: Int(ShortcutKey.dockPeekDefault.keyCode),
+            Keys.dockPeekShortcutModifiers: Int(ShortcutKey.dockPeekDefault.modifiers.rawValue),
+            Keys.dockPeekHoldMs: 800,
             Keys.dockPreviewEnabled: false,
             Keys.dockPreviewHoverDelayMs: 300,
+            Keys.dockPreviewGlassBackground: true,
             Keys.cmdTabSwitcherEnabled: false,
             Keys.windowSwitcherShowWindowlessApps: true,
+            Keys.windowSwitcherGlassBackground: true,
             Keys.cmdTabShortcutKeyCode: Int(ShortcutKey.cmdTabDefault.keyCode),
             Keys.cmdTabShortcutModifiers: Int(ShortcutKey.cmdTabDefault.modifiers.rawValue),
             Keys.finderNewFileEnabled: false,
@@ -121,6 +136,7 @@ final class SettingsStore: ObservableObject {
             Keys.finderCmdCommand: Self.defaultFinderCmdCommand,
             Keys.notchEnabled: false,
             Keys.notchHoverDelayMs: 200,
+            Keys.notchGlassBackground: true,
             Keys.notchTriggerMode: NotchTriggerMode.click.rawValue,
             Keys.notchShowCalendar: true,
             Keys.notchShowResources: false,
@@ -136,11 +152,17 @@ final class SettingsStore: ObservableObject {
         _saveDirectory = Published(initialValue: defaults.string(forKey: Keys.saveDirectory) ?? Self.defaultSaveDirectory)
         _askSaveLocation = Published(initialValue: defaults.bool(forKey: Keys.askSaveLocation))
         _screenshotEnabled = Published(initialValue: defaults.bool(forKey: Keys.screenshotEnabled))
+        _editorGlassBackground = Published(initialValue: defaults.bool(forKey: Keys.editorGlassBackground))
         _dockClickMinimize = Published(initialValue: defaults.bool(forKey: Keys.dockClickMinimize))
+        _dockPeekEnabled = Published(initialValue: defaults.bool(forKey: Keys.dockPeekEnabled))
+        _dockPeekShortcut = Published(initialValue: Self.loadDockPeekShortcut(from: defaults))
+        _dockPeekHoldMs = Published(initialValue: defaults.integer(forKey: Keys.dockPeekHoldMs))
         _dockPreviewEnabled = Published(initialValue: defaults.bool(forKey: Keys.dockPreviewEnabled))
         _dockPreviewHoverDelayMs = Published(initialValue: defaults.integer(forKey: Keys.dockPreviewHoverDelayMs))
+        _dockPreviewGlassBackground = Published(initialValue: defaults.bool(forKey: Keys.dockPreviewGlassBackground))
         _cmdTabSwitcherEnabled = Published(initialValue: defaults.bool(forKey: Keys.cmdTabSwitcherEnabled))
         _windowSwitcherShowWindowlessApps = Published(initialValue: defaults.bool(forKey: Keys.windowSwitcherShowWindowlessApps))
+        _windowSwitcherGlassBackground = Published(initialValue: defaults.bool(forKey: Keys.windowSwitcherGlassBackground))
         _finderNewFileEnabled = Published(initialValue: defaults.bool(forKey: Keys.finderNewFileEnabled))
         _finderNewFileName = Published(initialValue: defaults.string(forKey: Keys.finderNewFileName) ?? "new file.md")
         _finderCmdEnabled = Published(initialValue: defaults.bool(forKey: Keys.finderCmdEnabled))
@@ -148,6 +170,7 @@ final class SettingsStore: ObservableObject {
         _finderCmdCommand = Published(initialValue: defaults.string(forKey: Keys.finderCmdCommand) ?? Self.defaultFinderCmdCommand)
         _notchEnabled = Published(initialValue: defaults.bool(forKey: Keys.notchEnabled))
         _notchHoverDelayMs = Published(initialValue: defaults.integer(forKey: Keys.notchHoverDelayMs))
+        _notchGlassBackground = Published(initialValue: defaults.bool(forKey: Keys.notchGlassBackground))
         _notchTriggerMode = Published(initialValue: NotchTriggerMode(rawValue: defaults.string(forKey: Keys.notchTriggerMode) ?? "") ?? .click)
         _notchShowCalendar = Published(initialValue: defaults.bool(forKey: Keys.notchShowCalendar))
         _notchShowResources = Published(initialValue: defaults.bool(forKey: Keys.notchShowResources))
@@ -223,6 +246,15 @@ final class SettingsStore: ObservableObject {
                      defaultKeyCode: ShortcutKey.clipboardDefault.keyCode,
                      defaultModifiers: UInt(ShortcutKey.clipboardDefault.modifiers.rawValue),
                      defaultCharacter: ShortcutKey.clipboardDefault.character)
+    }
+
+    private static func loadDockPeekShortcut(from defaults: UserDefaults) -> ShortcutKey {
+        loadShortcut(from: defaults,
+                     keyCodeKey: Keys.dockPeekShortcutKeyCode,
+                     modifiersKey: Keys.dockPeekShortcutModifiers,
+                     defaultKeyCode: ShortcutKey.dockPeekDefault.keyCode,
+                     defaultModifiers: UInt(ShortcutKey.dockPeekDefault.modifiers.rawValue),
+                     defaultCharacter: ShortcutKey.dockPeekDefault.character)
     }
 
     private static func loadShortcut(from defaults: UserDefaults,
@@ -343,6 +375,13 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    /// 编辑窗口背景：液态玻璃（旧系统回退磨砂）
+    @Published var editorGlassBackground: Bool {
+        didSet {
+            defaults.set(editorGlassBackground, forKey: Keys.editorGlassBackground)
+        }
+    }
+
     // MARK: - Dock
 
     @Published var dockClickMinimize: Bool {
@@ -353,6 +392,41 @@ final class SettingsStore: ObservableObject {
                 object: nil,
                 userInfo: ["enabled": dockClickMinimize]
             )
+        }
+    }
+
+    // MARK: - Dock 弹出（自动隐藏时）
+
+    /// 自动隐藏模式下按热键把指针短暂贴到 Dock 边缘弹出一眼 Dock。
+    /// 仅系统已开启自动隐藏时可用（设置页置灰控制）
+    @Published var dockPeekEnabled: Bool {
+        didSet {
+            defaults.set(dockPeekEnabled, forKey: Keys.dockPeekEnabled)
+            NotificationCenter.default.post(
+                name: DockPeekManager.didChangeNotification,
+                object: nil,
+                userInfo: ["enabled": dockPeekEnabled]
+            )
+        }
+    }
+
+    /// Dock 弹出热键：修饰键组合（默认裸 Option），无主键
+    @Published var dockPeekShortcut: ShortcutKey {
+        didSet {
+            defaults.set(Int(dockPeekShortcut.keyCode), forKey: Keys.dockPeekShortcutKeyCode)
+            defaults.set(Int(dockPeekShortcut.modifiers.rawValue), forKey: Keys.dockPeekShortcutModifiers)
+            NotificationCenter.default.post(
+                name: DockPeekManager.shortcutDidChangeNotification,
+                object: nil,
+                userInfo: ["shortcut": dockPeekShortcut]
+            )
+        }
+    }
+
+    /// 热键触发后指针贴边停留多久再回原位（毫秒）；期间 Dock 弹出，还原后由系统自行收起
+    @Published var dockPeekHoldMs: Int {
+        didSet {
+            defaults.set(dockPeekHoldMs, forKey: Keys.dockPeekHoldMs)
         }
     }
 
@@ -376,6 +450,13 @@ final class SettingsStore: ObservableObject {
         }
     }
 
+    /// 预览面板背景：液态玻璃（旧系统回退磨砂）
+    @Published var dockPreviewGlassBackground: Bool {
+        didSet {
+            defaults.set(dockPreviewGlassBackground, forKey: Keys.dockPreviewGlassBackground)
+        }
+    }
+
     // MARK: - 窗口切换器
 
     @Published var cmdTabSwitcherEnabled: Bool {
@@ -392,6 +473,13 @@ final class SettingsStore: ObservableObject {
     @Published var windowSwitcherShowWindowlessApps: Bool {
         didSet {
             defaults.set(windowSwitcherShowWindowlessApps, forKey: Keys.windowSwitcherShowWindowlessApps)
+        }
+    }
+
+    /// 切换器面板背景：液态玻璃（旧系统回退磨砂）
+    @Published var windowSwitcherGlassBackground: Bool {
+        didSet {
+            defaults.set(windowSwitcherGlassBackground, forKey: Keys.windowSwitcherGlassBackground)
         }
     }
 
@@ -463,6 +551,13 @@ final class SettingsStore: ObservableObject {
     @Published var notchHoverDelayMs: Int {
         didSet {
             defaults.set(notchHoverDelayMs, forKey: Keys.notchHoverDelayMs)
+        }
+    }
+
+    /// 灵动岛面板背景：液态玻璃（旧系统回退磨砂）
+    @Published var notchGlassBackground: Bool {
+        didSet {
+            defaults.set(notchGlassBackground, forKey: Keys.notchGlassBackground)
         }
     }
 
@@ -590,5 +685,9 @@ final class SettingsStore: ObservableObject {
 
     func resetClipboardShortcutToDefault() {
         clipboardShortcut = .clipboardDefault
+    }
+
+    func resetDockPeekShortcutToDefault() {
+        dockPeekShortcut = .dockPeekDefault
     }
 }
