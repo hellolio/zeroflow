@@ -221,11 +221,11 @@
 - **Prevention:** 液态玻璃面板统一用一个 `PanelHostingContainer`（玻璃垫底 + hosting autoresizing 跟随，DEV-037），并暴露 `contentFittingSize = hosting.fittingSize`；面板定位/定窗改量这个值，别再依赖 `contentView?.fittingSize`。玻璃层位置要么 autoresizing、要么在容器 `layout()` 里按 bounds 重设（内缩量也要在此补齐，否则尺寸变了玻璃边距不跟随）。
 
 ## DEV-044: 新 SDK(27.x) 下合成鼠标事件的 API 形态变化
-- **Pitfall:** Dock 快捷键弹出功能里检查「鼠标是否按住」时用老的 C 函数 `CGEventSourceButtonState(.combinedSessionState, .left)` 编译报错；顺手补的 `.middle` 也报 `CGMouseButton has no member 'middle'`。
+- **Pitfall:** 写「检查鼠标是否按住」这类合成事件辅助逻辑时用老的 C 函数 `CGEventSourceButtonState(.combinedSessionState, .left)` 编译报错；顺手补的 `.middle` 也报 `CGMouseButton has no member 'middle'`。（该处代码来自已撤销的 Dock 快捷键弹出功能，API 形态结论仍然有效。）
 - **Cause:** 新 SDK 把 CoreGraphics 事件源的全局 C 函数换成了 `CGEventSource` 的实例/类型方法（`CGEventSource.buttonState(_:button:)`），且 Swift 侧 `CGMouseButton` 只暴露 `.left`/`.right`（`kCGMouseButtonMiddle` 其实存在但没桥接成 case，中键由右键 tap 监听覆盖即可）。
 - **Prevention:** 新 SDK 写合成事件相关代码时，事件源状态查询一律用 `CGEventSource(button/key)State(_ stateID:)` 系实例 API；遇到 `has been replaced by` 的报错直接改用提示的新形式，别套老 C 函数名。另：8 个 `(1 << CGEventType.xxx.rawValue)` 的 OR 长链别再包一层 `CGEventMask(...)` 括号函数调用，拆成 `let mask: CGEventMask = ... | ...` 逐行写，否则「compiler unable to type-check in reasonable time」。
 
-## DEV-045: 自动隐藏 Dock 的「临时弹出」优先用 AXManualHide，不要靠合成指针贴边
-- **Pitfall:** 用「合成 mouseMoved 把指针瞬移到屏幕边缘停一会儿再移回」给自动隐藏的 Dock 做快捷键预览，能看到弹出，但指针被瞬移会打断用户手上的指向/悬停（编辑器画线、拖拽、悬停卡片都会跳），体验上不可接受。
-- **Cause:** Dock 的自动隐藏弹出只认物理指针贴边；任何基于指针的触发都必然要动真实光标。
-- **Prevention:** 对 Dock 进程（`com.apple.dock`）的 AX 窗口读写 `AXManualHide` 属性：读出原值 → 置 `false`（Dock 立即弹出动画）→ 停留指定时长 → 写回原值（Dock 自行收起动画）。全程不动指针、不碰 `com.apple.dock` 的 `autohide` 偏好。该属性是未文档化 AX 属性，新系统可能改名/消失：读取失败时用 `AXUIElementCopyAttributeNames` dump 窗口属性名排查，功能侧直接跳过而不是回退到指针方案。注意驻留期间用户点 Dock 图标后 Dock 会在还原时收起，属预期。
+## DEV-045: 自动隐藏的 Dock 无法用「临时弹出」做快捷键预览（AXManualHide 在 macOS 26/27 已不存在）
+- **Pitfall:** 想做「按修饰键热键让自动隐藏的 Dock 短暂弹出看清图标」：合成 `mouseMoved` 把指针瞬移到屏幕边缘再移回，功能能看到弹出，但指针被瞬移会打断用户手上的指向/悬停（编辑器画线、拖拽、悬停卡片都跳），体验不可接受；改用未文档化 AX 属性 `AXManualHide` 的方案，在本机 macOS 26/27 上完全读不到该属性，功能无法实现，最终整体移除（不要再重新尝试这条路）。
+- **Cause:** ① Dock 的自动隐藏弹出只认物理指针贴边，基于指针的触发必然要动真实光标；② `AXManualHide` 只存在于旧版本 macOS 的 Dock AX 树，本机实测 Dock 进程 AX 子树共 17 个元素（AXApplication / AXList / AXDockItem×15），`AXUIElementCopyAttributeNames` 的属性列表里没有任何 `AXManualHide`，即使先 `AXUIElementSetAttributeValue(dockApp, "AXEnhancedUserInterface", kCFBooleanTrue)` 成功（err=0）也不会出现。
+- **Prevention:** 排查 Dock 的 AX 结构时注意 **`kAXWindowsAttribute` 在 Dock 上返回空数组**，Dock 的图标元素挂在 `kAXChildrenAttribute` 子树里（`DockHoverPreviewController` 的建缓存逻辑即按此枚举，DEV 见其 1121 行附近注释）；要按 role 递归枚举，别指望 `kAXWindowsAttribute`。想验证某个未文档化属性是否存在，用 `AXUIElementCopyAttributeNames` dump 整棵子树的 role + 属性名，再决定方案；若目标属性不存在，直接放弃功能，不要回退到移动指针的方案。
