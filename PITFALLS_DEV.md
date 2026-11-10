@@ -224,3 +224,8 @@
 - **Pitfall:** Dock 快捷键弹出功能里检查「鼠标是否按住」时用老的 C 函数 `CGEventSourceButtonState(.combinedSessionState, .left)` 编译报错；顺手补的 `.middle` 也报 `CGMouseButton has no member 'middle'`。
 - **Cause:** 新 SDK 把 CoreGraphics 事件源的全局 C 函数换成了 `CGEventSource` 的实例/类型方法（`CGEventSource.buttonState(_:button:)`），且 Swift 侧 `CGMouseButton` 只暴露 `.left`/`.right`（`kCGMouseButtonMiddle` 其实存在但没桥接成 case，中键由右键 tap 监听覆盖即可）。
 - **Prevention:** 新 SDK 写合成事件相关代码时，事件源状态查询一律用 `CGEventSource(button/key)State(_ stateID:)` 系实例 API；遇到 `has been replaced by` 的报错直接改用提示的新形式，别套老 C 函数名。另：8 个 `(1 << CGEventType.xxx.rawValue)` 的 OR 长链别再包一层 `CGEventMask(...)` 括号函数调用，拆成 `let mask: CGEventMask = ... | ...` 逐行写，否则「compiler unable to type-check in reasonable time」。
+
+## DEV-045: 自动隐藏 Dock 的「临时弹出」优先用 AXManualHide，不要靠合成指针贴边
+- **Pitfall:** 用「合成 mouseMoved 把指针瞬移到屏幕边缘停一会儿再移回」给自动隐藏的 Dock 做快捷键预览，能看到弹出，但指针被瞬移会打断用户手上的指向/悬停（编辑器画线、拖拽、悬停卡片都会跳），体验上不可接受。
+- **Cause:** Dock 的自动隐藏弹出只认物理指针贴边；任何基于指针的触发都必然要动真实光标。
+- **Prevention:** 对 Dock 进程（`com.apple.dock`）的 AX 窗口读写 `AXManualHide` 属性：读出原值 → 置 `false`（Dock 立即弹出动画）→ 停留指定时长 → 写回原值（Dock 自行收起动画）。全程不动指针、不碰 `com.apple.dock` 的 `autohide` 偏好。该属性是未文档化 AX 属性，新系统可能改名/消失：读取失败时用 `AXUIElementCopyAttributeNames` dump 窗口属性名排查，功能侧直接跳过而不是回退到指针方案。注意驻留期间用户点 Dock 图标后 Dock 会在还原时收起，属预期。
