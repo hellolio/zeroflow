@@ -904,15 +904,15 @@
     "en": "Requires Accessibility permission to move the mouse pointer",
     "ja": "「アクセシビリティ」権限でマウスポインタを移動します"
   },
-  "指针贴边停留时长": {
-    "zh-Hans": "指针贴边停留时长",
-    "en": "Dwell time at the Dock edge",
-    "ja": "Dock 端の待機時間"
+  "Dock 停留时长": {
+    "zh-Hans": "Dock 停留时长",
+    "en": "Dock stay duration",
+    "ja": "Dock 表示時間"
   },
-  "按热键后，指针被移到 Dock 所在屏幕边缘短暂弹出 Dock，随后自动还原到原位；Dock 收起时机由 macOS 自己管理。": {
-    "zh-Hans": "按热键后，指针被移到 Dock 所在屏幕边缘短暂弹出 Dock，随后自动还原到原位；Dock 收起时机由 macOS 自己管理。",
-    "en": "After the hotkey, the pointer moves to the Dock edge to briefly reveal the Dock, then returns to its original spot. macOS decides when the Dock hides again.",
-    "ja": "ホットキーを押すとポインタが Dock のある画面端へ移動して Dock を一瞬表示し、元の位置へ戻ります。Dock を隠すタイミングは macOS が管理します。"
+  "按热键后，自动隐藏的 Dock 会短暂弹出便于查看图标，停留时长结束后 Dock 自动收起；不移动鼠标指针，也不修改系统的 Dock 隐藏设置。": {
+    "zh-Hans": "按热键后，自动隐藏的 Dock 会短暂弹出便于查看图标，停留时长结束后 Dock 自动收起；不移动鼠标指针，也不修改系统的 Dock 隐藏设置。",
+    "en": "After the hotkey, the auto-hidden Dock briefly pops up so you can check its icons, then hides again after the configured duration. The mouse pointer is never moved and the system Dock hiding settings are not modified.",
+    "ja": "ホットキーを押すと非表示の Dock が一時的に表示され、設定した時間が経過すると自動的に隠れます。マウスポインタは移動せず、システムの Dock 非表示設定も変更しません。"
   },
   "默认热键为 Option（⌥），仅支持修饰键组合（⌘ / ⇧ / ⌃ / ⌥）。": {
     "zh-Hans": "默认热键为 Option（⌥），仅支持修饰键组合（⌘ / ⇧ / ⌃ / ⌥）。",

@@ -1,13 +1,13 @@
 import AppKit
 import ApplicationServices
-import Carbon
 import CoreGraphics
 
 /// Dock 快捷键弹出（自动隐藏时）：按下预设修饰键热键（默认裸 Option）并松开，
-/// 记录当前指针位置 → 合成 mouseMoved 把指针短暂贴到 Dock 所在屏幕边缘 →
-/// 停留 `dockPeekHoldMs` 后把指针移回原位。
-/// 不读写系统 autohide 设置：指针贴边时 macOS 自己弹出 Dock，
-/// 指针离开边缘时 macOS 自己收起 Dock。
+/// 让自动隐藏的 Dock 短暂弹出看清图标状态，停留结束后由 macOS 自己收起。
+///
+/// 弹出方式：把 Dock 进程窗口的 `AXManualHide` AX 属性临时置 false
+/// （Dock 立即弹出动画），驻留 `dockPeekHoldMs` 后写回读取到的原值。
+/// **不移动鼠标指针、不读写系统 autohide 设置**，Dock 的弹出/收起节奏由 macOS 管理。
 ///
 /// 实现要点：
 /// - 裸修饰键热键无法走 `GlobalHotkeyManager` 的 Carbon
@@ -15,11 +15,10 @@ import CoreGraphics
 ///   flagsChanged **精确匹配**修饰键组合，且只在「按下→松开期间没有出现任何
 ///   其他按键/鼠标按下」时触发，保证 Option 兼作 ⌥` 切换器、打字变音等
 ///   正常修饰键用法时不误触发。
-/// - 合成移动事件带 source userData 魔数（与 DockClickMinimizer 的合成
-///   mouseDown 同一手法），`DockHoverPreviewController` 据此放行，避免指针
-///   瞬移途中误触发 Dock 悬停预览面板。
-/// - peek 动作在后台串行队列执行：generation 防重入，驻留期间出现鼠标按下
-///   则立即还原并作废在途回调。
+/// - peek 动作在后台串行队列执行：generation 防重入；驻留到点/功能关闭都走
+///   同一个还原入口（写回原值，而不是一律 true，避免碰掉系统原有状态）。
+/// - `ZEROFLOW_DOCKPEEK_DEBUG=1` 打印状态机与 AXManualHide 决策日志；
+///   该属性不可用时会 dump Dock 窗口的 AX 属性名便于排查。
 final class DockPeekManager {
     static let shared = DockPeekManager()
 
@@ -28,18 +27,13 @@ final class DockPeekManager {
     /// 外部通知：由 SettingsStore.dockPeekShortcut 的 didSet 触发（tap 为懒读配置，仅用于日志/订阅者）
     static let shortcutDidChangeNotification = Notification.Name("zeroflow.dockPeekShortcutDidChange")
 
-    /// 合成移动事件的 source userData 魔数，跨服务识别「zeroflow 自己的瞬移」
-    static let syntheticEventUserData: UInt64 = 0x5A5A_7A00_0000_0002
-
-    /// 合成指针移动的提前量：先移到距边缘 inFromEdgePt 的内侧，再贴到边缘 +1，
-    /// 两段式「走过去」保证边缘触发被系统感知（单次瞬移到边缘可能吞掉触发）。
-    private static let inFromEdgePt: CGFloat = 8
-    private static let nudgeDelay: TimeInterval = 0.06
     /// 按下→松开的最长间隔：超过视为正常修饰键长按，不触发
     private static let maxPressDuration: TimeInterval = 2.0
     /// 驻留时长设置的下限（毫秒），钳制极端值
     private static let minHoldMs = 150
     private static let maxHoldMs = 5000
+    /// Dock 窗口上控制「手动隐藏」的 AX 属性
+    private static let manualHideAttribute = "AXManualHide" as CFString
 
     private let lock = NSLock()
     private var isRunning = false
@@ -63,8 +57,8 @@ final class DockPeekManager {
 
     private var generation: UInt64 = 0
     private var inFlight = false
-    /// 当前在途 peek 记录的原始指针位置（stop 兜底还原用）
-    private var inFlightOrigin: CGPoint = .zero
+    /// 当前在途 peek 的还原动作（驻留超时/关闭功能时执行一次并作废）
+    private var pendingRestore: (() -> Void)?
 
     private let debug: Bool = ProcessInfo.processInfo.environment["ZEROFLOW_DOCKPEEK_DEBUG"] == "1"
 
@@ -88,18 +82,6 @@ final class DockPeekManager {
     /// 系统是否开启了 Dock 自动隐藏（「桌面与 Dock → 自动显示和隐藏 Dock」）
     static func readSystemAutohide() -> Bool {
         (CFPreferencesCopyAppValue("autohide" as CFString, "com.apple.dock" as CFString) as? Bool) ?? false
-    }
-
-    enum DockEdge {
-        case bottom, left, right
-    }
-
-    private static func readOrientation() -> DockEdge {
-        switch CFPreferencesCopyAppValue("orientation" as CFString, "com.apple.dock" as CFString) as? String {
-        case "left": return .left
-        case "right": return .right
-        default: return .bottom
-        }
     }
 
     // MARK: - 启停
@@ -155,9 +137,9 @@ final class DockPeekManager {
         isRunning = false
         suspended = false
         armed = false
-        let wasInFlight = inFlight
-        let stopOrigin = inFlightOrigin
+        let stopRestore = pendingRestore
         inFlight = false
+        pendingRestore = nil
         generation += 1
         let runLoop = tapRunLoop
         let source = runLoopSource
@@ -167,11 +149,11 @@ final class DockPeekManager {
         tapRunLoop = nil
         lock.unlock()
 
-        // 在途 peek 兜底还原（generation 已作废，纯移回，避免功能关闭时指针留在边缘）
-        if wasInFlight, stopOrigin != .zero {
-            workQueue.async { [weak self] in
-                self?.postSyntheticMove(to: stopOrigin)
-                ZSLog("DockPeek: fallback restore to \(stopOrigin)")
+        // 在途 peek 兜底还原（generation 已作废，纯还原，避免功能关闭时 Dock 一直弹出）
+        if let stopRestore {
+            workQueue.async {
+                stopRestore()
+                ZSLog("DockPeek: fallback restore on stop")
             }
         }
         if let source, let runLoop {
@@ -198,8 +180,6 @@ final class DockPeekManager {
             | (1 << CGEventType.keyDown.rawValue)
             | (1 << CGEventType.keyUp.rawValue)
             | (1 << CGEventType.leftMouseDown.rawValue)
-            | (1 << CGEventType.leftMouseUp.rawValue)
-            | (1 << CGEventType.leftMouseDragged.rawValue)
             | (1 << CGEventType.rightMouseDown.rawValue)
             | (1 << CGEventType.otherMouseDown.rawValue)
         let maskValue = CGEventMask(mask)
@@ -277,13 +257,9 @@ final class DockPeekManager {
 
         switch type {
         case .flagsChanged:
-            handleFlagsChanged(mods: Self.modifiers(of: event.flags), at: event.location)
-        case .keyDown, .keyUp, .leftMouseDown, .leftMouseUp, .leftMouseDragged,
-             .rightMouseDown, .otherMouseDown:
+            handleFlagsChanged(mods: Self.modifiers(of: event.flags))
+        case .keyDown, .keyUp, .leftMouseDown, .rightMouseDown, .otherMouseDown:
             markForeign()
-            if type == .leftMouseDown || type == .rightMouseDown || type == .otherMouseDown {
-                abortInFlightIfAny()
-            }
         default:
             break
         }
@@ -296,7 +272,7 @@ final class DockPeekManager {
     /// - 按住期间 flags 出现组合之外的修饰键 → 标记外部使用（组合手势）；
     /// - 组合中任一修饰键抬起（flags 成为组合的真子集）→ 松开，未见过外部
     ///   事件且时长 ≤ maxPressDuration 才触发 peek。
-    private func handleFlagsChanged(mods: CGEventFlags, at point: CGPoint) {
+    private func handleFlagsChanged(mods: CGEventFlags) {
         let target = Self.modifiers(of: Self.storedShortcutFlags())
         guard !target.isEmpty else { return }
 
@@ -305,7 +281,7 @@ final class DockPeekManager {
             armed = true
             armedTime = CFAbsoluteTimeGetCurrent()
             foreignSeen = false
-            dlog("hotkey armed \(mods), point=\(point)")
+            dlog("hotkey armed \(mods)")
             return
         }
 
@@ -326,9 +302,9 @@ final class DockPeekManager {
             dlog("released without trigger: foreign=\(foreignSeen) elapsed=\(elapsed)s")
             return
         }
-        dlog("hotkey released, peek at edge, origin=\(point)")
+        dlog("hotkey released, peeking dock")
         workQueue.async { [weak self] in
-            self?.performPeek(from: point)
+            self?.performPeek()
         }
     }
 
@@ -359,7 +335,7 @@ final class DockPeekManager {
 
     // MARK: - peek 执行（workQueue 串行）
 
-    private func performPeek(from origin: CGPoint) {
+    private func performPeek() {
         guard SettingsStore.shared.dockPeekEnabled else { return }
         guard AccessibilityPermission.isGranted else { return }
         guard Self.readSystemAutohide() else {
@@ -370,60 +346,39 @@ final class DockPeekManager {
             dlog("capture active, peek skipped")
             return
         }
-        // 拖拽/按住鼠标期间不做指针瞬移
-        let buttonsDown = CGEventSource.buttonState(.combinedSessionState, button: .left)
-            || CGEventSource.buttonState(.combinedSessionState, button: .right)
-        guard !buttonsDown else {
-            dlog("mouse button held, peek skipped")
-            return
-        }
-
-        guard let (edgePoint, insidePoint) = Self.dockEdgePoints() else {
-            ZSLog("DockPeek: no screen found, peek skipped")
-            return
-        }
 
         let holdMs = min(max(SettingsStore.shared.dockPeekHoldMs, Self.minHoldMs), Self.maxHoldMs)
+        guard let targets = beginManualHide() else {
+            ZSLog("DockPeek: AXManualHide unavailable, peek skipped")
+            return
+        }
 
         lock.lock()
         generation += 1
         let gen = generation
         inFlight = true
-        inFlightOrigin = origin
+        pendingRestore = { [weak self] in
+            self?.restoreManualHide(targets)
+        }
         lock.unlock()
 
-        dlog("peek begin origin=\(origin) inside=\(insidePoint) edge=\(edgePoint) hold=\(holdMs)ms gen=\(gen)")
-        postSyntheticMove(to: insidePoint)
-        workQueue.asyncAfter(deadline: .now() + Self.nudgeDelay) { [weak self] in
-            self?.postSyntheticMove(to: edgePoint)
-        }
+        dlog("peek begin manual-hide hold=\(holdMs)ms gen=\(gen) targets=\(targets.count)")
         workQueue.asyncAfter(deadline: .now() + TimeInterval(holdMs) / 1000.0) { [weak self] in
-            self?.restoreIfCurrent(generation: gen, to: origin)
+            self?.runRestoreIfCurrent(generation: gen)
         }
     }
 
-    /// 驻留到点后把指针移回原位（仅当 generation 仍是当前在途任务）。
-    /// 驻留超时与中止（鼠标按下/停止功能）都走这里，先到先得并作废对方。
-    private func restoreIfCurrent(generation gen: UInt64, to origin: CGPoint) {
+    /// 还原入口（驻留超时 / 功能关闭共用）：仅当 generation 仍是当前在途任务。
+    private func runRestoreIfCurrent(generation gen: UInt64) {
         lock.lock()
         guard generation == gen else { lock.unlock(); return }
         inFlight = false
+        let restore = pendingRestore
+        pendingRestore = nil
         generation += 1
         lock.unlock()
-        postSyntheticMove(to: origin)
-        ZSLog("DockPeek: pointer restored to \(origin), dock hide timing left to macOS")
-    }
-
-    private func abortInFlightIfAny() {
-        lock.lock()
-        guard inFlight else { lock.unlock(); return }
-        let gen = generation
-        let origin = inFlightOrigin
-        lock.unlock()
-        dlog("mouse down while in flight, aborting")
-        workQueue.async { [weak self] in
-            self?.restoreIfCurrent(generation: gen, to: origin)
-        }
+        restore?()
+        ZSLog("DockPeek: peek ended, dock hide timing left to macOS")
     }
 
     private func currentGeneration() -> UInt64 {
@@ -431,62 +386,87 @@ final class DockPeekManager {
         return generation
     }
 
-    // MARK: - 合成移动
+    // MARK: - AXManualHide
 
-    /// 合成 mouseMoved 把指针瞬移到目标点（带 userData 魔数，Dock 预览据此放行）
-    private func postSyntheticMove(to point: CGPoint) {
-        guard let source = CGEventSource(stateID: .hidSystemState) else { return }
-        source.userData = Int64(Self.syntheticEventUserData)
-        let move = CGEvent(
-            mouseEventSource: source,
-            mouseType: .mouseMoved,
-            mouseCursorPosition: point,
-            mouseButton: .left
-        )
-        move?.post(tap: .cghidEventTap)
-        dlog("synthetic move to \(point)")
+    /// 把 Dock 各窗口的 AXManualHide 置 false（Dock 弹出），返回 (窗口, 原值) 列表用于还原。
+    /// 任一写入失败则回滚已写入的窗口并返回 nil（不做 peek）。
+    private func beginManualHide() -> [(AXUIElement, Bool)]? {
+        guard let windows = dockWindows(), !windows.isEmpty else {
+            dlog("no dock windows")
+            return nil
+        }
+
+        var targets: [(AXUIElement, Bool)] = []
+        for window in windows {
+            guard let original = copyManualHide(window) else { continue }
+            targets.append((window, original))
+        }
+        guard !targets.isEmpty else {
+            dlog("no dock window with AXManualHide attribute")
+            dumpDockWindowAttributes(windows)
+            return nil
+        }
+
+        var applied: [(AXUIElement, Bool)] = []
+        for (window, original) in targets {
+            let err = AXUIElementSetAttributeValue(window, Self.manualHideAttribute, kCFBooleanFalse)
+            if err == .success {
+                applied.append((window, original))
+            } else {
+                dlog("set AXManualHide=false failed \(err.rawValue), rolling back")
+                restoreManualHide(applied)
+                return nil
+            }
+        }
+        return targets
     }
 
-    private static func currentPointerLocation() -> CGPoint {
-        CGEvent(source: nil)?.location ?? NSEvent.mouseLocation.flippedPoint()
+    /// 写回读取到的原值（而不是一律 true，避免碰掉系统本来就 manual=false 的状态）
+    private func restoreManualHide(_ targets: [(AXUIElement, Bool)]) {
+        for (window, original) in targets {
+            let err = AXUIElementSetAttributeValue(
+                window,
+                Self.manualHideAttribute,
+                original ? kCFBooleanTrue : kCFBooleanFalse
+            )
+            if err != .success {
+                dlog("restore AXManualHide failed \(err.rawValue)")
+            }
+        }
     }
 
-    // MARK: - Dock 几何（CGEvent/AX 全局坐标 = 主屏左上原点）
+    private func copyManualHide(_ window: AXUIElement) -> Bool? {
+        var raw: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(window, Self.manualHideAttribute, &raw) == .success,
+              let raw,
+              CFGetTypeID(raw) == CFBooleanGetTypeID() else { return nil }
+        return CFBooleanGetValue((raw as! CFBoolean))
+    }
 
-    /// 返回 Dock 边缘的「贴边点」与「先到的内侧点」。
-    /// Dock 屏幕取菜单栏所在主屏，方向读 com.apple.dock 的 orientation。
-    private static func dockEdgePoints() -> (edge: CGPoint, inside: CGPoint)? {
-        guard let screen = NSScreen.screens.first else { return nil }
-        let union = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }
-        let frame = CGRect(
-            x: screen.frame.minX,
-            y: union.maxY - screen.frame.maxY,
-            width: screen.frame.width,
-            height: screen.frame.height
-        )
-        switch readOrientation() {
-        case .left:
-            let point = CGPoint(x: frame.minX + inFromEdgePt, y: frame.midY)
-            return (CGPoint(x: frame.minX + 1, y: frame.midY), point)
-        case .right:
-            let point = CGPoint(x: frame.maxX - inFromEdgePt, y: frame.midY)
-            return (CGPoint(x: frame.maxX - 1, y: frame.midY), point)
-        case .bottom:
-            let point = CGPoint(x: frame.midX, y: frame.maxY - inFromEdgePt)
-            return (CGPoint(x: frame.midX, y: frame.maxY - 1), point)
+    private func dockWindows() -> [AXUIElement]? {
+        guard let dock = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.dock").first else {
+            return nil
+        }
+        let dockElement = AXUIElementCreateApplication(dock.processIdentifier)
+        var raw: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(dockElement, kAXWindowsAttribute as CFString, &raw) == .success,
+              let value = raw else { return nil }
+        return value as? [AXUIElement]
+    }
+
+    /// 诊断：Dock 窗口的 AX 属性名列表（排查 AXManualHide 在新系统上的变化）
+    private func dumpDockWindowAttributes(_ windows: [AXUIElement]) {
+        guard debug else { return }
+        for (i, window) in windows.enumerated() {
+            var namesRaw: CFArray?
+            guard AXUIElementCopyAttributeNames(window, &namesRaw) == .success,
+                  let names = namesRaw as? [String] else { continue }
+            dlog("dock window[\(i)] attributes: \(names.joined(separator: ", "))")
         }
     }
 
     private func dlog(_ message: @autoclosure () -> String) {
         guard debug else { return }
         ZSLog("DockPeek: \(message())")
-    }
-}
-
-private extension NSPoint {
-    /// NSEvent.mouseLocation（左下原点）→ CGEvent 全局坐标（左上原点）
-    func flippedPoint() -> CGPoint {
-        let union = NSScreen.screens.reduce(CGRect.null) { $0.union($1.frame) }
-        return CGPoint(x: x, y: union.maxY - y)
     }
 }

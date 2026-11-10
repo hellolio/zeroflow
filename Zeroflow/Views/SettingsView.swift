@@ -639,7 +639,7 @@ struct SettingsView: View {
                         )
                     }
                     VStack(alignment: .leading, spacing: 6) {
-                        LabeledContent(L10n.tr("指针贴边停留时长")) {
+                        LabeledContent(L10n.tr("Dock 停留时长")) {
                             Text("\(store.dockPeekHoldMs) ms")
                                 .monospacedDigit()
                                 .foregroundColor(.secondary)
@@ -657,7 +657,7 @@ struct SettingsView: View {
                     Text(L10n.tr("需要系统先在「桌面与 Dock → 自动显示和隐藏 Dock」中开启自动隐藏，此功能才可用。"))
                 } else {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(L10n.tr("按热键后，指针被移到 Dock 所在屏幕边缘短暂弹出 Dock，随后自动还原到原位；Dock 收起时机由 macOS 自己管理。"))
+                        Text(L10n.tr("按热键后，自动隐藏的 Dock 会短暂弹出便于查看图标，停留时长结束后 Dock 自动收起；不移动鼠标指针，也不修改系统的 Dock 隐藏设置。"))
                         Text(L10n.tr("默认热键为 Option（⌥），仅支持修饰键组合（⌘ / ⇧ / ⌃ / ⌥）。"))
                     }
                 }

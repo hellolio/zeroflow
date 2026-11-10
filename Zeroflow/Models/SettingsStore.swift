@@ -423,7 +423,7 @@ final class SettingsStore: ObservableObject {
         }
     }
 
-    /// 热键触发后指针贴边停留多久再回原位（毫秒）；期间 Dock 弹出，还原后由系统自行收起
+    /// 热键触发后 Dock 弹出停留多久再自动收起（毫秒）；不移动指针，收起时机交给 macOS
     @Published var dockPeekHoldMs: Int {
         didSet {
             defaults.set(dockPeekHoldMs, forKey: Keys.dockPeekHoldMs)
