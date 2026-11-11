@@ -884,59 +884,39 @@
     "en": "Use the macOS 26 Liquid Glass effect for the editor window; older systems fall back to a frosted background. Turn off to use the default background.",
     "ja": "編集ウィンドウに macOS 26 のリキッドグラス効果を使用します。古いシステムではすりガラスにフォールバックします。オフにすると既定の背景を使用します。"
   },
-  "自动隐藏时按快捷键弹出 Dock": {
-    "zh-Hans": "自动隐藏时按快捷键弹出 Dock",
-    "en": "Reveal Dock with a Hotkey (Auto-Hidden Dock)",
-    "ja": "非表示 Dock をホットキーで一時的に表示"
+  "鼠标": {
+    "zh-Hans": "鼠标",
+    "en": "Mouse",
+    "ja": "マウス"
   },
-  "自动隐藏时弹出": {
-    "zh-Hans": "自动隐藏时弹出",
-    "en": "Reveal While Auto-Hidden",
-    "ja": "非表示時に一時表示"
+  "垂直滚动反向": {
+    "zh-Hans": "垂直滚动反向",
+    "en": "Reverse vertical scrolling",
+    "ja": "垂直スクロールを反転"
   },
-  "需要系统先在「桌面与 Dock → 自动显示和隐藏 Dock」中开启自动隐藏，此功能才可用。": {
-    "zh-Hans": "需要系统先在「桌面与 Dock → 自动显示和隐藏 Dock」中开启自动隐藏，此功能才可用。",
-    "en": "Requires \"Desktop & Dock → Automatically hide and show the Dock\" to be enabled in System Settings.",
-    "ja": "システム設定の「デスクトップと Dock → Dock を自動的に表示/非表示」をオンにする必要があります。"
+  "水平滚动反向": {
+    "zh-Hans": "水平滚动反向",
+    "en": "Reverse horizontal scrolling",
+    "ja": "水平スクロールを反転"
   },
-  "需要「辅助功能」权限才能移动鼠标指针": {
-    "zh-Hans": "需要「辅助功能」权限才能移动鼠标指针",
-    "en": "Requires Accessibility permission to move the mouse pointer",
-    "ja": "「アクセシビリティ」権限でマウスポインタを移動します"
+  "翻转鼠标滚动方向": {
+    "zh-Hans": "翻转鼠标滚动方向",
+    "en": "Reverse mouse scrolling",
+    "ja": "マウスのスクロール方向を反転"
   },
-  "指针贴边停留时长": {
-    "zh-Hans": "指针贴边停留时长",
-    "en": "Dwell time at the Dock edge",
-    "ja": "Dock 端の待機時間"
+  "只对传统滚轮鼠标生效，触控板与妙控鼠标不受影响。垂直对应滚轮上下滚动；水平对应倾斜滚轮或 Shift+滚轮。两个方向可分别开关，关闭后立即恢复系统方向。": {
+    "zh-Hans": "只对传统滚轮鼠标生效，触控板与妙控鼠标不受影响。垂直对应滚轮上下滚动；水平对应倾斜滚轮或 Shift+滚轮。两个方向可分别开关，关闭后立即恢复系统方向。",
+    "en": "Applies only to traditional scroll-wheel mice; trackpads and Magic Mouse are unaffected. Vertical covers scrolling the wheel up/down; horizontal covers tilting the wheel or Shift+scroll. Each direction can be toggled independently, and turning it off restores the system direction immediately.",
+    "ja": "従来のホイールマウスのみに適用され、トラックパッドや Magic Mouse には影響しません。垂直はホイールの上下スクロール、水平はホイールの左右傾斜または Shift+スクロールに対応します。各方向は個別に切り替えられ、オフにするとシステムの方向にすぐ戻ります。"
   },
-  "按热键后，指针被移到 Dock 所在屏幕边缘短暂弹出 Dock，随后自动还原到原位；Dock 收起时机由 macOS 自己管理。": {
-    "zh-Hans": "按热键后，指针被移到 Dock 所在屏幕边缘短暂弹出 Dock，随后自动还原到原位；Dock 收起时机由 macOS 自己管理。",
-    "en": "After the hotkey, the pointer moves to the Dock edge to briefly reveal the Dock, then returns to its original spot. macOS decides when the Dock hides again.",
-    "ja": "ホットキーを押すとポインタが Dock のある画面端へ移動して Dock を一瞬表示し、元の位置へ戻ります。Dock を隠すタイミングは macOS が管理します。"
+  "需要「辅助功能」权限才能翻转鼠标滚动方向": {
+    "zh-Hans": "需要「辅助功能」权限才能翻转鼠标滚动方向",
+    "en": "Accessibility permission is required to reverse mouse scrolling",
+    "ja": "マウスのスクロール方向を反転するには「アクセシビリティ」権限が必要です"
   },
-  "默认热键为 Option（⌥），仅支持修饰键组合（⌘ / ⇧ / ⌃ / ⌥）。": {
-    "zh-Hans": "默认热键为 Option（⌥），仅支持修饰键组合（⌘ / ⇧ / ⌃ / ⌥）。",
-    "en": "Default hotkey is Option (⌥). Only modifier-key combinations are supported (⌘ / ⇧ / ⌃ / ⌥).",
-    "ja": "既定ホットキーは Option（⌥）。修飾キーの組み合わせのみ対応（⌘ / ⇧ / ⌃ / ⌥）。"
-  },
-  "按住修饰键…": {
-    "zh-Hans": "按住修饰键…",
-    "en": "Press and hold modifiers…",
-    "ja": "修飾キーを押して…"
-  },
-  "此功能只支持修饰键组合（⌘ / ⇧ / ⌃ / ⌥），请只按修饰键": {
-    "zh-Hans": "此功能只支持修饰键组合（⌘ / ⇧ / ⌃ / ⌥），请只按修饰键",
-    "en": "Only modifier combinations (⌘ / ⇧ / ⌃ / ⌥) are supported. Press modifiers only.",
-    "ja": "修飾キーの組み合わせのみ対応（⌘ / ⇧ / ⌃ / ⌥）。修飾キーだけを押してください"
-  },
-  "录制期间请勿点击鼠标，只按修饰键": {
-    "zh-Hans": "录制期间请勿点击鼠标，只按修饰键",
-    "en": "Don't click the mouse while capturing — press modifiers only.",
-    "ja": "キャプチャ中はマウスをクリックせず、修飾キーだけを押してください"
-  },
-  "未设置": {
-    "zh-Hans": "未设置",
-    "en": "Not Set",
-    "ja": "未設定"
+  "该权限与 Dock 单击最小化、窗口切换器等功能共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 单击最小化、窗口切换器等功能共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock click-to-minimize, the window switcher and other features; if it is already granted, this row shows green.",
+    "ja": "この権限は Dock のクリック最小化やウィンドウスイッチャーなどと共通です。すでに許可されている場合はここに緑色で表示されます。"
   }
 }

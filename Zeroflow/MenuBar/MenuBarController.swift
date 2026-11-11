@@ -62,8 +62,8 @@ final class MenuBarController: NSObject, NSApplicationDelegate {
         // Dock 单击最小化：按开关初始状态启停（开关变化由 DockClickMinimizer 自行监听恢复）
         DockClickMinimizer.shared.reapply()
 
-        // Dock 快捷键弹出（自动隐藏时）：按开关初始状态启停（开关变化由 DockPeekManager 自行监听恢复）
-        DockPeekManager.shared.reapply()
+        // 鼠标滚轮方向翻转：按开关初始状态启停（开关变化由 MouseScrollReverser 自行监听恢复）
+        MouseScrollReverser.shared.reapply()
 
         // 窗口切换器：按开关初始状态启停（开关变化由 CommandTabSwitcher 自行监听恢复）
         CommandTabSwitcher.shared.reapply()
