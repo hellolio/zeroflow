@@ -53,6 +53,8 @@ final class SettingsStore: ObservableObject {
         static let clipboardShortcutModifiers = "clipboardShortcut.modifiers"
         static let clipboardPreviewDelayMs = "clipboardPreviewDelayMs"
         static let clipboardMaxItems = "clipboardMaxItems"
+        static let reverseMouseScrollVertical = "reverseMouseScrollVertical"
+        static let reverseMouseScrollHorizontal = "reverseMouseScrollHorizontal"
     }
 
     private let defaults: UserDefaults
@@ -139,6 +141,8 @@ final class SettingsStore: ObservableObject {
             Keys.clipboardShortcutModifiers: Int(ShortcutKey.clipboardDefault.modifiers.rawValue),
             Keys.clipboardPreviewDelayMs: 1000,
             Keys.clipboardMaxItems: 100,
+            Keys.reverseMouseScrollVertical: false,
+            Keys.reverseMouseScrollHorizontal: false,
         ])
         _launchAtLogin = Published(initialValue: defaults.bool(forKey: Keys.launchAtLogin))
         _saveDirectory = Published(initialValue: defaults.string(forKey: Keys.saveDirectory) ?? Self.defaultSaveDirectory)
@@ -174,6 +178,8 @@ final class SettingsStore: ObservableObject {
         _clipboardEnabled = Published(initialValue: defaults.bool(forKey: Keys.clipboardEnabled))
         _clipboardPreviewDelayMs = Published(initialValue: defaults.integer(forKey: Keys.clipboardPreviewDelayMs))
         _clipboardMaxItems = Published(initialValue: defaults.integer(forKey: Keys.clipboardMaxItems))
+        _reverseMouseScrollVertical = Published(initialValue: defaults.bool(forKey: Keys.reverseMouseScrollVertical))
+        _reverseMouseScrollHorizontal = Published(initialValue: defaults.bool(forKey: Keys.reverseMouseScrollHorizontal))
         _appLanguage = Published(initialValue: AppLanguage(rawValue: defaults.string(forKey: Keys.appLanguage) ?? "") ?? .system)
         ensureDefaultDirectoryExists()
         // 用本次加载的真实值补齐 group container 共享文件（didSet 只在变更时触发）
@@ -591,6 +597,32 @@ final class SettingsStore: ObservableObject {
             defaults.set(clipboardMaxItems, forKey: Keys.clipboardMaxItems)
             ClipboardHistoryStore.shared.trimToLimit()
         }
+    }
+
+    // MARK: - 鼠标滚动方向
+
+    /// 翻转传统滚轮鼠标的垂直滚动方向（触控板不受影响）
+    @Published var reverseMouseScrollVertical: Bool {
+        didSet {
+            defaults.set(reverseMouseScrollVertical, forKey: Keys.reverseMouseScrollVertical)
+            notifyMouseScrollReverser()
+        }
+    }
+
+    /// 翻转传统滚轮鼠标的水平滚动方向（倾斜滚轮 / Shift+滚轮）
+    @Published var reverseMouseScrollHorizontal: Bool {
+        didSet {
+            defaults.set(reverseMouseScrollHorizontal, forKey: Keys.reverseMouseScrollHorizontal)
+            notifyMouseScrollReverser()
+        }
+    }
+
+    private func notifyMouseScrollReverser() {
+        NotificationCenter.default.post(
+            name: MouseScrollReverser.didChangeNotification,
+            object: nil,
+            userInfo: ["enabled": reverseMouseScrollVertical || reverseMouseScrollHorizontal]
+        )
     }
 
     // MARK: - 语言

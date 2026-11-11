@@ -5,6 +5,7 @@ import FinderSync
 /// 设置页标签页
 enum SettingsTab: String, CaseIterable {
     case general = "通用"
+    case mouse = "鼠标"
     case screenshot = "截图"
     case switcher = "切换"
     case dock = "Dock"
@@ -43,6 +44,8 @@ struct SettingsView: View {
                 switch selectedTab {
                 case .general:
                     generalTab
+                case .mouse:
+                    mouseTab
                 case .screenshot:
                     screenshotTab
                 case .switcher:
@@ -181,6 +184,44 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    // MARK: - 鼠标
+
+    private var mouseTab: some View {
+        Form {
+            Section {
+                Toggle(L10n.tr("垂直滚动反向"), isOn: $store.reverseMouseScrollVertical)
+                    .onChange(of: store.reverseMouseScrollVertical) { enabled in
+                        requestAccessibilityIfNeeded(enabled)
+                    }
+                Toggle(L10n.tr("水平滚动反向"), isOn: $store.reverseMouseScrollHorizontal)
+                    .onChange(of: store.reverseMouseScrollHorizontal) { enabled in
+                        requestAccessibilityIfNeeded(enabled)
+                    }
+            } header: {
+                Text(L10n.tr("翻转鼠标滚动方向"))
+            } footer: {
+                Text(L10n.tr("只对传统滚轮鼠标生效，触控板与妙控鼠标不受影响。垂直对应滚轮上下滚动；水平对应倾斜滚轮或 Shift+滚轮。两个方向可分别开关，关闭后立即恢复系统方向。"))
+            }
+
+            if store.reverseMouseScrollVertical || store.reverseMouseScrollHorizontal {
+                Section {
+                    AccessibilityPermissionRow(message: L10n.tr("需要「辅助功能」权限才能翻转鼠标滚动方向"))
+                    Text(L10n.tr("该权限与 Dock 单击最小化、窗口切换器等功能共用，若已开启则此处直接显示绿色。"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } header: {
+                    Text(L10n.tr("权限"))
+                }
+            }
+        }
+        .formStyle(.grouped)
+    }
+
+    private func requestAccessibilityIfNeeded(_ enabled: Bool) {
+        guard enabled, !AccessibilityPermission.isGranted else { return }
+        AccessibilityPermission.requestAuthorization()
     }
 
     // MARK: - 切换（⌘⇥ 窗口切换器）

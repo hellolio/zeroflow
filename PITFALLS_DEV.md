@@ -229,3 +229,8 @@
 - **Pitfall:** 想做「按修饰键热键让自动隐藏的 Dock 短暂弹出看清图标」：合成 `mouseMoved` 把指针瞬移到屏幕边缘再移回，功能能看到弹出，但指针被瞬移会打断用户手上的指向/悬停（编辑器画线、拖拽、悬停卡片都跳），体验不可接受；改用未文档化 AX 属性 `AXManualHide` 的方案，在本机 macOS 26/27 上完全读不到该属性，功能无法实现，最终整体移除（不要再重新尝试这条路）。
 - **Cause:** ① Dock 的自动隐藏弹出只认物理指针贴边，基于指针的触发必然要动真实光标；② `AXManualHide` 只存在于旧版本 macOS 的 Dock AX 树，本机实测 Dock 进程 AX 子树共 17 个元素（AXApplication / AXList / AXDockItem×15），`AXUIElementCopyAttributeNames` 的属性列表里没有任何 `AXManualHide`，即使先 `AXUIElementSetAttributeValue(dockApp, "AXEnhancedUserInterface", kCFBooleanTrue)` 成功（err=0）也不会出现。
 - **Prevention:** 排查 Dock 的 AX 结构时注意 **`kAXWindowsAttribute` 在 Dock 上返回空数组**，Dock 的图标元素挂在 `kAXChildrenAttribute` 子树里（`DockHoverPreviewController` 的建缓存逻辑即按此枚举，DEV 见其 1121 行附近注释）；要按 role 递归枚举，别指望 `kAXWindowsAttribute`。想验证某个未文档化属性是否存在，用 `AXUIElementCopyAttributeNames` dump 整棵子树的 role + 属性名，再决定方案；若目标属性不存在，直接放弃功能，不要回退到移动指针的方案。
+
+## DEV-046: 翻转鼠标滚轮只能走事件层,且必须区分鼠标/触控板与合成事件
+- **Pitfall:** 改系统「自然滚动」偏好(`com.apple.swipescrolldirection`)会把触控板一起反转;在 CGEventTap 里不区分来源,两指滚动也会被翻转;不排除 `eventSourceUnixProcessID != 0` 的事件,会和其他滚动工具(或驱动软件)叠加成双重反转。把 `DeltaAxis` 取反后立即读回 `PointDelta` 会发现系统已按倍数重算;若先写 Point/FixedPt 再写 DeltaAxis,取反结果被覆盖,方向偶发不生效。
+- **Cause:** 触控板与妙控鼠标的 scrollWheel 恒为 `scrollWheelEventIsContinuous == 1`,传统滚轮鼠标为 0;手势/惯性阶段的事件同样进 tap。`CGEventSetIntegerValueField(kCGScrollWheelEventDeltaAxis1)` 会让 macOS 内部重算 `FixedPtDelta`(1x)与 `PointDelta`(实测合成 line 事件是 10x),覆盖顺序决定最终增量。
+- **Prevention:** 只对 `continuous == 0 && scrollPhase == 0 && momentumPhase == 0 && pid == 0` 的事件取反,垂直/水平分别处理 axis1/axis2;写字段顺序固定为 `DeltaAxis → FixedPtDelta → PointDelta`(后写保住高精度滚轮的加速度),实测取反后三个字段同号且量级不变。tap 需辅助功能权限:沿用 `DockClickMinimizer` 的独立线程 runloop + 2s 重试建 tap(授权后无需重启),布局校验用 `ZEROFLOW_SCROLL_DEBUG=1` 打印 `continuous/phase/momentum/pid/增量`,触控板事件应全部是 continuous=1。
