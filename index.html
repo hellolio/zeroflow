@@ -93,6 +93,8 @@
     color:var(--muted);font-size:15px;line-height:1.7;
   }
   .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+  /* 两个卡片等宽：inline-grid + 1fr 让两列都取最宽那个的内容宽度 */
+  .dl-row{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
   .btn{
     display:inline-flex;align-items:center;gap:8px;
     height:44px;padding:0 22px;border-radius:10px;
@@ -108,6 +110,20 @@
   .btn-ghost{border:1px solid var(--line-strong);color:var(--text);background:rgba(255,255,255,.02)}
   .btn-ghost:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.24)}
   .btn svg{width:16px;height:16px}
+  /* ---------- 下载按钮：两个架构平铺，包体积在第二行 ---------- */
+  .btn.dl-card{
+    position:relative;height:auto;padding:11px 20px;gap:10px;justify-content:center;min-width:188px;
+  }
+  .dl-text{display:flex;flex-direction:column;line-height:1.3;text-align:center}
+  .dl-name{display:block;font-size:14px;font-weight:560;letter-spacing:-.01em;white-space:nowrap}
+  .dl-size{
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;
+    font-size:11.5px;opacity:.62;font-variant-numeric:tabular-nums;letter-spacing:.01em;
+  }
+  /* 「你的 Mac」跟在体积后面：放在第一行会把两行都撑歪 */
+  .dl-tag{font-size:10px;letter-spacing:.02em;opacity:.85;white-space:nowrap}
+  .dl-tag::before{content:"· ";opacity:.6}
+  .dl-tag[hidden]{display:none}
   .dl-note{
     min-height:17px;margin-top:14px;
     font-size:12px;color:var(--muted-dim);
@@ -268,18 +284,26 @@
       <p class="tagline" data-i18n="hero.tagline">七种 macOS 效率工具，一个菜单栏图标</p>
       <p class="sub" data-i18n="hero.sub">截图标注、窗口切换、Dock 增强、剪贴板历史、灵动岛。原生 Swift 编写，零第三方依赖，常驻内存极低。</p>
       <div class="cta">
-        <a class="btn btn-primary" id="dl" href="https://github.com/hellolio/zeroflow/releases/latest">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/>
-          </svg>
-          <span data-i18n="hero.download">下载 DMG</span>
+        <div class="dl-row">
+        <a class="btn btn-primary dl-card" id="dlArm" href="https://github.com/hellolio/zeroflow/releases/latest">
+          <span class="dl-text">
+            <span class="dl-name" data-i18n="hero.dlArm">下载 ARM 版本</span>
+            <span class="dl-size">
+              <span class="dl-size-num" data-size="arm"></span>
+              <span class="dl-tag" id="tagArm" hidden data-i18n="hero.yourMac">你的 Mac</span>
+            </span>
+          </span>
         </a>
-        <a class="btn btn-ghost" href="https://github.com/hellolio/zeroflow" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.85-2.34 4.7-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2Z"/>
-          </svg>
-          <span>GitHub</span>
+        <a class="btn btn-ghost dl-card" id="dlIntel" href="https://github.com/hellolio/zeroflow/releases/latest">
+          <span class="dl-text">
+            <span class="dl-name" data-i18n="hero.dlIntel">下载 Intel 版本</span>
+            <span class="dl-size">
+              <span class="dl-size-num" data-size="x86"></span>
+              <span class="dl-tag" id="tagIntel" hidden data-i18n="hero.yourMac">你的 Mac</span>
+            </span>
+          </span>
         </a>
+        </div>
       </div>
       <p class="dl-note" id="dlNote"></p>
       <p class="meta-line" data-i18n="hero.meta">macOS 14.0 Sonoma 及以上 · MIT 开源 · 免费无广告</p>
@@ -441,7 +465,7 @@
       <ol class="steps">
         <li>
           <span data-i18n="install.s1">从 <a class="inline-link" href="https://github.com/hellolio/zeroflow/releases/latest" target="_blank" rel="noopener">Releases</a> 下载最新的 DMG</span>
-          <small data-i18n="install.s1s">Zeroflow-x.x.x.dmg，约几 MB。</small>
+          <small data-i18n="install.s1s">Zeroflow-x.x.x-arm64.dmg 或 -x86_64.dmg，按芯片选择，约几 MB。</small>
         </li>
         <li>
           <span data-i18n="install.s2">双击打开后，把 Zeroflow 拖入「应用程序」</span>
@@ -483,7 +507,9 @@
       "nav.install": "安装",
       "hero.tagline": "七种 macOS 效率工具，一个菜单栏图标",
       "hero.sub": "截图标注、窗口切换、Dock 增强、剪贴板历史、灵动岛。原生 Swift 编写，零第三方依赖，常驻内存极低。",
-      "hero.download": "下载 DMG",
+      "hero.dlArm": "下载 ARM 版本",
+      "hero.dlIntel": "下载 Intel 版本",
+      "hero.yourMac": "你的 Mac",
       "hero.meta": "macOS 14.0 Sonoma 及以上 · MIT 开源 · 免费无广告",
       "features.title": "功能",
       "features.lead": "全部功能收在一个菜单栏图标里，快捷键均可自定义。",
@@ -501,7 +527,7 @@
       "light.c1": "零第三方依赖", "light.c2": "单 Xcode 工程", "light.c3": "SwiftUI + AppKit", "light.c4": "安装包小 · 启动快",
       "install.title": "安装",
       "install.s1": "从 {link} 下载最新的 DMG",
-      "install.s1s": "Zeroflow-x.x.x.dmg，约几 MB。",
+      "install.s1s": "Zeroflow-x.x.x-arm64.dmg 或 -x86_64.dmg，按芯片选择，约几 MB。",
       "install.s2": "双击打开后，把 Zeroflow 拖入「应用程序」",
       "install.s3": "应用暂时未做开发者签名/公证，首次打开若提示「已损坏，无法打开」或「无法验证开发者」，任选其一：",
       "install.s3s": "① 前往 系统设置 → 隐私与安全性 → 点击「仍要打开」。",
@@ -515,7 +541,9 @@
       "nav.install": "Install",
       "hero.tagline": "Seven macOS utilities behind one menu bar icon",
       "hero.sub": "Screenshot annotation, window switching, Dock enhancements, clipboard history, Dynamic Island. Native Swift, zero third-party dependencies, minimal idle memory.",
-      "hero.download": "Download DMG",
+      "hero.dlArm": "Download ARM version",
+      "hero.dlIntel": "Download Intel version",
+      "hero.yourMac": "Your Mac",
       "hero.meta": "macOS 14.0 Sonoma or later · MIT licensed · Free, no ads",
       "features.title": "Features",
       "features.lead": "Everything lives behind a single menu bar icon, with configurable shortcuts.",
@@ -533,7 +561,7 @@
       "light.c1": "Zero dependencies", "light.c2": "Single Xcode project", "light.c3": "SwiftUI + AppKit", "light.c4": "Small download, fast launch",
       "install.title": "Install",
       "install.s1": "Download the latest DMG from {link}",
-      "install.s1s": "Zeroflow-x.x.x.dmg — only a few MB.",
+      "install.s1s": "Zeroflow-x.x.x-arm64.dmg or -x86_64.dmg — pick the one for your chip, only a few MB.",
       "install.s2": "Double-click to open, then drag Zeroflow into the Applications folder",
       "install.s3": "Zeroflow is not code-signed or notarized yet. If the first launch reports \"is damaged and can't be opened\" or \"cannot be opened because the developer cannot be verified\", pick either option:",
       "install.s3s": "① Go to System Settings → Privacy & Security → click \"Open Anyway\".",
@@ -547,7 +575,9 @@
       "nav.install": "インストール",
       "hero.tagline": "メニューバーのアイコン1つに、7つの macOS ユーティリティ",
       "hero.sub": "スクリーンショット注釈、ウィンドウ切り替え、Dock 拡張、クリップボード履歴、ダイナミックアイランド。ネイティブ Swift 製、サードパーティ依存ゼロ、常駐メモリはごくわずか。",
-      "hero.download": "DMG をダウンロード",
+      "hero.dlArm": "arm 版をダウンロード",
+      "hero.dlIntel": "Intel 版をダウンロード",
+      "hero.yourMac": "この Mac",
       "hero.meta": "macOS 14.0 Sonoma 以降 · MIT ライセンス · 無料・広告なし",
       "features.title": "機能",
       "features.lead": "すべての機能がメニューバーのアイコン1つに。ショートカットは変更可能です。",
@@ -565,7 +595,7 @@
       "light.c1": "サードパーティ依存ゼロ", "light.c2": "単一 Xcode プロジェクト", "light.c3": "SwiftUI + AppKit", "light.c4": "軽い配布物・高速起動",
       "install.title": "インストール",
       "install.s1": "{link} から最新の DMG をダウンロード",
-      "install.s1s": "Zeroflow-x.x.x.dmg、数 MB 程度。",
+      "install.s1s": "Zeroflow-x.x.x-arm64.dmg または -x86_64.dmg、チップに合わせて選択。数 MB 程度。",
       "install.s2": "ダブルクリックして開き、Zeroflow を「アプリケーション」フォルダにドラッグしてください",
       "install.s3": "Zeroflow はまだコード署名・公証を行っていません。初回起動時に「壊れているため開けません」または「開発元を確認できないため開けません」と表示された場合は、次のいずれかを行ってください：",
       "install.s3s": "① システム設定 → プライバシーとセキュリティ → 「このまま開く」をクリック。",
@@ -663,33 +693,93 @@
     });
   }
 
-  // 解析最新 Release 的 DMG 直链：点击按钮即在本页直接下载，不跳转 Release 页
+  // ---------- 下载区：两个架构平铺 + 最新 Release 直链 ----------
+  var ASSET_RE = { arm: /-arm64\.dmg$/i, x86: /-x86_64\.dmg$/i };
+  var assets = { arm: null, x86: null };
+
+  function fmtSize(asset) {
+    return asset ? (asset.size / 1048576).toFixed(1) + " MB" : "";
+  }
+
+  // 第二行小字 = 包体积
+  function renderSizes() {
+    document.querySelectorAll(".dl-size-num").forEach(function (el) {
+      el.textContent = fmtSize(assets[el.dataset.size]);
+    });
+  }
+
+  // 直链：该架构的包还没出时退回 Releases 页
+  function bindLinks() {
+    [["arm", "dlArm"], ["x86", "dlIntel"]].forEach(function (pair) {
+      var el = document.getElementById(pair[1]);
+      var asset = assets[pair[0]];
+      if (!el) return;
+      if (asset) {
+        el.href = asset.browser_download_url;
+        el.setAttribute("download", asset.name);
+      } else {
+        el.href = RELEASES_URL;
+        el.removeAttribute("download");
+      }
+    });
+  }
+
+  // 浏览器报得出真实芯片架构时，把对应按钮升为主按钮并打「你的 Mac」标记；
+  // Safari 一律报 MacIntel，检测不到就保持 arm64 为主、两边都不打标记。
+  function applyDetectedArch(arch) {
+    if (!arch) return;
+    var isX86 = arch === "x86";
+    var primary = document.getElementById(isX86 ? "dlIntel" : "dlArm");
+    var secondary = document.getElementById(isX86 ? "dlArm" : "dlIntel");
+    if (!primary || !secondary) return;
+    primary.classList.remove("btn-ghost");
+    primary.classList.add("btn-primary");
+    secondary.classList.remove("btn-primary");
+    secondary.classList.add("btn-ghost");
+    var tag = document.getElementById(isX86 ? "tagIntel" : "tagArm");
+    if (tag) tag.hidden = false;
+  }
+
+  function detectArch() {
+    var ua = navigator.userAgentData;
+    if (!ua || typeof ua.getHighEntropyValues !== "function") return Promise.resolve(null);
+    return ua.getHighEntropyValues(["architecture"]).then(function (v) {
+      var a = String((v && v.architecture) || "").toLowerCase();
+      return a === "arm" ? "arm" : (a === "x86" ? "x86" : null);
+    }).catch(function () { return null; });
+  }
+
   (function resolveDownload() {
-    var dl = document.getElementById("dl");
-    var note = document.getElementById("dlNote");
-    if (!dl || !window.fetch) return;
-    var FALLBACK = RELEASES_URL;
+    if (!window.fetch) return;
     fetch("https://api.github.com/repos/hellolio/zeroflow/releases/latest", {
       headers: { Accept: "application/vnd.github+json" }
     }).then(function (r) {
       if (!r.ok) throw new Error("HTTP " + r.status);
       return r.json();
     }).then(function (rel) {
-      var dmg = (rel.assets || []).filter(function (a) {
-        return /\.dmg$/i.test(a.name);
-      })[0];
-      if (!dmg) throw new Error("no dmg asset");
-      dl.href = dmg.browser_download_url;
-      dl.setAttribute("download", dmg.name);
+      var list = rel.assets || [];
+      var pick = function (re) {
+        for (var i = 0; i < list.length; i++) {
+          if (re.test(list[i].name)) return list[i];
+        }
+        return null;
+      };
+      assets.arm = pick(ASSET_RE.arm);
+      assets.x86 = pick(ASSET_RE.x86);
+      if (!assets.arm && !assets.x86) throw new Error("no dmg asset");
+      var note = document.getElementById("dlNote");
       if (note) {
         var ver = String(rel.tag_name || "").replace(/^v/i, "");
-        var mb = (dmg.size / 1048576).toFixed(1);
-        note.textContent = (ver ? "v" + ver + " · " : "") + mb + " MB";
+        note.textContent = ver ? "v" + ver : "";
       }
+      renderSizes();
+      bindLinks();
     }).catch(function () {
-      dl.href = FALLBACK; // API 不可用（限流 / 离线）时回到 Releases 页
+      // API 不可用（限流 / 离线）：按钮已指向 Releases 页，无需额外处理
     });
   })();
+
+  detectArch().then(applyDetectedArch);
 
   document.getElementById("year").textContent = new Date().getFullYear();
   apply(guess());
