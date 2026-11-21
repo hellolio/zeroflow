@@ -244,9 +244,18 @@
 
   @media (max-width:640px){
     .hero{padding:64px 0 60px}
-    .nav-links{display:none}
+    /* 移动端保留导航：靠压缩间距/字号塞下，不整条藏掉 */
+    .wrap{padding:0 18px}
+    .nav-inner{gap:10px}
+    .nav-links{gap:12px;font-size:12px}
+    .lang{padding:2px}
+    .lang button{padding:3px 6px;font-size:11px}
     .light{padding:26px 20px}
     .foot-links{margin-left:0}
+  }
+  /* 超窄机型（≤359px）实在放不下：只留 GitHub，功能/安装靠滚动即可到达 */
+  @media (max-width:359px){
+    .nav-links a[data-i18n]{display:none}
   }
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
