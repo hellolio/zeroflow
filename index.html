@@ -191,7 +191,8 @@
   }
 
   /* ---------- install ---------- */
-  .steps{list-style:none;counter-reset:s;display:grid;gap:2px;margin-top:6px}
+  /* minmax(0,1fr)：默认 grid 列宽会被 .code 里 nowrap 的 min-content 撑破容器 */
+  .steps{list-style:none;counter-reset:s;display:grid;grid-template-columns:minmax(0,1fr);gap:2px;margin-top:6px}
   .steps li{
     counter-increment:s;position:relative;
     padding:16px 0 16px 46px;border-bottom:1px solid var(--line);
@@ -250,6 +251,10 @@
     .nav-links{gap:12px;font-size:12px}
     .lang{padding:2px}
     .lang button{padding:3px 6px;font-size:11px}
+    /* 两张下载卡等分容器宽度，不再被 188px 的 min-width 顶出屏幕 */
+    .dl-row{width:100%}
+    .btn.dl-card{min-width:0;padding:11px 10px}
+    .dl-name{font-size:13px}
     .light{padding:26px 20px}
     .foot-links{margin-left:0}
   }
