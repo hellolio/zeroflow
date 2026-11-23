@@ -234,6 +234,75 @@
   }
   .code button:hover{color:var(--text);border-color:var(--line-strong)}
 
+  /* ---------- QQ 群 ---------- */
+  .qq{margin-top:20px;display:flex;justify-content:center}
+  .qq-btn{
+    height:38px;padding:0 16px;font-size:13px;font-weight:520;
+    color:var(--muted);border:1px solid var(--line);
+    background:rgba(255,255,255,.02);cursor:pointer;
+  }
+  .qq-btn:hover{color:var(--text);border-color:var(--line-strong);background:rgba(255,255,255,.055)}
+  .qq-btn svg{width:15px;height:15px}
+  .qq-no{
+    font-family:ui-monospace,"SF Mono",Menlo,monospace;
+    font-size:12px;color:var(--muted-dim);letter-spacing:.02em;
+    margin-left:1px;padding-left:9px;border-left:1px solid var(--line);
+  }
+
+  .qq-modal{
+    position:fixed;inset:0;z-index:60;
+    display:grid;place-items:center;padding:20px;
+    background:rgba(4,5,7,.74);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  }
+  .qq-modal[hidden]{display:none}
+  .qq-card{
+    position:relative;width:min(322px,100%);
+    padding:26px 24px 22px;text-align:center;
+    background:var(--bg-elev);border:1px solid var(--line-strong);
+    border-radius:18px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.92);
+    animation:qqIn .19s cubic-bezier(.2,.8,.3,1);
+  }
+  .qq-card:focus{outline:none}
+  @keyframes qqIn{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:none}}
+  .qq-qr{
+    display:block;width:192px;height:192px;margin:0 auto;
+    border-radius:12px;background:#fff;padding:8px;object-fit:contain;
+    /* 图片未就位时白底上还能看到 alt 提示，不至于是一片空白 */
+    color:#5A6470;font-size:12px;line-height:1.5;text-align:center;
+  }
+  .qq-card h3{margin-top:16px;font-size:15px;font-weight:600;letter-spacing:-.012em}
+  .qq-card .qq-hint{margin-top:6px;font-size:12.5px;line-height:1.6;color:var(--muted-dim)}
+  .qq-id{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:15px}
+  .qq-id code{
+    font-family:ui-monospace,"SF Mono",Menlo,monospace;
+    font-size:14px;letter-spacing:.06em;color:var(--text);
+    font-variant-numeric:tabular-nums;
+    padding:7px 12px;border-radius:8px;
+    border:1px solid var(--line);background:var(--bg-code);
+  }
+  .qq-id button{
+    font:inherit;font-size:12px;color:var(--muted);
+    background:rgba(255,255,255,.05);border:1px solid var(--line);
+    border-radius:8px;padding:7px 12px;cursor:pointer;transition:all .18s;
+  }
+  .qq-id button:hover{color:var(--text);border-color:var(--line-strong)}
+  .qq-open{
+    display:inline-block;margin-top:15px;font-size:12.5px;
+    color:var(--accent);border-bottom:1px solid rgba(76,141,255,.45);padding-bottom:1px;
+    transition:color .18s,border-color .18s;
+  }
+  .qq-open:hover{color:#7FAEFF;border-color:#7FAEFF}
+  .qq-close{
+    position:absolute;top:11px;right:11px;
+    width:28px;height:28px;border-radius:8px;
+    display:grid;place-items:center;
+    font-size:17px;line-height:1;color:var(--muted-dim);
+    background:none;border:0;cursor:pointer;transition:all .18s;
+  }
+  .qq-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
+
   /* ---------- footer ---------- */
   footer{border-top:1px solid var(--line);padding:30px 0 44px}
   .foot{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;font-size:13px;color:var(--muted-dim)}
@@ -256,6 +325,7 @@
     .btn.dl-card{min-width:0;padding:11px 10px}
     .dl-name{font-size:13px}
     .light{padding:26px 20px}
+    .qq-qr{width:168px;height:168px}
     .foot-links{margin-left:0}
   }
   /* 超窄机型（≤359px）实在放不下：只留 GitHub，功能/安装靠滚动即可到达 */
@@ -264,7 +334,7 @@
   }
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto}
-    *{transition:none!important}
+    *{transition:none!important;animation:none!important}
   }
 </style>
 </head>
@@ -321,6 +391,17 @@
       </div>
       <p class="dl-note" id="dlNote"></p>
       <p class="meta-line" data-i18n="hero.meta">macOS 14.0 Sonoma 及以上</p>
+      <div class="qq">
+        <button class="btn qq-btn" id="qqOpen" type="button" aria-haspopup="dialog" aria-controls="qqModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9.5" cy="8" r="3.6"/>
+            <path d="M3.2 19.4a6.3 6.3 0 0 1 12.6 0"/>
+            <path d="M18.6 7.4v5.2M16 10h5.2"/>
+          </svg>
+          <span data-i18n="qq.btn">加入 QQ 群</span>
+          <span class="qq-no">655495010</span>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -512,6 +593,20 @@
   </div>
 </footer>
 
+<div class="qq-modal" id="qqModal" hidden>
+  <div class="qq-card" role="dialog" aria-modal="true" aria-labelledby="qqTitle" tabindex="-1">
+    <button class="qq-close" id="qqClose" type="button" data-i18n-aria="qq.close" aria-label="关闭">&times;</button>
+    <img class="qq-qr" id="qqQr" src="assets/qq-group-qr.png" alt="Zeroflow QQ 群二维码" width="192" height="192">
+    <h3 id="qqTitle" data-i18n="qq.title">扫码加入 QQ 群</h3>
+    <p class="qq-hint" data-i18n="qq.hint">手机 QQ 扫码，或复制群号在 QQ 中搜索</p>
+    <div class="qq-id">
+      <code id="qqNo">655495010</code>
+      <button type="button" id="qqCopy" data-i18n="qq.copy">复制群号</button>
+    </div>
+    <a class="qq-open" id="qqDirect" data-i18n="qq.open">在 QQ 中打开</a>
+  </div>
+</div>
+
 <script>
 (function () {
   var I18N = {
@@ -547,7 +642,13 @@
       "install.s3s": "① 前往 系统设置 → 隐私与安全性 → 点击「仍要打开」。",
       "install.s3s2": "② 或终端执行以下命令后再打开：",
       "install.copy": "复制", "install.copied": "已复制",
-      "footer.license": "", "footer.sponsor": "赞助"
+      "footer.license": "", "footer.sponsor": "赞助",
+      "qq.btn": "加入 QQ 群",
+      "qq.title": "扫码加入 QQ 群",
+      "qq.hint": "手机 QQ 扫码，或复制群号在 QQ 中搜索",
+      "qq.copy": "复制群号", "qq.copied": "已复制",
+      "qq.open": "在 QQ 中打开",
+      "qq.close": "关闭"
     },
     en: {
       "title": "Zeroflow — Seven macOS utilities behind one menu bar icon",
@@ -581,7 +682,13 @@
       "install.s3s": "① Go to System Settings → Privacy & Security → click \"Open Anyway\".",
       "install.s3s2": "② Or run the command below in Terminal, then open it again:",
       "install.copy": "Copy", "install.copied": "Copied",
-      "footer.license": "", "footer.sponsor": "Sponsor"
+      "footer.license": "", "footer.sponsor": "Sponsor",
+      "qq.btn": "Join QQ Group",
+      "qq.title": "Scan to join the QQ group",
+      "qq.hint": "Scan with mobile QQ, or copy the group number and search in QQ",
+      "qq.copy": "Copy", "qq.copied": "Copied",
+      "qq.open": "Open in QQ",
+      "qq.close": "Close"
     },
     ja: {
       "title": "Zeroflow — メニューバーのアイコン1つに、7つの macOS ユーティリティ",
@@ -615,7 +722,13 @@
       "install.s3s": "① システム設定 → プライバシーとセキュリティ → 「このまま開く」をクリック。",
       "install.s3s2": "② またはターミナルで以下のコマンドを実行してから、再度開いてください：",
       "install.copy": "コピー", "install.copied": "コピーしました",
-      "footer.license": "", "footer.sponsor": "スポンサー"
+      "footer.license": "", "footer.sponsor": "スポンサー",
+      "qq.btn": "QQ グループに参加",
+      "qq.title": "QR コードで QQ グループに参加",
+      "qq.hint": "スマホの QQ で読み取るか、グループ番号をコピーして QQ で検索してください",
+      "qq.copy": "コピー", "qq.copied": "コピーしました",
+      "qq.open": "QQ で開く",
+      "qq.close": "閉じる"
     }
   };
 
@@ -670,6 +783,12 @@
       b.setAttribute("aria-pressed", String(b.dataset.lang === current));
     });
     if (copyBtn) copyBtn.textContent = dict["install.copy"];
+    document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
+      var val = dict[el.getAttribute("data-i18n-aria")];
+      if (val) el.setAttribute("aria-label", val);
+    });
+    var qc = document.getElementById("qqCopy");
+    if (qc) qc.textContent = dict["qq.copy"];
     try { localStorage.setItem("zf-lang", current); } catch (e) {}
   }
 
@@ -703,6 +822,72 @@
         sel.removeAllRanges();
         sel.addRange(r);
         try { document.execCommand("copy"); done(); } catch (e) {}
+      }
+    });
+  }
+
+  // ---------- QQ 群：二维码弹层 + 群号复制 ----------
+  var qqModal = document.getElementById("qqModal");
+  var qqOpenBtn = document.getElementById("qqOpen");
+  var qqCloseBtn = document.getElementById("qqClose");
+  var qqCopyBtn = document.getElementById("qqCopy");
+  var qqNoEl = document.getElementById("qqNo");
+  var qqDirect = document.getElementById("qqDirect");
+  var qqCard = qqModal ? qqModal.querySelector(".qq-card") : null;
+  var qqLastFocus = null;
+
+  // 装了 QQ 的桌面端可直接唤起群资料卡；浏览器不认这个 scheme 时会静默失败，
+  // 兜底靠二维码和群号复制，所以这里不做可用性检测。
+  if (qqDirect && qqNoEl) {
+    qqDirect.href = "mqqapi://card/show_pslcard?src_type=internal&version=1&uin=" +
+      qqNoEl.textContent.trim() + "&card_type=group&source=qrcode";
+  }
+
+  function openQQ() {
+    if (!qqModal) return;
+    qqLastFocus = document.activeElement;
+    qqModal.hidden = false;
+    document.body.style.overflow = "hidden";
+    // 焦点移进对话框本身，不落到关闭按钮上（避免一开就出现蓝色焦点环）
+    if (qqCard) qqCard.focus();
+  }
+
+  function closeQQ() {
+    if (!qqModal || qqModal.hidden) return;
+    qqModal.hidden = true;
+    document.body.style.overflow = "";
+    if (qqLastFocus && qqLastFocus.focus) qqLastFocus.focus();
+  }
+
+  if (qqOpenBtn) qqOpenBtn.addEventListener("click", openQQ);
+  if (qqCloseBtn) qqCloseBtn.addEventListener("click", closeQQ);
+  if (qqModal) {
+    // 点遮罩关闭；点卡片内部不关
+    qqModal.addEventListener("click", function (e) {
+      if (e.target === qqModal) closeQQ();
+    });
+  }
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeQQ();
+  });
+
+  if (qqCopyBtn && qqNoEl) {
+    qqCopyBtn.addEventListener("click", function () {
+      var text = qqNoEl.textContent.trim();
+      var done = function () {
+        qqCopyBtn.textContent = I18N[current]["qq.copied"];
+        setTimeout(function () { qqCopyBtn.textContent = I18N[current]["qq.copy"]; }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () {});
+      } else {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); done(); } catch (err) {}
+        document.body.removeChild(ta);
       }
     });
   }
