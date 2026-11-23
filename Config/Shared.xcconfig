@@ -1,13 +1,2 @@
-// 团队共享构建设置（本文件提交进仓库，不得出现任何真实凭证）。
-//
-// DEVELOPMENT_TEAM 不写死在 project.pbxproj 里，避免 Apple Developer Team ID
-// 随开源仓库公开。真实值放在同目录的 Local.xcconfig（已 gitignore），
-// CI 通过 `xcodebuild DEVELOPMENT_TEAM=...` 命令行注入。
-//
-// 首次 clone 后执行：
-//   cp Config/Local.xcconfig.example Config/Local.xcconfig
-// 然后把里面的占位符换成你自己的 Team ID。
-//
-// 用 #include? 而非 #include：文件缺失时不报错，只是 DEVELOPMENT_TEAM 为空，
-// 此时本地签名会失败——这是有意的，比静默用错 Team 更好排查。
+
 #include? "Local.xcconfig"

@@ -1,8 +1,2 @@
-// 模板：复制为 Local.xcconfig 后填写真实值。
-//   cp Config/Local.xcconfig.example Config/Local.xcconfig
-//
-// Local.xcconfig 已被 .gitignore 忽略，不会进入仓库。
-//
-// Team ID 在哪找：Xcode → Settings → Accounts → 选中你的团队；
-// 或 developer.apple.com → Membership details（10 位大写字母+数字）。
+
 DEVELOPMENT_TEAM = YOUR_TEAM_ID_HERE
