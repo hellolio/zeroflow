@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# 构建产物（xcodebuild -derivedDataPath 输出）
+build-debug/
+build-release/
+dist/
+DerivedData/
+Build/
+
+# Xcode 用户数据与状态
+xcuserdata/
+**/xcuserdata/
+*.xcuserstate
+
+# 日志与杂项
+*.log
+.env
+build-baseline/
+
+# 本机私有构建设置（含 Apple Developer Team ID）
+Config/Local.xcconfig

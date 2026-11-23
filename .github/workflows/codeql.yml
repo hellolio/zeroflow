@@ -1,0 +1,58 @@
+# CodeQL 扫描:只保留 `actions` 语言(扫 .github/workflows 自身)。
+#
+# Swift 源码分析已移除。原因:Swift 不支持 build-mode: none,必须在 macOS runner
+# 上完整 xcodebuild 一遍才能建库(单次 15 分钟+);而本项目是零第三方依赖的本地
+# 菜单栏工具,无服务端、无外部不可信输入,CodeQL 的 taint source→sink 规则几乎
+# 没有适用面,报出来的多是噪音。
+#
+# 保留 actions 这一路:它查 workflow 里的脚本注入、未固定版本的 action、权限过宽,
+# 对本仓库的 tag 触发发版 + secrets 流程有实际价值,30 秒左右跑完。
+name: "CodeQL"
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    # branches:
+    #   - main
+    tags:
+      - "v*"
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    permissions:
+      # required for all workflows
+      security-events: write
+
+      # required to fetch internal or private CodeQL packs
+      packages: read
+
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - language: actions
+          build-mode: none
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: ${{ matrix.language }}
+        build-mode: ${{ matrix.build-mode }}
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:${{matrix.language}}"
