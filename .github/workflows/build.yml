@@ -89,7 +89,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Zeroflow ${{ github.ref_name }}
-          generate_release_notes: true
+          generate_release_notes: false
           body: |
             ## Install
 
