@@ -4,7 +4,6 @@
 # 构建产物（xcodebuild -derivedDataPath 输出）
 build-debug/
 build-release/
-dist/
 DerivedData/
 Build/
 
