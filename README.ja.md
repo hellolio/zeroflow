@@ -10,7 +10,6 @@ macOS ネイティブの軽量ユーティリティ集。スクリーンショ�
 
 [![Sponsor][SponsorBadge]][SponsorUrl]
 [![Latest release](https://img.shields.io/github/v/release/hellolio/zeroflow)](https://github.com/hellolio/zeroflow/releases/latest)
-[![License: AGPL-3.0](https://img.shields.io/github/license/hellolio/zeroflow)](LICENSE)
 [![macOS: 14.0+](https://img.shields.io/badge/macOS-14.0%2B-black?logo=apple&logoColor=white)](https://github.com/hellolio/zeroflow)
 
 [SponsorUrl]: https://github.com/sponsors/hellolio
