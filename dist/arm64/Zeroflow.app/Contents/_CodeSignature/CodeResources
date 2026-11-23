@@ -14,7 +14,7 @@
 		</data>
 		<key>Resources/Translations.json</key>
 		<data>
-		rEd/Vkn1AK040dYT1pxhvc108PQ=
+		3z4TPxEPEsQIW0nfLwki2cVxvJU=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -23,7 +23,7 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			9nmi61to4vlj44JH+zk939JFpmg=
+			mT+po2rTNRwyLplcCvilRiefaUs=
 			</data>
 			<key>requirement</key>
 			<string>identifier "com.zeroflow.app.finderSync" and anchor apple generic and certificate leaf[subject.CN] = "Apple Development: helloliaojun@outlook.com (D74X3VT6S6)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
@@ -46,7 +46,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			AFOMhMVZNZK4R4JQ9Gd4LMaCyhff5QyUYEMgZoYzR50=
+			ODEcvUwTO3w2bLxD+v4MY/vJQgRVppIZZbdxtxX7iIc=
 			</data>
 		</dict>
 	</dict>

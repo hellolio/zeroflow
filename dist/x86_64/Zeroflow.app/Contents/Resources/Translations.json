@@ -439,6 +439,11 @@
     "en": "Dock Preview",
     "ja": "Dockプレビュー"
   },
+  "自定义 Dock": {
+    "zh-Hans": "自定义 Dock",
+    "en": "Custom Dock",
+    "ja": "カスタム Dock"
+  },
   "悬停 Dock 图标显示窗口缩略图": {
     "zh-Hans": "悬停 Dock 图标显示窗口缩略图",
     "en": "Show window thumbnails when hovering Dock icons",
@@ -692,12 +697,12 @@
   "读": {
     "zh-Hans": "读",
     "en": "Read",
-    "ja": "読み"
+    "ja": "読"
   },
   "写": {
     "zh-Hans": "写",
     "en": "Write",
-    "ja": "書き"
+    "ja": "書"
   },
   "内存": {
     "zh-Hans": "内存",
@@ -899,6 +904,16 @@
     "en": "Use the macOS 26 Liquid Glass effect for the panel background; older systems fall back to a frosted background. Turn off to use the default background.",
     "ja": "パネル背景に macOS 26 のリキッドグラス効果を使用します。古いシステムではすりガラスにフォールバックします。オフにすると既定の背景を使用します。"
   },
+  "更通透（无背景蒙版）": {
+    "zh-Hans": "更通透（无背景蒙版）",
+    "en": "More transparent (no background mask)",
+    "ja": "より透明（背景マスクなし）"
+  },
+  "「更通透」去掉液态玻璃的自适应背景蒙版，只保留折射与高光，背景内容更透；仅 macOS 26 及以上有效。": {
+    "zh-Hans": "「更通透」去掉液态玻璃的自适应背景蒙版，只保留折射与高光，背景内容更透；仅 macOS 26 及以上有效。",
+    "en": "“More transparent” removes the Liquid Glass adaptive background mask, keeping only refraction and highlights so the content behind shows through more clearly. Only applies on macOS 26 or later.",
+    "ja": "「より透明」はリキッドグラスの適応背景マスクを外し、屈折とハイライトだけを残すため、背後の内容がより透けて見えます。macOS 26 以降でのみ有効です。"
+  },
   "整块面板（含顶部刘海条）使用液态玻璃背景；macOS 26 以下自动回退为磨砂。关闭后使用默认纯黑背景。": {
     "zh-Hans": "整块面板（含顶部刘海条）使用液态玻璃背景；macOS 26 以下自动回退为磨砂。关闭后使用默认纯黑背景。",
     "en": "Use a Liquid Glass background for the entire panel, including the top notch bar; on macOS versions below 26 it falls back to a frosted background. Turn off to use the default solid black background.",
@@ -943,21 +958,6 @@
     "zh-Hans": "该权限与 Dock 单击最小化、窗口切换器等功能共用，若已开启则此处直接显示绿色。",
     "en": "This permission is shared with Dock click-to-minimize, the window switcher and other features; if it is already granted, this row shows green.",
     "ja": "この権限は Dock のクリック最小化やウィンドウスイッチャーなどと共通です。すでに許可されている場合はここに緑色で表示されます。"
-  },
-  "核": {
-    "zh-Hans": "核",
-    "en": "cores",
-    "ja": "コア"
-  },
-  "读": {
-    "zh-Hans": "读",
-    "en": "Read",
-    "ja": "読"
-  },
-  "写": {
-    "zh-Hans": "写",
-    "en": "Write",
-    "ja": "書"
   },
   "一键清理": {
     "zh-Hans": "一键清理",
@@ -1108,5 +1108,330 @@
     "zh-Hans": "打开后，没有硬件刘海的屏幕（外接显示器、无刘海内屏）在顶部中央也会出现触发区域，面板从该位置展开；触发区域只是不可见的几何区域，屏幕上不显示任何东西。刘海屏始终使用真实刘海位置。",
     "en": "When on, screens without a hardware notch (external displays, notch-less built-in displays) also get a trigger area at the top center, and the panel expands from there. The trigger area is an invisible geometric region — nothing is drawn on screen. Notch screens always use the real notch position.",
     "ja": "オンにすると、ハードウェアノッチのない画面（外部ディスプレイやノッチ非搭載の内蔵ディスプレイ）の上部中央にもトリガー領域ができ、パネルはそこから展開します。トリガー領域は見えない幾何学的な範囲で、画面には何も描画されません。ノッチ搭載画面は常に実際のノッチ位置を使用します。"
+  },
+  "许可证": {
+    "zh-Hans": "许可证",
+    "en": "License",
+    "ja": "ライセンス"
+  },
+  "状态": {
+    "zh-Hans": "状态",
+    "en": "Status",
+    "ja": "ステータス"
+  },
+  "激活": {
+    "zh-Hans": "激活",
+    "en": "Activate",
+    "ja": "有効化"
+  },
+  "立即激活": {
+    "zh-Hans": "立即激活",
+    "en": "Activate Now",
+    "ja": "今すぐ有効化"
+  },
+  "Zeroflow Pro 已激活": {
+    "zh-Hans": "Zeroflow Pro 已激活",
+    "en": "Zeroflow Pro activated",
+    "ja": "Zeroflow Pro は有効化済み"
+  },
+  "Pro 试用剩余 %d 天": {
+    "zh-Hans": "Pro 试用剩余 %d 天",
+    "en": "Pro trial: %d days left",
+    "ja": "Pro 体験版 残り %d 日"
+  },
+  "Pro 试用已结束": {
+    "zh-Hans": "Pro 试用已结束",
+    "en": "Pro trial ended",
+    "ja": "Pro 体験版は終了しました"
+  },
+  "试用期内全部功能可用，到期后免费功能不受影响。": {
+    "zh-Hans": "试用期内全部功能可用，到期后免费功能不受影响。",
+    "en": "All features are available during the trial; free features keep working afterwards.",
+    "ja": "体験期間中はすべての機能が使えます。終了後も無料機能はそのまま使えます。"
+  },
+  "Pro 试用已结束，付费功能已暂停使用。截图、窗口切换、Dock 悬停预览、Dock 单击最小化与访达右键菜单仍可正常使用。": {
+    "zh-Hans": "Pro 试用已结束，付费功能已暂停使用。截图、窗口切换、Dock 悬停预览、Dock 单击最小化与访达右键菜单仍可正常使用。",
+    "en": "The Pro trial has ended and paid features are paused. Screenshot, window switcher, Dock hover preview, Dock click-to-minimize and the Finder context menu still work.",
+    "ja": "Pro 体験版は終了し、有料機能は停止しました。スクリーンショット、ウィンドウスイッチャー、Dock プレビュー、Dock クリック最小化、Finder コンテキストメニューは引き続き使えます。"
+  },
+  "选择许可证文件…": {
+    "zh-Hans": "选择许可证文件…",
+    "en": "Choose License File…",
+    "ja": "ライセンスファイルを選択…"
+  },
+  "选择 zeroflow.license 文件": {
+    "zh-Hans": "选择 zeroflow.license 文件",
+    "en": "Choose a zeroflow.license file",
+    "ja": "zeroflow.license ファイルを選択"
+  },
+  "也可以把 .license 文件拖到这里，或直接在访达里双击该文件。许可证只在本机离线校验，不会上传任何信息。": {
+    "zh-Hans": "也可以把 .license 文件拖到这里，或直接在访达里双击该文件。许可证只在本机离线校验，不会上传任何信息。",
+    "en": "You can also drag a .license file here, or double-click it in Finder. The license is verified offline on this Mac; nothing is uploaded.",
+    "ja": ".license ファイルをここにドラッグするか、Finder でダブルクリックしても有効化できます。検証はオフラインで行われ、何も送信されません。"
+  },
+  "邮箱": {
+    "zh-Hans": "邮箱",
+    "en": "Email",
+    "ja": "メールアドレス"
+  },
+  "许可证 ID": {
+    "zh-Hans": "许可证 ID",
+    "en": "License ID",
+    "ja": "ライセンス ID"
+  },
+  "签发日期": {
+    "zh-Hans": "签发日期",
+    "en": "Issued",
+    "ja": "発行日"
+  },
+  "更新策略": {
+    "zh-Hans": "更新策略",
+    "en": "Updates",
+    "ja": "アップデート"
+  },
+  "终身更新": {
+    "zh-Hans": "终身更新",
+    "en": "Lifetime",
+    "ja": "永久"
+  },
+  "移除许可证": {
+    "zh-Hans": "移除许可证",
+    "en": "Remove License",
+    "ja": "ライセンスを削除"
+  },
+  "移除已保存的许可证？": {
+    "zh-Hans": "移除已保存的许可证？",
+    "en": "Remove the saved license?",
+    "ja": "保存されたライセンスを削除しますか？"
+  },
+  "移除": {
+    "zh-Hans": "移除",
+    "en": "Remove",
+    "ja": "削除"
+  },
+  "许可证已移除": {
+    "zh-Hans": "许可证已移除",
+    "en": "License removed",
+    "ja": "ライセンスを削除しました"
+  },
+  "移除后按试用状态判定；已过试用期将暂停付费功能。": {
+    "zh-Hans": "移除后按试用状态判定；已过试用期将暂停付费功能。",
+    "en": "After removal the trial rules apply; paid features are paused if the trial is over.",
+    "ja": "削除後は体験版の判定に戻ります。体験期間が終了している場合、有料機能は停止します。"
+  },
+  "许可证信息": {
+    "zh-Hans": "许可证信息",
+    "en": "License Info",
+    "ja": "ライセンス情報"
+  },
+  "了解 Zeroflow Pro（官网）": {
+    "zh-Hans": "了解 Zeroflow Pro（官网）",
+    "en": "Learn about Zeroflow Pro (website)",
+    "ja": "Zeroflow Pro を見る（公式サイト）"
+  },
+  "了解 Pro": {
+    "zh-Hans": "了解 Pro",
+    "en": "Learn More",
+    "ja": "詳しく見る"
+  },
+  "激活成功": {
+    "zh-Hans": "激活成功",
+    "en": "Activation successful",
+    "ja": "有効化に成功しました"
+  },
+  "激活成功：%@": {
+    "zh-Hans": "激活成功：%@",
+    "en": "Activated: %@",
+    "ja": "有効化しました：%@"
+  },
+  "激活失败": {
+    "zh-Hans": "激活失败",
+    "en": "Activation failed",
+    "ja": "有効化に失敗しました"
+  },
+  "许可证无效": {
+    "zh-Hans": "许可证无效",
+    "en": "Invalid license",
+    "ja": "ライセンスが無効です"
+  },
+  "Zeroflow Pro 已激活：%@": {
+    "zh-Hans": "Zeroflow Pro 已激活：%@",
+    "en": "Zeroflow Pro activated for %@",
+    "ja": "Zeroflow Pro を有効化しました：%@"
+  },
+  "付费功能已暂停使用；截图、窗口切换、Dock 悬停预览、Dock 单击最小化与访达右键菜单仍然免费。前往官网了解 Zeroflow Pro 并获取许可证。": {
+    "zh-Hans": "付费功能已暂停使用；截图、窗口切换、Dock 悬停预览、Dock 单击最小化与访达右键菜单仍然免费。前往官网了解 Zeroflow Pro 并获取许可证。",
+    "en": "Paid features are paused. Screenshot, window switcher, Dock hover preview, Dock click-to-minimize and the Finder context menu remain free. Visit the website to learn about Zeroflow Pro and get a license.",
+    "ja": "有料機能は停止しました。スクリーンショット、ウィンドウスイッチャー、Dock プレビュー、Dock クリック最小化、Finder コンテキストメニューは無料で使えます。公式サイトで Zeroflow Pro とライセンスをご確認ください。"
+  },
+  "关于": {
+    "zh-Hans": "关于",
+    "en": "About",
+    "ja": "このアプリについて"
+  },
+  "此功能需要 Zeroflow Pro": {
+    "zh-Hans": "此功能需要 Zeroflow Pro",
+    "en": "This feature requires Zeroflow Pro",
+    "ja": "この機能には Zeroflow Pro が必要です"
+  },
+  "%@ 属于 Zeroflow Pro，Pro 试用已结束，该功能已暂停使用。": {
+    "zh-Hans": "%@ 属于 Zeroflow Pro，Pro 试用已结束，该功能已暂停使用。",
+    "en": "%@ is part of Zeroflow Pro. The Pro trial has ended, so this feature is paused.",
+    "ja": "%@ は Zeroflow Pro の機能です。Pro 体験版が終了したため停止しています。"
+  },
+  "激活后会自动恢复你之前开启的设置。": {
+    "zh-Hans": "激活后会自动恢复你之前开启的设置。",
+    "en": "Your previous settings are restored automatically after activation.",
+    "ja": "有効化すると、以前の設定が自動的に復元されます。"
+  },
+  "检测到系统时间早于上次记录，剩余天数仍按首次启动时间计算。": {
+    "zh-Hans": "检测到系统时间早于上次记录，剩余天数仍按首次启动时间计算。",
+    "en": "The system clock is earlier than the last recorded time. Remaining days are still calculated from the first launch.",
+    "ja": "システム時刻が前回の記録より前になっています。残り日数は初回起動日時から計算します。"
+  },
+  "无法写入钥匙串，试用记录只剩本地文件一份，请勿删除 ~/Library/Application Support/zeroflow/trial.json。": {
+    "zh-Hans": "无法写入钥匙串，试用记录只剩本地文件一份，请勿删除 ~/Library/Application Support/zeroflow/trial.json。",
+    "en": "Keychain is unavailable, so the trial record exists only as a local file. Do not delete ~/Library/Application Support/zeroflow/trial.json.",
+    "ja": "キーチェーンに書き込めないため、体験記録はローカルファイルのみです。~/Library/Application Support/zeroflow/trial.json を削除しないでください。"
+  },
+  "内置公钥尚未配置（开发提示）：请运行 Tools/gen-license-key.sh 并把公钥填入 LicenseConfig.swift。": {
+    "zh-Hans": "内置公钥尚未配置（开发提示）：请运行 Tools/gen-license-key.sh 并把公钥填入 LicenseConfig.swift。",
+    "en": "Built-in public key is not configured (developer note): run Tools/gen-license-key.sh and paste the public key into LicenseConfig.swift.",
+    "ja": "組み込み公開鍵が未設定です（開発者向け）：Tools/gen-license-key.sh を実行し、公開鍵を LicenseConfig.swift に貼り付けてください。"
+  },
+  "无法读取许可证文件": {
+    "zh-Hans": "无法读取许可证文件",
+    "en": "Cannot read the license file",
+    "ja": "ライセンスファイルを読み込めません"
+  },
+  "许可证格式不正确（缺少 payload 或 signature）": {
+    "zh-Hans": "许可证格式不正确（缺少 payload 或 signature）",
+    "en": "Malformed license (missing payload or signature)",
+    "ja": "ライセンスの形式が正しくありません（payload または signature がありません）"
+  },
+  "许可证内容损坏（Base64 解码失败）": {
+    "zh-Hans": "许可证内容损坏（Base64 解码失败）",
+    "en": "Corrupted license (Base64 decode failed)",
+    "ja": "ライセンスが壊れています（Base64 デコード失敗）"
+  },
+  "许可证签名无效，可能被篡改或不是本产品的许可证": {
+    "zh-Hans": "许可证签名无效，可能被篡改或不是本产品的许可证",
+    "en": "Invalid license signature — it may be tampered with or issued for another product",
+    "ja": "署名が無効です。改ざんされているか、別製品のライセンスです"
+  },
+  "许可证内容缺少必要字段": {
+    "zh-Hans": "许可证内容缺少必要字段",
+    "en": "License is missing required fields",
+    "ja": "ライセンスに必要な項目がありません"
+  },
+  "许可证产品不匹配：%@": {
+    "zh-Hans": "许可证产品不匹配：%@",
+    "en": "License product mismatch: %@",
+    "ja": "製品が一致しません：%@"
+  },
+  "内置公钥无效，无法验证许可证": {
+    "zh-Hans": "内置公钥无效，无法验证许可证",
+    "en": "Built-in public key is invalid; cannot verify the license",
+    "ja": "組み込み公開鍵が無効なため検証できません"
+  },
+  "Dock 单击最小化": {
+    "zh-Hans": "Dock 单击最小化",
+    "en": "Click Dock icon to minimize",
+    "ja": "Dock アイコンをクリックで最小化"
+  },
+  "自定义 Dock 栏": {
+    "zh-Hans": "自定义 Dock 栏",
+    "en": "Custom Dock",
+    "ja": "カスタム Dock"
+  },
+  "剪贴板历史": {
+    "zh-Hans": "剪贴板历史",
+    "en": "Clipboard History",
+    "ja": "クリップボード履歴"
+  },
+  "访达右键菜单": {
+    "zh-Hans": "访达右键菜单",
+    "en": "Finder context menu",
+    "ja": "Finder コンテキストメニュー"
+  },
+  "Pro 试用已结束 · 激活许可证…": {
+    "zh-Hans": "Pro 试用已结束 · 激活许可证…",
+    "en": "Pro trial ended · Activate License…",
+    "ja": "Pro 体験版終了 · ライセンスを有効化…"
+  },
+  "授权": {
+    "zh-Hans": "授权",
+    "en": "License",
+    "ja": "ライセンス"
+  },
+  "Pro 已激活": {
+    "zh-Hans": "Pro 已激活",
+    "en": "Pro activated",
+    "ja": "Pro 有効化済み"
+  },
+  "清理 ~/Library/Caches、各沙盒容器缓存与 ~/Library/Logs；不会删除任何文档，清理后部分应用首次启动会稍慢": {
+    "zh-Hans": "清理 ~/Library/Caches、各沙盒容器缓存与 ~/Library/Logs；不会删除任何文档，清理后部分应用首次启动会稍慢",
+    "en": "Clears ~/Library/Caches, sandbox container caches and ~/Library/Logs. No documents are deleted; some apps may start a bit slower the first time afterwards.",
+    "ja": "~/Library/Caches、各サンドボックスコンテナのキャッシュ、~/Library/Logs を削除します。書類は削除しません。一部のアプリは次回起動が少し遅くなることがあります。"
+  },
+  "启用自定义 Dock 栏": {
+    "zh-Hans": "启用自定义 Dock 栏",
+    "en": "Enable Custom Dock",
+    "ja": "カスタム Dock を有効にする"
+  },
+  "按下快捷键呼出一个可自定义的 Dock 栏，显示系统 Dock 中的所有 app。点击图标即可激活或启动 app；鼠标悬停图标可预览该 app 的窗口缩略图。按 Esc 或点击面板外关闭。": {
+    "zh-Hans": "按下快捷键呼出一个可自定义的 Dock 栏，显示系统 Dock 中的所有 app。点击图标即可激活或启动 app；鼠标悬停图标可预览该 app 的窗口缩略图。按 Esc 或点击面板外关闭。",
+    "en": "Press the shortcut to bring up a customizable Dock showing every app in your system Dock. Click an icon to activate or launch the app; hover an icon to preview its window thumbnails. Press Esc or click outside the panel to close.",
+    "ja": "ショートカットを押すと、システム Dock のすべてのアプリを表示するカスタム Dock が現れます。アイコンをクリックするとアプリを起動またはアクティブにし、ホバーするとウィンドウのサムネイルをプレビューできます。Esc またはパネル外のクリックで閉じます。"
+  },
+  "呼出快捷键": {
+    "zh-Hans": "呼出快捷键",
+    "en": "Shortcut",
+    "ja": "呼び出しショートカット"
+  },
+  "选择其一呼出自定义 Dock 栏：⌥⇥（Option + Tab）或 ⌘⇥（Command + Tab）。⇧ + 修饰键 + 主键 后退选择。": {
+    "zh-Hans": "选择其一呼出自定义 Dock 栏：⌥⇥（Option + Tab）或 ⌘⇥（Command + Tab）。⇧ + 修饰键 + 主键 后退选择。",
+    "en": "Pick one to open the Custom Dock: ⌥⇥ (Option + Tab) or ⌘⇥ (Command + Tab). Shift + modifier + key moves the selection backwards.",
+    "ja": "カスタム Dock を開くキーを選択：⌥⇥（Option + Tab）または ⌘⇥（Command + Tab）。Shift + 修飾キー + キーで逆方向に移動します。"
+  },
+  "图标大小": {
+    "zh-Hans": "图标大小",
+    "en": "Icon size",
+    "ja": "アイコンサイズ"
+  },
+  "垂直位置": {
+    "zh-Hans": "垂直位置",
+    "en": "Vertical position",
+    "ja": "垂直位置"
+  },
+  "0% = 屏幕底部，50% = 屏幕中间。默认 25% = 屏幕下方 1/4 处。": {
+    "zh-Hans": "0% = 屏幕底部，50% = 屏幕中间。默认 25% = 屏幕下方 1/4 处。",
+    "en": "0% = bottom of the screen, 50% = middle. Default 25% = lower quarter.",
+    "ja": "0% = 画面下端、50% = 画面中央。既定値 25% = 下から 1/4 の位置。"
+  },
+  "背景": {
+    "zh-Hans": "背景",
+    "en": "Background",
+    "ja": "背景"
+  },
+  "需要「辅助功能」权限才能拦截键盘事件": {
+    "zh-Hans": "需要「辅助功能」权限才能拦截键盘事件",
+    "en": "Accessibility permission is required to intercept keyboard events",
+    "ja": "キーボードイベントを横取りするには「アクセシビリティ」権限が必要です"
+  },
+  "该权限与 Dock 单击最小化、窗口切换器共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 单击最小化、窗口切换器共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock click-to-minimize and the window switcher; if it is already granted, this row shows green.",
+    "ja": "この権限は Dock クリックで最小化・ウィンドウスイッチャーと共用です。許可済みならここに緑で表示されます。"
+  },
+  "缩略图预览需要「屏幕录制」权限，未授权时卡片只显示窗口标题。": {
+    "zh-Hans": "缩略图预览需要「屏幕录制」权限，未授权时卡片只显示窗口标题。",
+    "en": "Thumbnail previews need Screen Recording permission; without it, cards only show window titles.",
+    "ja": "サムネイルのプレビューには「画面収録」権限が必要です。未許可の場合、カードにはウィンドウタイトルのみ表示されます。"
+  },
+  "系统资源模块中显示的项目；CPU 和内存为环形仪表（环心为使用率，CPU 副信息含核心数与温度），GPU 为次要小环，磁盘/网络为一行文字读数。": {
+    "zh-Hans": "系统资源模块中显示的项目；CPU 和内存为环形仪表（环心为使用率，CPU 副信息含核心数与温度），GPU 为次要小环，磁盘/网络为一行文字读数。",
+    "en": "Items shown in the System Resources module: CPU and memory as ring gauges (usage in the center; CPU also shows core count and temperature), GPU as a smaller secondary ring, disk and network as one line of text.",
+    "ja": "システムリソースモジュールに表示する項目。CPU とメモリはリングゲージ（中央が使用率、CPU はコア数と温度も表示）、GPU は小さな補助リング、ディスク/ネットワークは 1 行のテキストで表示します。"
   }
 }
