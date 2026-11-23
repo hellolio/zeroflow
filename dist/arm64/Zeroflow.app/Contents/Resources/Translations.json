@@ -554,10 +554,10 @@
     "en": "Click",
     "ja": "クリック"
   },
-  "悬停或单击屏幕顶部刘海区域（可在下方选择触发方式），刘海扩大并显示内容模块；点击面板外部或按 Esc 收起。仅支持带刘海的机型。": {
-    "zh-Hans": "悬停或单击屏幕顶部刘海区域（可在下方选择触发方式），刘海扩大并显示内容模块；点击面板外部或按 Esc 收起。仅支持带刘海的机型。",
-    "en": "Hover over or click the notch at the top of the screen (trigger can be chosen below) to expand it and show a content module; click outside the panel or press Esc to dismiss. Only works on Macs with a notch.",
-    "ja": "画面上部のノッチにカーソルを合わせるかクリックすると（トリガーは下で選択できます）、ノッチが拡大してコンテンツモジュールを表示します。パネルの外側をクリックするか Esc で閉じます。ノッチ搭載機種のみ対応。"
+  "悬停或单击屏幕顶部刘海区域（可在下方选择触发方式），刘海扩大并显示内容模块；点击面板外部或按 Esc 收起。默认只支持带刘海的屏幕，无刘海屏幕见下方「屏幕」。": {
+    "zh-Hans": "悬停或单击屏幕顶部刘海区域（可在下方选择触发方式），刘海扩大并显示内容模块；点击面板外部或按 Esc 收起。默认只支持带刘海的屏幕，无刘海屏幕见下方「屏幕」。",
+    "en": "Hover over or click the notch at the top of the screen (trigger can be chosen below) to expand it and show a content module; click outside the panel or press Esc to dismiss. Only notch screens are supported by default — see \"Screens\" below for displays without a notch.",
+    "ja": "画面上部のノッチにカーソルを合わせるかクリックすると（トリガーは下で選択できます）、ノッチが拡大してコンテンツモジュールを表示します。パネルの外側をクリックするか Esc で閉じます。既定ではノッチ搭載画面のみ対応で、ノッチのない画面は下の「画面」で設定します。"
   },
   "单击刘海区域弹出面板，鼠标移出不会收起；单击面板和刘海以外的区域收起。面板尺寸随当前显示内容自动调整。": {
     "zh-Hans": "单击刘海区域弹出面板，鼠标移出不会收起；单击面板和刘海以外的区域收起。面板尺寸随当前显示内容自动调整。",
@@ -1093,5 +1093,20 @@
     "zh-Hans": "暂无更新说明。",
     "en": "No release notes.",
     "ja": "リリースノートはありません。"
+  },
+  "屏幕": {
+    "zh-Hans": "屏幕",
+    "en": "Screens",
+    "ja": "画面"
+  },
+  "在外接显示器上启用": {
+    "zh-Hans": "在外接显示器上启用",
+    "en": "Enable on External Displays",
+    "ja": "外部ディスプレイでも有効にする"
+  },
+  "打开后，没有硬件刘海的屏幕（外接显示器、无刘海内屏）在顶部中央也会出现触发区域，面板从该位置展开；触发区域只是不可见的几何区域，屏幕上不显示任何东西。刘海屏始终使用真实刘海位置。": {
+    "zh-Hans": "打开后，没有硬件刘海的屏幕（外接显示器、无刘海内屏）在顶部中央也会出现触发区域，面板从该位置展开；触发区域只是不可见的几何区域，屏幕上不显示任何东西。刘海屏始终使用真实刘海位置。",
+    "en": "When on, screens without a hardware notch (external displays, notch-less built-in displays) also get a trigger area at the top center, and the panel expands from there. The trigger area is an invisible geometric region — nothing is drawn on screen. Notch screens always use the real notch position.",
+    "ja": "オンにすると、ハードウェアノッチのない画面（外部ディスプレイやノッチ非搭載の内蔵ディスプレイ）の上部中央にもトリガー領域ができ、パネルはそこから展開します。トリガー領域は見えない幾何学的な範囲で、画面には何も描画されません。ノッチ搭載画面は常に実際のノッチ位置を使用します。"
   }
 }
