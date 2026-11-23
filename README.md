@@ -4,7 +4,7 @@
 
 A native, lightweight macOS utility set: screenshot annotation, window switching, Dock enhancements, clipboard history, and a Dynamic Island — all behind a single menu bar icon.
 
-Free, no ads or pop-ups, no third-party dependencies. Small download, fast launch, low idle memory.
+no pop-ups, no third-party dependencies. Small download, fast launch, low idle memory.
 
 Compared to AltTab (a window switcher) and Maccy (a clipboard manager), ZeroFlow offers several times more functionality while using significantly less memory. This holds true both right after launch and after extended use. Feel free to download all three and see the difference for yourself.
 
@@ -91,3 +91,4 @@ zeroflow/
 [AGPL-3.0-only](LICENSE)
 
 The copyright holder reserves the right to license this software under other terms (including a commercial license).
+
