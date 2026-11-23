@@ -235,14 +235,15 @@
   .code button:hover{color:var(--text);border-color:var(--line-strong)}
 
   /* ---------- QQ 群 ---------- */
-  .qq{margin-top:20px;display:flex;justify-content:center}
-  .qq-btn{
+  .qq{margin-top:20px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .qq-btn,.qq-scan{
     height:38px;padding:0 16px;font-size:13px;font-weight:520;
     color:var(--muted);border:1px solid var(--line);
     background:rgba(255,255,255,.02);cursor:pointer;
   }
-  .qq-btn:hover{color:var(--text);border-color:var(--line-strong);background:rgba(255,255,255,.055)}
-  .qq-btn svg{width:15px;height:15px}
+  .qq-btn:hover,.qq-scan:hover{color:var(--text);border-color:var(--line-strong);background:rgba(255,255,255,.055)}
+  .qq-btn svg,.qq-scan svg{width:15px;height:15px}
+  .qq-scan{padding:0 13px}
   .qq-no{
     font-family:ui-monospace,"SF Mono",Menlo,monospace;
     font-size:12px;color:var(--muted-dim);letter-spacing:.02em;
@@ -392,7 +393,7 @@
       <p class="dl-note" id="dlNote"></p>
       <p class="meta-line" data-i18n="hero.meta">macOS 14.0 Sonoma 及以上</p>
       <div class="qq">
-        <button class="btn qq-btn" id="qqOpen" type="button" aria-haspopup="dialog" aria-controls="qqModal">
+        <a class="btn qq-btn" id="qqBtn" href="https://qm.qq.com/q/4CdUIpNVni" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="9.5" cy="8" r="3.6"/>
             <path d="M3.2 19.4a6.3 6.3 0 0 1 12.6 0"/>
@@ -400,6 +401,15 @@
           </svg>
           <span data-i18n="qq.btn">加入 QQ 群</span>
           <span class="qq-no">655495010</span>
+        </a>
+        <button class="btn qq-scan" id="qqOpen" type="button" aria-haspopup="dialog" aria-controls="qqModal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.5" y="3.5" width="6" height="6" rx="1"/>
+            <rect x="14.5" y="3.5" width="6" height="6" rx="1"/>
+            <rect x="3.5" y="14.5" width="6" height="6" rx="1"/>
+            <path d="M14.5 15v2M14.5 20.5h6v-4"/>
+          </svg>
+          <span data-i18n="qq.scan">扫码</span>
         </button>
       </div>
     </div>
@@ -603,7 +613,7 @@
       <code id="qqNo">655495010</code>
       <button type="button" id="qqCopy" data-i18n="qq.copy">复制群号</button>
     </div>
-    <a class="qq-open" id="qqDirect" data-i18n="qq.open">在 QQ 中打开</a>
+    <a class="qq-open" id="qqDirect" href="https://qm.qq.com/q/4CdUIpNVni" target="_blank" rel="noopener" data-i18n="qq.open">打开加群页面</a>
   </div>
 </div>
 
@@ -644,10 +654,11 @@
       "install.copy": "复制", "install.copied": "已复制",
       "footer.license": "", "footer.sponsor": "赞助",
       "qq.btn": "加入 QQ 群",
+      "qq.scan": "扫码",
       "qq.title": "扫码加入 QQ 群",
       "qq.hint": "手机 QQ 扫码，或复制群号在 QQ 中搜索",
       "qq.copy": "复制群号", "qq.copied": "已复制",
-      "qq.open": "在 QQ 中打开",
+      "qq.open": "打开加群页面",
       "qq.close": "关闭"
     },
     en: {
@@ -684,10 +695,11 @@
       "install.copy": "Copy", "install.copied": "Copied",
       "footer.license": "", "footer.sponsor": "Sponsor",
       "qq.btn": "Join QQ Group",
+      "qq.scan": "Scan",
       "qq.title": "Scan to join the QQ group",
       "qq.hint": "Scan with mobile QQ, or copy the group number and search in QQ",
       "qq.copy": "Copy", "qq.copied": "Copied",
-      "qq.open": "Open in QQ",
+      "qq.open": "Open group page",
       "qq.close": "Close"
     },
     ja: {
@@ -724,10 +736,11 @@
       "install.copy": "コピー", "install.copied": "コピーしました",
       "footer.license": "", "footer.sponsor": "スポンサー",
       "qq.btn": "QQ グループに参加",
+      "qq.scan": "スキャン",
       "qq.title": "QR コードで QQ グループに参加",
       "qq.hint": "スマホの QQ で読み取るか、グループ番号をコピーして QQ で検索してください",
       "qq.copy": "コピー", "qq.copied": "コピーしました",
-      "qq.open": "QQ で開く",
+      "qq.open": "参加ページを開く",
       "qq.close": "閉じる"
     }
   };
@@ -832,16 +845,46 @@
   var qqCloseBtn = document.getElementById("qqClose");
   var qqCopyBtn = document.getElementById("qqCopy");
   var qqNoEl = document.getElementById("qqNo");
-  var qqDirect = document.getElementById("qqDirect");
   var qqCard = qqModal ? qqModal.querySelector(".qq-card") : null;
   var qqLastFocus = null;
 
-  // 装了 QQ 的桌面端可直接唤起群资料卡；浏览器不认这个 scheme 时会静默失败，
-  // 兜底靠二维码和群号复制，所以这里不做可用性检测。
-  if (qqDirect && qqNoEl) {
-    qqDirect.href = "mqqapi://card/show_pslcard?src_type=internal&version=1&uin=" +
-      qqNoEl.textContent.trim() + "&card_type=group&source=qrcode";
+  // ---------- QQ 群入口：按设备切换链接 ----------
+  var QQ_WEB = "https://qm.qq.com/q/4CdUIpNVni";
+  var QQ_SCHEME = "mqqapi://card/show_pslcard?src_type=internal&version=1" +
+    "&uin=655495010&card_type=group&source=qrcode";
+  var qqBtn = document.getElementById("qqBtn");
+
+  function isMobileDevice() {
+    var ua = navigator.userAgent || "";
+    // 微信内置浏览器会拦 mqqapi，直接给网页版
+    if (/MicroMessenger/i.test(ua)) return false;
+    if (/Android|iPhone|iPod|iPad|Mobile|HarmonyOS|Windows Phone/i.test(ua)) return true;
+    // iPadOS 13+ 的 Safari 把自己伪装成 MacIntel，用触点数兜底
+    return /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
   }
+
+  // 桌面：直接开加群网页；手机：先唤起 QQ，唤起不了再退回网页
+  function bindQQLink(el) {
+    if (!el) return;
+    if (!isMobileDevice()) {
+      el.href = QQ_WEB;
+      el.target = "_blank";
+      el.rel = "noopener";
+      return;
+    }
+    el.href = QQ_SCHEME;
+    el.removeAttribute("target");
+    el.removeAttribute("rel");
+    el.addEventListener("click", function () {
+      // 唤起成功时页面会转后台，1.5s 后仍在前台说明没装 QQ 或系统拦了
+      setTimeout(function () {
+        if (document.visibilityState === "visible") location.href = QQ_WEB;
+      }, 1500);
+    });
+  }
+
+  bindQQLink(qqBtn);
+  bindQQLink(document.getElementById("qqDirect"));
 
   function openQQ() {
     if (!qqModal) return;
