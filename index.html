@@ -602,7 +602,7 @@
       <code id="qqNo">655495010</code>
       <button type="button" id="qqCopy" data-i18n="qq.copy">复制群号</button>
     </div>
-    <a class="btn btn-primary qq-open" id="qqDirect" href="https://qm.qq.com/q/4CdUIpNVni" data-i18n="qq.open">打开 QQ 加群</a>
+    <a class="btn btn-primary qq-open" id="qqDirect" href="https://qm.qq.com/q/4CdUIpNVni" target="_blank" rel="noopener" data-i18n="qq.open">打开 QQ 加群</a>
   </div>
 </div>
 
@@ -852,10 +852,9 @@
   function bindQQLink(el) {
     if (!el) return;
     if (!isMobileDevice()) {
-      // 同标签跳转，不开新窗口
       el.href = QQ_WEB;
-      el.removeAttribute("target");
-      el.removeAttribute("rel");
+      el.target = "_blank";
+      el.rel = "noopener";
       return;
     }
     el.href = QQ_SCHEME;
