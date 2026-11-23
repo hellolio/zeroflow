@@ -56,11 +56,6 @@ cp -r build/Build/Products/Release/Zeroflow.app /Applications/Zeroflow.app
 open build/Build/Products/Release/Zeroflow.app
 ```
 
-- 新增源文件放入 `Zeroflow/` 即自动纳入编译，无需修改 `project.pbxproj`。
-- `-allowProvisioningUpdates` 用于自动生成 FinderSync 扩展所需的 App Group 描述文件。
-
-CI 见 `.github/workflows/build.yml`：推送或 PR 到 `main` 触发编译检查并上传 app artifact；推送 `v*` tag 则以 Release 配置构建、打包 DMG 并发布到 GitHub Releases。
-
 ## 技术栈
 
 | 项 | 选型 |

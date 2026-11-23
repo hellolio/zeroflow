@@ -37,22 +37,6 @@ Download the latest `Zeroflow-x.x.x.dmg` from [Releases](https://github.com/hell
 > - Run `xattr -cr /Applications/Zeroflow.app` in Terminal, then open it again;
 > - Or open System Settings → Privacy & Security, find the Zeroflow notice, and click "Open Anyway".
 
-## Build
-
-Requires macOS 14.0+ and Xcode 16+.
-
-```bash
-xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow \
-  ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
-  -configuration Debug -derivedDataPath build -allowProvisioningUpdates build
-open build/Build/Products/Debug/Zeroflow.app
-```
-
-- Source files added under `Zeroflow/` are compiled automatically — no `project.pbxproj` edits needed.
-- `-allowProvisioningUpdates` lets Xcode generate the App Group provisioning profile required by the FinderSync extension.
-
-CI lives in `.github/workflows/build.yml`: pushes and PRs to `main` run a compile check and upload an app artifact; a `v*` tag builds in Release configuration, packages a DMG, and publishes it to GitHub Releases.
-
 ## Tech stack
 
 | Area | Choice |

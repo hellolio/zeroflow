@@ -37,22 +37,6 @@ macOS ネイティブの軽量ユーティリティ集。スクリーンショ�
 > - ターミナルで `xattr -cr /Applications/Zeroflow.app` を実行してから、もう一度開く。
 > - 「システム設定 → プライバシーとセキュリティ」で Zeroflow の通知を探し、「このまま開く」をクリックする。
 
-## ビルド
-
-必要な環境：macOS 14.0 以降、Xcode 16 以降。
-
-```bash
-xcodebuild -project Zeroflow.xcodeproj -scheme Zeroflow \
-  ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
-  -configuration Debug -derivedDataPath build -allowProvisioningUpdates build
-open build/Build/Products/Debug/Zeroflow.app
-```
-
-- `Zeroflow/` に追加したソースファイルは自動的にコンパイル対象になります（`project.pbxproj` の編集は不要）。
-- `-allowProvisioningUpdates` は、FinderSync 拡張に必要な App Group のプロビジョニングプロファイルを自動生成するための指定です。
-
-CI は `.github/workflows/build.yml`：`main` への push / PR ではコンパイルチェックと app アーティファクトのアップロードを実行します。`v*` タグを push すると Release 構成でビルドし、DMG をパッケージして GitHub Releases に公開します。
-
 ## 技術スタック
 
 | 項目 | 選定 |
