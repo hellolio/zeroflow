@@ -235,9 +235,9 @@
   .code button:hover{color:var(--text);border-color:var(--line-strong)}
 
   /* ---------- QQ 群 ---------- */
-  .qq{margin-top:20px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .qq{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .qq-btn{
-    height:38px;padding:0 16px;font-size:13px;font-weight:520;
+    height:34px;padding:0 14px;font-size:12.5px;font-weight:500;
     color:var(--muted);border:1px solid var(--line);
     background:rgba(255,255,255,.02);cursor:pointer;
   }
@@ -302,6 +302,99 @@
   }
   .qq-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
 
+  /* ---------- Pro ---------- */
+  .pro-cta{margin-top:18px;display:flex;justify-content:center}
+  .pro-link{
+    display:inline-flex;align-items:center;gap:9px;height:36px;padding:0 16px;
+    font:inherit;font-size:13px;font-weight:520;color:var(--muted);cursor:pointer;
+    border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.02);
+    transition:all .18s;
+  }
+  .pro-link:hover{color:var(--text);border-color:var(--line-strong);background:rgba(255,255,255,.055)}
+
+  .pro-modal{
+    position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:20px;
+    background:rgba(4,5,7,.78);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  }
+  .pro-modal[hidden]{display:none}
+  .pro-card{
+    position:relative;width:min(720px,100%);max-height:calc(100vh - 40px);overflow:auto;
+    padding:30px 28px 26px;text-align:left;
+    background:var(--bg-elev);border:1px solid var(--line-strong);border-radius:18px;
+    box-shadow:0 24px 70px rgba(0,0,0,.55);
+    animation:qqIn .2s cubic-bezier(.2,.8,.3,1);
+  }
+  .pro-card:focus{outline:none}
+  .pro-card [hidden]{display:none!important}
+  .pro-card h2{font-size:19px;font-weight:600;letter-spacing:-.015em;padding-right:32px}
+  .pro-sub{margin-top:6px;font-size:13px;color:var(--muted-dim);line-height:1.6}
+  .pro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+  .pro-col{border:1px solid var(--line);border-radius:13px;padding:15px 16px 14px;background:rgba(255,255,255,.015)}
+  .pro-col.hot{border-color:rgba(76,141,255,.42);background:linear-gradient(180deg,rgba(76,141,255,.10),rgba(76,141,255,.02))}
+  .pro-col-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px}
+  .pro-col-head span{font-size:14px;font-weight:600}
+  .pro-col-head em{font-style:normal;font-size:12px;color:var(--muted-dim)}
+  .pro-col.hot .pro-col-head em{color:var(--accent)}
+  .pro-col ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .pro-col li{position:relative;padding-left:17px;font-size:13px;color:var(--muted);line-height:1.5}
+  .pro-col li::before{content:"";position:absolute;left:2px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--muted-dim)}
+  .pro-col.hot li::before{background:var(--accent)}
+  .pro-col li b{display:block;color:var(--text);font-weight:520}
+  .pro-col li i{font-style:normal;font-size:12px;color:var(--muted-dim)}
+  .pro-col li.inc{color:var(--muted-dim)}
+  .pro-col li.inc b{color:var(--muted);font-weight:500}
+  .pro-col.hot li.inc::before{
+    content:"✓";width:auto;height:auto;background:none;border-radius:0;
+    left:1px;top:3px;font-size:11px;line-height:1;color:#57A98A;
+  }
+  .pro-col li.sep{padding-left:0;margin-top:3px;font-size:11px;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--accent);font-weight:600}
+  .pro-col li.sep::before{display:none}
+  .pro-buy{margin-top:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+  .pro-price{display:flex;align-items:baseline;gap:8px;flex:1 1 100%;margin-right:0}
+  .pro-price b{font-size:24px;font-weight:600;letter-spacing:-.02em}
+  .pro-price span{font-size:12px;color:var(--muted-dim)}
+  .pro-field{
+    height:38px;padding:0 12px;flex:1 1 200px;min-width:0;font:inherit;font-size:13px;color:var(--text);
+    background:var(--bg-code);border:1px solid var(--line);border-radius:9px;outline:none;
+  }
+  .pro-field:focus{border-color:rgba(76,141,255,.55)}
+  .pro-field::placeholder{color:var(--muted-dim)}
+  .pro-ch{
+    height:38px;padding:0 16px;font:inherit;font-size:13px;font-weight:520;cursor:pointer;
+    color:var(--text);background:rgba(255,255,255,.05);
+    border:1px solid var(--line-strong);border-radius:9px;transition:background .18s;
+  }
+  .pro-ch:hover{background:rgba(255,255,255,.09)}
+  .pro-ch[disabled]{opacity:.5;cursor:default}
+  .pro-err{margin-top:10px;font-size:12.5px;color:#FF7A6E;min-height:0}
+  .pro-pay{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 0 2px}
+  .pro-qr{width:200px;height:200px;border-radius:12px;background:#fff;padding:8px;margin-top:14px}
+  .pro-pay .pro-amount{font-size:26px;font-weight:600;margin-top:12px;letter-spacing:-.02em}
+  .pro-pay .pro-ord{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;color:var(--muted-dim);margin-top:5px}
+  .pro-wait{margin-top:14px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .pro-spin{width:12px;height:12px;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:proSpin .8s linear infinite}
+  @keyframes proSpin{to{transform:rotate(360deg)}}
+  .pro-actions{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .pro-done{text-align:center;padding:14px 0 4px}
+  .pro-done .ok{
+    width:46px;height:46px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(52,199,123,.14);color:#34C77B;font-size:21px;
+  }
+  .pro-done h3{font-size:16px;font-weight:600}
+  .pro-done p{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.75}
+  .pro-done code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;
+    background:rgba(255,255,255,.07);padding:2px 6px;border-radius:5px;color:var(--text)}
+  .pro-done .pro-actions{margin-top:18px}
+  @media (max-width:640px){
+    .pro-card{padding:24px 18px 20px}
+    .pro-grid{grid-template-columns:1fr}
+    .pro-field{width:100%}
+    .pro-price{width:100%}
+    .pro-ch{flex:1}
+  }
+
   /* ---------- footer ---------- */
   footer{border-top:1px solid var(--line);padding:30px 0 44px}
   .foot{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;font-size:13px;color:var(--muted-dim)}
@@ -310,6 +403,11 @@
   .foot a:hover{color:var(--text)}
   .foot .accent{color:var(--accent)}
   .foot .accent:hover{color:#7FAEFF}
+  .foot button.linklike{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;transition:color .18s}
+  .foot button.linklike:hover{color:var(--text)}
+  .foot .foot-pro{color:var(--accent)}
+  .foot .qq-btn{border-color:transparent;background:none;padding:0 2px;color:var(--muted-dim)}
+  .foot .qq-btn:hover{color:var(--text);border-color:transparent;background:none}
 
   @media (max-width:640px){
     .hero{padding:64px 0 60px}
@@ -390,15 +488,9 @@
       </div>
       <p class="dl-note" id="dlNote"></p>
       <p class="meta-line" data-i18n="hero.meta">macOS 14.0 Sonoma 及以上</p>
-      <div class="qq">
-        <button class="btn qq-btn" id="qqOpen" type="button" aria-haspopup="dialog" aria-controls="qqModal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="9.5" cy="8" r="3.6"/>
-            <path d="M3.2 19.4a6.3 6.3 0 0 1 12.6 0"/>
-            <path d="M18.6 7.4v5.2M16 10h5.2"/>
-          </svg>
-          <span data-i18n="qq.btn">加入 QQ 群</span>
-          <span class="qq-no">655495010</span>
+      <div class="pro-cta">
+        <button class="pro-link" id="proOpen" type="button" aria-haspopup="dialog" aria-controls="proModal">
+          <span data-i18n="pro.cta">了解 Pro</span>
         </button>
       </div>
     </div>
@@ -583,7 +675,19 @@
   <div class="wrap foot">
     <span>© <span id="year">2026</span> Zeroflow</span>
     <span data-i18n="footer.license"></span>
+    <span class="qq">
+      <button class="btn qq-btn" id="qqOpen" type="button" aria-haspopup="dialog" aria-controls="qqModal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9.5" cy="8" r="3.6"/>
+          <path d="M3.2 19.4a6.3 6.3 0 0 1 12.6 0"/>
+          <path d="M18.6 7.4v5.2M16 10h5.2"/>
+        </svg>
+        <span data-i18n="qq.btn">加入 QQ 群</span>
+        <span class="qq-no">655495010</span>
+      </button>
+    </span>
     <span class="foot-links">
+      <button class="linklike foot-pro" id="proOpenFoot" type="button" data-i18n="pro.footer">Pro 版</button>
       <a href="https://github.com/hellolio/zeroflow/blob/main/README.zh-CN.md" target="_blank" rel="noopener">简体中文</a>
       <a href="https://github.com/hellolio/zeroflow/blob/main/README.md" target="_blank" rel="noopener">English</a>
       <a href="https://github.com/hellolio/zeroflow/blob/main/README.ja.md" target="_blank" rel="noopener">日本語</a>
@@ -603,6 +707,66 @@
       <button type="button" id="qqCopy" data-i18n="qq.copy">复制群号</button>
     </div>
     <a class="btn btn-primary qq-open" id="qqDirect" href="https://qm.qq.com/q/4CdUIpNVni" target="_blank" rel="noopener" data-i18n="qq.open">打开 QQ 加群</a>
+  </div>
+</div>
+
+<div class="pro-modal" id="proModal" hidden>
+  <div class="pro-card" role="dialog" aria-modal="true" aria-labelledby="proTitle" tabindex="-1">
+    <button class="qq-close" id="proClose" type="button" data-i18n-aria="pro.close" aria-label="关闭">&times;</button>
+
+    <div id="proMain">
+      <h2 id="proTitle" data-i18n="pro.title">免费版与 Pro 的区别</h2>
+      <p class="pro-sub" data-i18n="pro.sub">免费版已包含日常最常用的五项功能，Pro 解锁其余进阶能力。</p>
+      <div class="pro-grid">
+        <div class="pro-col">
+          <div class="pro-col-head">
+            <span data-i18n="pro.free">免费版</span>
+            <em data-i18n="pro.freePrice">永久免费</em>
+          </div>
+          <ul id="proFreeList"></ul>
+        </div>
+        <div class="pro-col hot">
+          <div class="pro-col-head">
+            <span>Pro</span>
+            <em id="proPriceTag">¥9.9</em>
+          </div>
+          <ul id="proProList"></ul>
+        </div>
+      </div>
+      <div class="pro-buy">
+        <div class="pro-price">
+          <b id="proPrice">¥9.9</b>
+          <span data-i18n="pro.once">一次买断 · 永久授权</span>
+        </div>
+        <input class="pro-field" id="proEmail" type="email" autocomplete="email" spellcheck="false" placeholder="邮箱（接收许可证）">
+        <button class="pro-ch" type="button" data-ch="alipay" data-i18n="pro.alipay">支付宝</button>
+        <button class="pro-ch" type="button" data-ch="wechat" data-i18n="pro.wechat">微信支付</button>
+      </div>
+      <div class="pro-err" id="proErr"></div>
+    </div>
+
+    <div class="pro-pay" id="proPay" hidden>
+      <h2 data-i18n="pro.payTitle">扫码支付</h2>
+      <p class="pro-sub" data-i18n="pro.paySub">支付完成后许可证会自动下载，无需再操作。</p>
+      <img class="pro-qr" id="proQr" alt="支付二维码">
+      <div class="pro-amount" id="proPayAmount"></div>
+      <div class="pro-ord" id="proPayOrder"></div>
+      <div class="pro-wait"><span class="pro-spin"></span><span data-i18n="pro.waiting">等待支付…</span></div>
+      <div class="pro-actions">
+        <button class="pro-ch" id="proMock" type="button" hidden data-i18n="pro.mock">模拟支付成功（测试）</button>
+        <button class="pro-ch" id="proCancel" type="button" data-i18n="pro.cancel">取消</button>
+      </div>
+    </div>
+
+    <div class="pro-done" id="proDone" hidden>
+      <div class="ok">&#10003;</div>
+      <h3 data-i18n="pro.doneTitle">许可证已下载</h3>
+      <p data-i18n="pro.doneBody">双击下载好的 zeroflow.license 文件即可激活 Pro。</p>
+      <div class="pro-actions">
+        <button class="pro-ch" id="proAgain" type="button" data-i18n="pro.again">重新下载</button>
+        <button class="pro-ch" id="proFinish" type="button" data-i18n="pro.finish">完成</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -647,7 +811,20 @@
       "qq.hint": "手机 QQ 扫码，或点下方按钮直接加群",
       "qq.copy": "复制群号", "qq.copied": "已复制",
       "qq.open": "打开 QQ 加群",
-      "qq.close": "关闭"
+      "qq.close": "关闭",
+      "pro.cta": "了解 Pro",
+      "pro.ctaTag": "剪贴板历史 · 灵动岛 · 自定义 Dock",
+      "pro.footer": "Pro 版", "pro.extras": "额外解锁",
+      "pro.title": "免费版与 Pro 的区别",
+      "pro.sub": "免费版已包含日常最常用的五项功能，Pro 解锁其余进阶能力。",
+      "pro.free": "免费版", "pro.freePrice": "永久免费", "pro.once": "一次买断 · 永久授权",
+      "pro.alipay": "支付宝", "pro.wechat": "微信支付",
+      "pro.payTitle": "扫码支付", "pro.paySub": "支付完成后许可证会自动下载，无需再操作。",
+      "pro.waiting": "等待支付…", "pro.mock": "模拟支付成功（测试）", "pro.cancel": "取消",
+      "pro.doneTitle": "许可证已下载", "pro.doneBody": "双击下载好的 zeroflow.license 文件即可激活 Pro。",
+      "pro.again": "重新下载", "pro.finish": "完成", "pro.close": "关闭",
+      "pro.phEmail": "邮箱（接收许可证）", "pro.errEmail": "请填写有效邮箱",
+      "pro.errNet": "无法连接支付服务，请稍后再试", "pro.errExpired": "订单已过期，请重新购买"
     },
     en: {
       "title": "Zeroflow — Seven macOS utilities behind one menu bar icon",
@@ -687,7 +864,20 @@
       "qq.hint": "Scan with mobile QQ, or use the button below",
       "qq.copy": "Copy", "qq.copied": "Copied",
       "qq.open": "Open in QQ",
-      "qq.close": "Close"
+      "qq.close": "Close",
+      "pro.cta": "Explore Pro",
+      "pro.ctaTag": "Clipboard history · Dynamic Island · Custom Dock",
+      "pro.footer": "Pro", "pro.extras": "Pro adds",
+      "pro.title": "Free vs Pro",
+      "pro.sub": "The free edition covers the five most-used tools. Pro unlocks the rest.",
+      "pro.free": "Free", "pro.freePrice": "Free forever", "pro.once": "One-time purchase · lifetime license",
+      "pro.alipay": "Alipay", "pro.wechat": "WeChat Pay",
+      "pro.payTitle": "Scan to pay", "pro.paySub": "The license downloads automatically once payment completes.",
+      "pro.waiting": "Waiting for payment…", "pro.mock": "Simulate payment (test)", "pro.cancel": "Cancel",
+      "pro.doneTitle": "License downloaded", "pro.doneBody": "Double-click the downloaded zeroflow.license file to activate Pro.",
+      "pro.again": "Download again", "pro.finish": "Done", "pro.close": "Close",
+      "pro.phEmail": "Email (for your license)", "pro.errEmail": "Please enter a valid email",
+      "pro.errNet": "Cannot reach the payment service, try again later", "pro.errExpired": "Order expired, please buy again"
     },
     ja: {
       "title": "Zeroflow — メニューバーのアイコン1つに、7つの macOS ユーティリティ",
@@ -727,7 +917,20 @@
       "qq.hint": "スマホの QQ で読み取るか、下のボタンから参加できます",
       "qq.copy": "コピー", "qq.copied": "コピーしました",
       "qq.open": "QQ で参加",
-      "qq.close": "閉じる"
+      "qq.close": "閉じる",
+      "pro.cta": "Pro を見る",
+      "pro.ctaTag": "クリップボード履歴 · ダイナミックアイランド · Dock カスタム",
+      "pro.footer": "Pro 版", "pro.extras": "Pro で追加",
+      "pro.title": "無料版と Pro の違い",
+      "pro.sub": "無料版にはよく使う5つの機能が含まれ、Pro で残りの機能が使えます。",
+      "pro.free": "無料版", "pro.freePrice": "ずっと無料", "pro.once": "買い切り · 永久ライセンス",
+      "pro.alipay": "Alipay", "pro.wechat": "WeChat Pay",
+      "pro.payTitle": "QR コードで支払う", "pro.paySub": "支払いが完了するとライセンスが自動でダウンロードされます。",
+      "pro.waiting": "支払いを待っています…", "pro.mock": "支払いをシミュレート（テスト）", "pro.cancel": "キャンセル",
+      "pro.doneTitle": "ライセンスをダウンロードしました", "pro.doneBody": "ダウンロードした zeroflow.license をダブルクリックすると Pro が有効になります。",
+      "pro.again": "再ダウンロード", "pro.finish": "完了", "pro.close": "閉じる",
+      "pro.phEmail": "メール（ライセンス送付先）", "pro.errEmail": "有効なメールアドレスを入力してください",
+      "pro.errNet": "決済サービスに接続できません。後でもう一度お試しください", "pro.errExpired": "注文の有効期限が切れました。もう一度購入してください"
     }
   };
 
@@ -788,6 +991,7 @@
     });
     var qc = document.getElementById("qqCopy");
     if (qc) qc.textContent = dict["qq.copy"];
+    renderPro(current);
     try { localStorage.setItem("zf-lang", current); } catch (e) {}
   }
 
@@ -895,7 +1099,7 @@
     });
   }
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeQQ();
+    if (e.key === "Escape") { closeQQ(); closePro(); }
   });
 
   if (qqCopyBtn && qqNoEl) {
@@ -918,6 +1122,295 @@
       }
     });
   }
+
+  // ---------- Pro：对比 / 下单 / 支付轮询 / 许可证下载 ----------
+  // 后端地址：本地开发指到 8787，部署后改成正式域名即可
+  var PAY_API = "http://localhost:8787";
+  var PAY_APP = "zeroflow";
+
+  var PRO_ITEMS = {
+    zh: {
+      free: [
+        ["截图标注", "⌘⇧S 截图，可画线、矩形、圆框、文字气泡、马赛克"],
+        ["窗口切换器", "⌘⇥ 缩略图切换，最小化与离屏窗口同样可见"],
+        ["Dock 悬停预览", "鼠标悬停 Dock 图标，预览窗口内容"],
+        ["Dock 单击最小化", "点一下图标，把当前窗口收进 Dock"],
+        ["访达右键菜单", "在设置里添加自定义命令，右键直接调用"]
+      ],
+      pro: [
+        ["剪贴板历史", "⌘⇧C 呼出，可搜索、方向键选择、回车粘贴"],
+        ["灵动岛", "刘海展开显示日历、系统资源与正在播放"],
+        ["自定义 Dock 栏", "自定义 Dock 的显示与行为"],
+        ["翻转鼠标滚动方向", "垂直与水平两个开关，和 Windows 一样"]
+      ]
+    },
+    en: {
+      free: [
+        ["Screenshot annotation", "⌘⇧S to capture, then draw, box, circle, bubble or mosaic"],
+        ["Window switcher", "⌘⇥ thumbnail switcher, minimized and off-screen windows included"],
+        ["Dock hover preview", "Hover a Dock icon to preview the window"],
+        ["Dock click to minimize", "Click the icon to tuck the current window into the Dock"],
+        ["Finder context menu", "Add custom commands in settings, call them from Finder"]
+      ],
+      pro: [
+        ["Clipboard history", "⌘⇧C to open, search, pick with arrows, paste with Return"],
+        ["Dynamic Island", "Expand the notch for calendar, system stats and now playing"],
+        ["Custom Dock", "Control how the Dock is displayed and behaves"],
+        ["Reverse mouse scrolling", "Separate vertical and horizontal switches, Windows-style"]
+      ]
+    },
+    ja: {
+      free: [
+        ["スクリーンショット注釈", "⌘⇧S で撮影し、線・矩形・円・吹き出し・モザイクで加工"],
+        ["ウィンドウ切り替え", "⌘⇥ のサムネイル切り替え。最小化・画面外も表示"],
+        ["Dock ホバープレビュー", "Dock アイコンにホバーしてウィンドウをプレビュー"],
+        ["Dock クリックで最小化", "アイコンをクリックで現在のウィンドウを Dock へ"],
+        ["Finder 右クリックメニュー", "設定で追加したコマンドを Finder から実行"]
+      ],
+      pro: [
+        ["クリップボード履歴", "⌘⇧C で呼び出し、検索・矢印キー選択・Return で貼り付け"],
+        ["ダイナミックアイランド", "ノッチを展開してカレンダー・システム情報・再生中を表示"],
+        ["Dock のカスタム", "Dock の表示と動作をカスタマイズ"],
+        ["マウスのスクロール方向反転", "垂直・水平を個別に切り替え、Windows と同じ操作感"]
+      ]
+    }
+  };
+
+  var proModal = document.getElementById("proModal");
+  var proCard = proModal ? proModal.querySelector(".pro-card") : null;
+  var proMain = document.getElementById("proMain");
+  var proPay = document.getElementById("proPay");
+  var proDone = document.getElementById("proDone");
+  var proEmail = document.getElementById("proEmail");
+  var proErrEl = document.getElementById("proErr");
+  var proQr = document.getElementById("proQr");
+  var proMockBtn = document.getElementById("proMock");
+  var proChBtns = proModal ? proModal.querySelectorAll(".pro-ch[data-ch]") : [];
+  var proState = { order: null, timer: null, busy: false, lastFocus: null };
+
+  function proDict() { return I18N[current] || I18N.zh; }
+
+  function renderPro(lang) {
+    var items = PRO_ITEMS[lang] || PRO_ITEMS.zh;
+    var dict = proDict();
+    var freeUl = document.getElementById("proFreeList");
+    var proUl = document.getElementById("proProList");
+
+    var makeItem = function (pair, cls) {
+      var li = document.createElement("li");
+      if (cls) li.className = cls;
+      var b = document.createElement("b");
+      b.textContent = pair[0];
+      var i = document.createElement("i");
+      i.textContent = pair[1];
+      li.appendChild(b);
+      li.appendChild(i);
+      return li;
+    };
+
+    if (freeUl) {
+      freeUl.textContent = "";
+      items.free.forEach(function (p) { freeUl.appendChild(makeItem(p)); });
+    }
+    if (proUl) {
+      proUl.textContent = "";
+      // Pro 包含免费版全部能力，再叠加独占功能
+      items.free.forEach(function (p) { proUl.appendChild(makeItem(p, "inc")); });
+      var sep = document.createElement("li");
+      sep.className = "sep";
+      sep.textContent = dict["pro.extras"] || "";
+      proUl.appendChild(sep);
+      items.pro.forEach(function (p) { proUl.appendChild(makeItem(p)); });
+    }
+    if (proEmail) proEmail.placeholder = dict["pro.phEmail"] || "";
+  }
+
+  // 价格以后台配置为准，读不到就保留页面上的静态值
+  function syncPrice() {
+    fetch(PAY_API + "/api/apps/" + encodeURIComponent(PAY_APP))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.amount_display) return;
+        var tag = document.getElementById("proPriceTag");
+        var price = document.getElementById("proPrice");
+        if (tag) tag.textContent = d.amount_display;
+        if (price) price.textContent = d.amount_display;
+      })
+      .catch(function () {});
+  }
+
+  function showProPanel(which) {
+    if (!proMain) return;
+    proMain.hidden = which !== "main";
+    proPay.hidden = which !== "pay";
+    proDone.hidden = which !== "done";
+  }
+
+  function setProErr(msg) {
+    if (proErrEl) proErrEl.textContent = msg || "";
+  }
+
+  function lockChannels(lock) {
+    proState.busy = lock;
+    proChBtns.forEach(function (b) { b.disabled = lock; });
+  }
+
+  function stopPoll() {
+    if (proState.timer) { clearTimeout(proState.timer); proState.timer = null; }
+  }
+
+  function openPro() {
+    if (!proModal) return;
+    proState.lastFocus = document.activeElement;
+    proState.order = null;
+    stopPoll();
+    setProErr("");
+    lockChannels(false);
+    showProPanel("main");
+    proModal.hidden = false;
+    document.body.style.overflow = "hidden";
+    if (proCard) proCard.focus();
+  }
+
+  function closePro() {
+    if (!proModal || proModal.hidden) return;
+    stopPoll();
+    proModal.hidden = true;
+    document.body.style.overflow = "";
+    if (proState.lastFocus && proState.lastFocus.focus) proState.lastFocus.focus();
+  }
+
+  function downloadLicense(orderNo) {
+    return fetch(PAY_API + "/api/orders/" + encodeURIComponent(orderNo) + "/license")
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.blob();
+      })
+      .then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = PAY_APP + ".license";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+        showProPanel("done");
+      });
+  }
+
+  function pollOrder() {
+    if (!proState.order) return;
+    var no = proState.order.order_no;
+    fetch(PAY_API + "/api/orders/" + encodeURIComponent(no))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!proState.order || proState.order.order_no !== no) return;
+        if (d.status === "paid") {
+          stopPoll();
+          downloadLicense(no).catch(function () {
+            setProErr(proDict()["pro.errNet"]);
+          });
+        } else if (d.status === "expired") {
+          stopPoll();
+          proState.order = null;
+          showProPanel("main");
+          setProErr(proDict()["pro.errExpired"]);
+        } else {
+          proState.timer = setTimeout(pollOrder, 2000);
+        }
+      })
+      .catch(function () {
+        proState.timer = setTimeout(pollOrder, 3000);
+      });
+  }
+
+  function startPay(order) {
+    proState.order = order;
+    setProErr("");
+    if (proQr) proQr.src = order.qr || "";
+    var amountEl = document.getElementById("proPayAmount");
+    if (amountEl) amountEl.textContent = order.amount_display || "";
+    var ordEl = document.getElementById("proPayOrder");
+    if (ordEl) ordEl.textContent = order.order_no;
+    if (proMockBtn) proMockBtn.hidden = !order.mock;
+    showProPanel("pay");
+    stopPoll();
+    proState.timer = setTimeout(pollOrder, 2000);
+  }
+
+  function buy(channel) {
+    if (proState.busy) return;
+    var email = (proEmail && proEmail.value || "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      setProErr(proDict()["pro.errEmail"]);
+      if (proEmail) proEmail.focus();
+      return;
+    }
+    setProErr("");
+    lockChannels(true);
+    fetch(PAY_API + "/api/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ app: PAY_APP, email: email, channel: channel })
+    })
+      .then(function (r) {
+        return r.json().then(function (d) {
+          if (!r.ok) throw new Error(d && d.error ? d.error : "HTTP " + r.status);
+          return d;
+        });
+      })
+      .then(function (d) {
+        lockChannels(false);
+        startPay(d);
+      })
+      .catch(function (e) {
+        lockChannels(false);
+        setProErr(e && e.message && e.message !== "Failed to fetch"
+          ? e.message : proDict()["pro.errNet"]);
+      });
+  }
+
+  if (proModal) {
+    proChBtns.forEach(function (b) {
+      b.addEventListener("click", function () { buy(b.dataset.ch); });
+    });
+    var proCloseBtn = document.getElementById("proClose");
+    var proCancelBtn = document.getElementById("proCancel");
+    var proFinishBtn = document.getElementById("proFinish");
+    var proAgainBtn = document.getElementById("proAgain");
+    if (proCloseBtn) proCloseBtn.addEventListener("click", closePro);
+    if (proCancelBtn) proCancelBtn.addEventListener("click", function () {
+      stopPoll();
+      proState.order = null;
+      showProPanel("main");
+    });
+    if (proFinishBtn) proFinishBtn.addEventListener("click", closePro);
+    if (proAgainBtn) proAgainBtn.addEventListener("click", function () {
+      if (proState.order) {
+        downloadLicense(proState.order.order_no).catch(function () {
+          setProErr(proDict()["pro.errNet"]);
+        });
+      }
+    });
+    if (proMockBtn) proMockBtn.addEventListener("click", function () {
+      if (!proState.order) return;
+      proMockBtn.disabled = true;
+      fetch(PAY_API + "/api/orders/" + encodeURIComponent(proState.order.order_no) + "/mock-pay", {
+        method: "POST"
+      })
+        .then(function () { proMockBtn.disabled = false; })
+        .catch(function () { proMockBtn.disabled = false; });
+    });
+    proModal.addEventListener("click", function (e) {
+      if (e.target === proModal) closePro();
+    });
+  }
+
+  var proOpenBtn = document.getElementById("proOpen");
+  var proOpenFoot = document.getElementById("proOpenFoot");
+  if (proOpenBtn) proOpenBtn.addEventListener("click", openPro);
+  if (proOpenFoot) proOpenFoot.addEventListener("click", openPro);
 
   // ---------- 下载区：两个架构平铺 + 最新 Release 直链 ----------
   var ASSET_RE = { arm: /-arm64\.dmg$/i, x86: /-x86_64\.dmg$/i };
@@ -1009,6 +1502,7 @@
 
   document.getElementById("year").textContent = new Date().getFullYear();
   apply(guess());
+  syncPrice();
 })();
 </script>
 </body>
