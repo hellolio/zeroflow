@@ -1,0 +1,1482 @@
+{
+  "通用": {
+    "zh-Hans": "通用",
+    "en": "General",
+    "ja": "一般"
+  },
+  "截图": {
+    "zh-Hans": "截图",
+    "en": "Screenshot",
+    "ja": "スクリーンショット"
+  },
+  "切换": {
+    "zh-Hans": "切换",
+    "en": "Switcher",
+    "ja": "切り替え"
+  },
+  "Dock": {
+    "zh-Hans": "Dock",
+    "en": "Dock",
+    "ja": "Dock"
+  },
+  "右键菜单": {
+    "zh-Hans": "右键菜单",
+    "en": "Context Menu",
+    "ja": "コンテキストメニュー"
+  },
+  "在访达右键菜单中显示「新建空文件」": {
+    "zh-Hans": "在访达右键菜单中显示「新建空文件」",
+    "en": "Show \"New Empty File\" in the Finder context menu",
+    "ja": "Finder のコンテキストメニューに「空の新規ファイル」を表示"
+  },
+  "开启后，在「访达」窗口或桌面的用户目录内点按右键即可新建空文件；关闭后 Finder 不监控任何目录，完全无副作用。": {
+    "zh-Hans": "开启后，在「访达」窗口或桌面的用户目录内点按右键即可新建空文件；关闭后 Finder 不监控任何目录，完全无副作用。",
+    "en": "When enabled, right-clicking inside your user folders in Finder or on the Desktop creates a new empty file; when disabled, Finder monitors no directories and there is no side effect.",
+    "ja": "有効にすると、Finder またはデスクトップのユーザーディレクトリ内で右クリックして空のファイルを新規作成できます。無効にすると Finder はディレクトリを監視せず、副作用はありません。"
+  },
+  "新文件名": {
+    "zh-Hans": "新文件名",
+    "en": "New File Name",
+    "ja": "新しいファイル名"
+  },
+  "默认文件名": {
+    "zh-Hans": "默认文件名",
+    "en": "Default file name",
+    "ja": "デフォルトのファイル名"
+  },
+  "文件名": {
+    "zh-Hans": "文件名",
+    "en": "File Name",
+    "ja": "ファイル名"
+  },
+  "包含扩展名，如 new file.md。名称已存在时自动追加数字（new file 1.md、new file 2.md…）。": {
+    "zh-Hans": "包含扩展名，如 new file.md。名称已存在时自动追加数字（new file 1.md、new file 2.md…）。",
+    "en": "Include the file extension, e.g. new file.md. When the name already exists, a number is appended automatically (new file 1.md, new file 2.md…).",
+    "ja": "拡張子を含めます（例: new file.md）。名前が既に存在する場合は数字が自動的に追加されます（new file 1.md、new file 2.md…）。"
+  },
+  "访达扩展": {
+    "zh-Hans": "访达扩展",
+    "en": "Finder Extension",
+    "ja": "Finder 拡張"
+  },
+  "首次使用需在系统中启用扩展；扩展启用后，菜单出现在用户目录（含桌面）内的任意位置。": {
+    "zh-Hans": "首次使用需在系统中启用扩展；扩展启用后，菜单出现在用户目录（含桌面）内的任意位置。",
+    "en": "The extension must be enabled once in System Settings. Once enabled, the menu appears anywhere inside your user folders, including the Desktop.",
+    "ja": "初回はシステム設定で拡張を有効にする必要があります。有効にすると、デスクトップを含むユーザーディレクトリ内のどこでもメニューが表示されます。"
+  },
+  "访达扩展已启用": {
+    "zh-Hans": "访达扩展已启用",
+    "en": "Finder Extension Enabled",
+    "ja": "Finder 拡張が有効です"
+  },
+  "无法读取访达扩展状态": {
+    "zh-Hans": "无法读取访达扩展状态",
+    "en": "Unable to read Finder Extension status",
+    "ja": "Finder 拡張の状態を取得できません"
+  },
+  "尚未在系统中启用访达扩展": {
+    "zh-Hans": "尚未在系统中启用访达扩展",
+    "en": "Finder Extension is not enabled yet",
+    "ja": "Finder 拡張がまだ有効になっていません"
+  },
+  "点击下方按钮，在「系统设置 → 通用 → 登录项与扩展 → 扩展」中开启 zeroflow 的「FinderSync」扩展。": {
+    "zh-Hans": "点击下方按钮，在「系统设置 → 通用 → 登录项与扩展 → 扩展」中开启 zeroflow 的「FinderSync」扩展。",
+    "en": "Click the button below, then turn on zeroflow's \"FinderSync\" extension in System Settings → General → Login Items & Extensions → Extensions.",
+    "ja": "下のボタンをクリックし、システム設定 → 一般 → ログイン項目と拡張機能 → 拡張機能 で zeroflow の「FinderSync」拡張をオンにしてください。"
+  },
+  "打开扩展管理": {
+    "zh-Hans": "打开扩展管理",
+    "en": "Open Extension Management",
+    "ja": "拡張機能の管理を開く"
+  },
+  "语言": {
+    "zh-Hans": "语言",
+    "en": "Language",
+    "ja": "言語"
+  },
+  "跟随系统": {
+    "zh-Hans": "跟随系统",
+    "en": "Follow System",
+    "ja": "システムに従う"
+  },
+  "启用截图功能": {
+    "zh-Hans": "启用截图功能",
+    "en": "Enable Screenshot",
+    "ja": "スクリーンショットを有効にする"
+  },
+  "启用": {
+    "zh-Hans": "启用",
+    "en": "Enable",
+    "ja": "有効化"
+  },
+  "关闭后，全局快捷键与菜单栏「立即截图」将停止工作。": {
+    "zh-Hans": "关闭后，全局快捷键与菜单栏「立即截图」将停止工作。",
+    "en": "When disabled, the global shortcut and the menu bar \"Capture Screenshot\" item stop working.",
+    "ja": "無効にすると、グローバルショートカットとメニューバーの「スクリーンショット」項目が動作しなくなります。"
+  },
+  "截屏快捷键": {
+    "zh-Hans": "截屏快捷键",
+    "en": "Screenshot Shortcut",
+    "ja": "スクリーンショットのショートカット"
+  },
+  "快捷键": {
+    "zh-Hans": "快捷键",
+    "en": "Shortcut",
+    "ja": "ショートカット"
+  },
+  "屏幕录制权限": {
+    "zh-Hans": "屏幕录制权限",
+    "en": "Screen Recording Permission",
+    "ja": "画面収録の権限"
+  },
+  "默认保存位置": {
+    "zh-Hans": "默认保存位置",
+    "en": "Default Save Location",
+    "ja": "デフォルトの保存先"
+  },
+  "保存时询问位置": {
+    "zh-Hans": "保存时询问位置",
+    "en": "Ask for Save Location",
+    "ja": "保存先を毎回確認"
+  },
+  "保存": {
+    "zh-Hans": "保存",
+    "en": "Save",
+    "ja": "保存"
+  },
+  "开机自动启动（登录时打开）": {
+    "zh-Hans": "开机自动启动（登录时打开）",
+    "en": "Launch at Login",
+    "ja": "ログイン時に起動"
+  },
+  "开机自启": {
+    "zh-Hans": "开机自启",
+    "en": "Launch at Login",
+    "ja": "ログイン時に起動"
+  },
+  "开启后，登录 macOS 时自动在后台启动 zeroflow，可随时用快捷键截图。": {
+    "zh-Hans": "开启后，登录 macOS 时自动在后台启动 zeroflow，可随时用快捷键截图。",
+    "en": "When enabled, zeroflow launches in the background at login, so you can capture anytime with the shortcut.",
+    "ja": "有効にすると、ログイン時に zeroflow がバックグラウンドで起動し、いつでもショートカットでスクリーンショットを撮れます。"
+  },
+  "用 ⌘⇥ 显示窗口缩略图": {
+    "zh-Hans": "用 ⌘⇥ 显示窗口缩略图",
+    "en": "Show Window Thumbnails with ⌘⇥",
+    "ja": "⌘⇥ でウィンドウのサムネイルを表示"
+  },
+  "开启后，按下配置的组合键会弹出窗口缩略图切换器，可切换到最小化、同 app 多窗口、其他 Space 的窗口。关闭后完全恢复系统默认。": {
+    "zh-Hans": "开启后，按下配置的组合键会弹出窗口缩略图切换器，可切换到最小化、同 app 多窗口、其他 Space 的窗口。关闭后完全恢复系统默认。",
+    "en": "When enabled, pressing the configured shortcut opens a window thumbnail switcher. You can switch to minimized windows, multiple windows of the same app, and windows on other Spaces. When disabled, the system default behavior is fully restored.",
+    "ja": "有効にすると、設定したショートカットでウィンドウのサムネイル切り替えが表示されます。最小化したウィンドウ、同じアプリの複数ウィンドウ、他の Space のウィンドウに切り替えられます。無効にするとシステムのデフォルトに完全に戻ります。"
+  },
+  "切换快捷键": {
+    "zh-Hans": "切换快捷键",
+    "en": "Switcher Shortcut",
+    "ja": "切り替えのショートカット"
+  },
+  "选择其一弹出切换器：⌘⇥（Command + Tab）或 ⌥`（Option + Tab 上方的「`」键）。⇧ + 修饰键 + 主键 后退。": {
+    "zh-Hans": "选择其一弹出切换器：⌘⇥（Command + Tab）或 ⌥`（Option + Tab 上方的「`」键）。⇧ + 修饰键 + 主键 后退。",
+    "en": "Pick one to open the switcher: ⌘⇥ (Command + Tab) or ⌥` (Option + the ` key above Tab). ⇧ + modifier + main key goes backward.",
+    "ja": "いずれかを選択して切り替えを表示: ⌘⇥（Command + Tab）または ⌥`（Option + Tab の上にある「`」キー）。⇧ + 修飾キー + メインキーで戻ります。"
+  },
+  "需要「辅助功能」权限才能接管 ⌘⇥ 切换": {
+    "zh-Hans": "需要「辅助功能」权限才能接管 ⌘⇥ 切换",
+    "en": "Accessibility permission is required to take over ⌘⇥ switching",
+    "ja": "⌘⇥ の切り替えを引き継ぐにはアクセシビリティ権限が必要です"
+  },
+  "该权限与 Dock 单击最小化共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 单击最小化共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock single-click minimize; if it is already enabled, this shows green.",
+    "ja": "この権限は Dock のワンクリック最小化と共用です。すでに有効な場合はここで緑色で表示されます。"
+  },
+  "权限": {
+    "zh-Hans": "权限",
+    "en": "Permission",
+    "ja": "権限"
+  },
+  "选项": {
+    "zh-Hans": "选项",
+    "en": "Options",
+    "ja": "オプション"
+  },
+  "显示无窗口的应用": {
+    "zh-Hans": "显示无窗口的应用",
+    "en": "Show Windowless Apps",
+    "ja": "ウィンドウのないアプリを表示"
+  },
+  "开启「显示无窗口的应用」后，窗口全部关闭但仍在运行的应用也会显示（无缩略图时显示 app 图标）。切换器总是会列出其他 Space 上打开的窗口。": {
+    "zh-Hans": "开启「显示无窗口的应用」后，窗口全部关闭但仍在运行的应用也会显示（无缩略图时显示 app 图标）。切换器总是会列出其他 Space 上打开的窗口。",
+    "en": "When \"Show Windowless Apps\" is enabled, apps that are still running with all windows closed are shown (an app icon appears when there is no thumbnail). The switcher always lists windows opened on other Spaces.",
+    "ja": "「ウィンドウのないアプリを表示」を有効にすると、すべてのウィンドウを閉じても実行中のアプリが表示されます（サムネイルがない場合はアプリアイコンが表示されます）。切り替えには他の Space で開いているウィンドウも常に一覧表示されます。"
+  },
+  "单击 Dock 图标最小化窗口": {
+    "zh-Hans": "单击 Dock 图标最小化窗口",
+    "en": "Single-click Dock Icon to Minimize Window",
+    "ja": "Dock アイコンのシングルクリックでウィンドウを最小化"
+  },
+  "需要「辅助功能」权限才能最小化窗口": {
+    "zh-Hans": "需要「辅助功能」权限才能最小化窗口",
+    "en": "Accessibility permission is required to minimize windows",
+    "ja": "ウィンドウを最小化するにはアクセシビリティ権限が必要です"
+  },
+  "桌面与 Dock": {
+    "zh-Hans": "桌面与 Dock",
+    "en": "Desktop & Dock",
+    "ja": "デスクトップと Dock"
+  },
+  "前往设置": {
+    "zh-Hans": "前往设置",
+    "en": "Open Settings",
+    "ja": "設定を開く"
+  },
+  "建议同时开启「桌面与 Dock → 最小化窗口到应用图标」，可避免最小化后还原位置丢失。": {
+    "zh-Hans": "建议同时开启「桌面与 Dock → 最小化窗口到应用图标」，可避免最小化后还原位置丢失。",
+    "en": "It is recommended to also enable \"Desktop & Dock → Minimize windows into application icon\" to avoid losing the restore position after minimizing.",
+    "ja": "「デスクトップと Dock → ウィンドウをアプリアイコンに最小化」も有効にすることをおすすめします。最小化後の復元位置のずれを防げます。"
+  },
+  "屏幕录制权限已开启": {
+    "zh-Hans": "屏幕录制权限已开启",
+    "en": "Screen Recording Permission Enabled",
+    "ja": "画面収録の権限が有効です"
+  },
+  "需要「屏幕录制」权限才能截图": {
+    "zh-Hans": "需要「屏幕录制」权限才能截图",
+    "en": "Screen Recording permission is required to capture",
+    "ja": "スクリーンショットには「画面収録」権限が必要です"
+  },
+  "1. 点击下方「打开系统设置授权」\n2. 在「隐私与安全性 → 屏幕录制」中为 Zeroflow 打开开关\n3. 授权后回到应用，点击「重新检测」": {
+    "zh-Hans": "1. 点击下方「打开系统设置授权」\n2. 在「隐私与安全性 → 屏幕录制」中为 Zeroflow 打开开关\n3. 授权后回到应用，点击「重新检测」",
+    "en": "1. Click \"Open System Settings\" below\n2. In \"Privacy & Security → Screen Recording\", enable Zeroflow\n3. Return to the app and click \"Recheck\"",
+    "ja": "1. 下の「システム設定を開く」をクリック\n2. 「プライバシーとセキュリティ → 画面収録」で Zeroflow をオンにします\n3. アプリに戻って「再確認」をクリック"
+  },
+  "打开系统设置授权": {
+    "zh-Hans": "打开系统设置授权",
+    "en": "Open System Settings",
+    "ja": "システム設定を開く"
+  },
+  "重新检测": {
+    "zh-Hans": "重新检测",
+    "en": "Recheck",
+    "ja": "再確認"
+  },
+  "立即截图（%@）": {
+    "zh-Hans": "立即截图（%@）",
+    "en": "Capture Screenshot (%@)",
+    "ja": "スクリーンショット (%@)"
+  },
+  "设置…": {
+    "zh-Hans": "设置…",
+    "en": "Settings…",
+    "ja": "設定…"
+  },
+  "退出 zeroflow": {
+    "zh-Hans": "退出 zeroflow",
+    "en": "Quit zeroflow",
+    "ja": "zeroflow を終了"
+  },
+  "zeroflow 设置": {
+    "zh-Hans": "zeroflow 设置",
+    "en": "zeroflow Settings",
+    "ja": "zeroflow 設定"
+  },
+  "zeroflow 截图": {
+    "zh-Hans": "zeroflow 截图",
+    "en": "zeroflow Screenshot",
+    "ja": "zeroflow スクリーンショット"
+  },
+  "截图失败": {
+    "zh-Hans": "截图失败",
+    "en": "Screenshot Failed",
+    "ja": "スクリーンショットに失敗しました"
+  },
+  "无法捕获所选区域，请检查屏幕录制权限后重试。": {
+    "zh-Hans": "无法捕获所选区域，请检查屏幕录制权限后重试。",
+    "en": "Unable to capture the selected area. Please check the Screen Recording permission and try again.",
+    "ja": "選択した領域をキャプチャできませんでした。画面収録の権限を確認してもう一度お試しください。"
+  },
+  "好的": {
+    "zh-Hans": "好的",
+    "en": "OK",
+    "ja": "OK"
+  },
+  "撤回 (⌘Z)": {
+    "zh-Hans": "撤回 (⌘Z)",
+    "en": "Undo (⌘Z)",
+    "ja": "元に戻す (⌘Z)"
+  },
+  "重做 (⇧⌘Z)": {
+    "zh-Hans": "重做 (⇧⌘Z)",
+    "en": "Redo (⇧⌘Z)",
+    "ja": "やり直す (⇧⌘Z)"
+  },
+  "画线 (L)": {
+    "zh-Hans": "画线 (L)",
+    "en": "Draw Line (L)",
+    "ja": "線を描く (L)"
+  },
+  "矩形标注": {
+    "zh-Hans": "矩形标注",
+    "en": "Rectangle",
+    "ja": "四角形"
+  },
+  "圆框标注": {
+    "zh-Hans": "圆框标注",
+    "en": "Ellipse",
+    "ja": "楕円"
+  },
+  "标注 (T)": {
+    "zh-Hans": "标注 (T)",
+    "en": "Annotation (T)",
+    "ja": "注釈 (T)"
+  },
+  "马赛克 小": {
+    "zh-Hans": "马赛克 小",
+    "en": "Mosaic Small",
+    "ja": "モザイク 小"
+  },
+  "马赛克 中": {
+    "zh-Hans": "马赛克 中",
+    "en": "Mosaic Medium",
+    "ja": "モザイク 中"
+  },
+  "马赛克 大": {
+    "zh-Hans": "马赛克 大",
+    "en": "Mosaic Large",
+    "ja": "モザイク 大"
+  },
+  "下载保存 (⌘S)": {
+    "zh-Hans": "下载保存 (⌘S)",
+    "en": "Save (⌘S)",
+    "ja": "保存 (⌘S)"
+  },
+  "复制 (⌘C)": {
+    "zh-Hans": "复制 (⌘C)",
+    "en": "Copy (⌘C)",
+    "ja": "コピー (⌘C)"
+  },
+  "粗细": {
+    "zh-Hans": "粗细",
+    "en": "Stroke Width",
+    "ja": "線の太さ"
+  },
+  "画笔颜色": {
+    "zh-Hans": "画笔颜色",
+    "en": "Pen Color",
+    "ja": "ペンの色"
+  },
+  "保存失败": {
+    "zh-Hans": "保存失败",
+    "en": "Save Failed",
+    "ja": "保存に失敗しました"
+  },
+  "无法生成图片数据": {
+    "zh-Hans": "无法生成图片数据",
+    "en": "Unable to generate image data",
+    "ja": "画像データを生成できませんでした"
+  },
+  "退出应用": {
+    "zh-Hans": "退出应用",
+    "en": "Quit App",
+    "ja": "アプリを終了"
+  },
+  "关闭窗口": {
+    "zh-Hans": "关闭窗口",
+    "en": "Close Window",
+    "ja": "ウィンドウを閉じる"
+  },
+  "最小化": {
+    "zh-Hans": "最小化",
+    "en": "Minimize",
+    "ja": "最小化"
+  },
+  "全屏切换": {
+    "zh-Hans": "全屏切换",
+    "en": "Toggle Full Screen",
+    "ja": "フルスクリーン切り替え"
+  },
+  "选择…": {
+    "zh-Hans": "选择…",
+    "en": "Choose…",
+    "ja": "選択…"
+  },
+  "打开": {
+    "zh-Hans": "打开",
+    "en": "Open",
+    "ja": "開く"
+  },
+  "选择": {
+    "zh-Hans": "选择",
+    "en": "Choose",
+    "ja": "選択"
+  },
+  "目录创建失败，请重试": {
+    "zh-Hans": "目录创建失败，请重试",
+    "en": "Failed to create directory. Please try again.",
+    "ja": "ディレクトリの作成に失敗しました。もう一度お試しください。"
+  },
+  "按下新快捷键…": {
+    "zh-Hans": "按下新快捷键…",
+    "en": "Press new shortcut…",
+    "ja": "新しいショートカットを押してください…"
+  },
+  "恢复默认": {
+    "zh-Hans": "恢复默认",
+    "en": "Restore Default",
+    "ja": "デフォルトに戻す"
+  },
+  "请至少按下一个修饰键（⌘/⌃/⌥/⇧）": {
+    "zh-Hans": "请至少按下一个修饰键（⌘/⌃/⌥/⇧）",
+    "en": "Press at least one modifier key (⌘/⌃/⌥/⇧)",
+    "ja": "少なくとも1つの修飾キーを押してください（⌘/⌃/⌥/⇧）"
+  },
+  "辅助功能权限已开启": {
+    "zh-Hans": "辅助功能权限已开启",
+    "en": "Accessibility Permission Enabled",
+    "ja": "アクセシビリティ権限が有効です"
+  },
+  "Dock 预览": {
+    "zh-Hans": "Dock 预览",
+    "en": "Dock Preview",
+    "ja": "Dockプレビュー"
+  },
+  "自定义 Dock": {
+    "zh-Hans": "自定义 Dock",
+    "en": "Custom Dock",
+    "ja": "カスタム Dock"
+  },
+  "悬停 Dock 图标显示窗口缩略图": {
+    "zh-Hans": "悬停 Dock 图标显示窗口缩略图",
+    "en": "Show window thumbnails when hovering Dock icons",
+    "ja": "Dockアイコンにカーソルを合わせるとウィンドウのサムネイルを表示"
+  },
+  "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。": {
+    "zh-Hans": "悬停 Dock 图标时弹出该应用所有窗口的缩略图，点击切换窗口、悬停卡片可关闭窗口。最小化窗口的瓦片悬停同样生效。",
+    "en": "Hovering a Dock icon shows thumbnails of all its windows. Click a card to switch to that window, or hover it to reveal a close button. Works on minimized-window tiles too.",
+    "ja": "Dockアイコンにカーソルを合わせると、そのアプリの全ウィンドウのサムネイルを表示します。クリックでウィンドウを切り替え、カードにカーソルを合わせると閉じるボタンが出ます。最小化ウィンドウのタイルでも有効です。"
+  },
+  "悬停延时": {
+    "zh-Hans": "悬停延时",
+    "en": "Hover delay",
+    "ja": "ホバー遅延"
+  },
+  "鼠标停留在 Dock 图标上多久后弹出预览。": {
+    "zh-Hans": "鼠标停留在 Dock 图标上多久后弹出预览。",
+    "en": "How long the mouse must stay on a Dock icon before the preview appears.",
+    "ja": "マウスがDockアイコン上に留まってからプレビューが表示されるまでの時間。"
+  },
+  "弹出延迟": {
+    "zh-Hans": "弹出延迟",
+    "en": "Show delay",
+    "ja": "表示遅延"
+  },
+  "收起延迟": {
+    "zh-Hans": "收起延迟",
+    "en": "Hide delay",
+    "ja": "非表示遅延"
+  },
+  "弹出延迟：鼠标停留在 Dock 图标上多久后弹出预览。收起延迟：鼠标离开图标与面板后多久收起——调大可让鼠标从容地从图标移到预览面板上。": {
+    "zh-Hans": "弹出延迟：鼠标停留在 Dock 图标上多久后弹出预览。收起延迟：鼠标离开图标与面板后多久收起——调大可让鼠标从容地从图标移到预览面板上。",
+    "en": "Show delay: how long the mouse must rest on a Dock icon before the preview appears. Hide delay: how long the panel waits after the pointer leaves the icon and panel — increase it to give yourself time to move from the icon onto the preview.",
+    "ja": "表示遅延：マウスがDockアイコン上に留まってからプレビューが表示されるまでの時間。非表示遅延：マウスがアイコンとパネルから離れてから閉じるまでの時間。大きくすると、アイコンからプレビューへゆっくり移動できます。"
+  },
+  "需要「辅助功能」权限才能监测 Dock 悬停": {
+    "zh-Hans": "需要「辅助功能」权限才能监测 Dock 悬停",
+    "en": "Accessibility permission is required to detect Dock hovering",
+    "ja": "Dockのホバー検出には「アクセシビリティ」権限が必要です"
+  },
+  "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。": {
+    "zh-Hans": "缩略图抓取需要「屏幕录制」权限，未授权时卡片只显示窗口标题。",
+    "en": "Screen Recording permission is needed to capture thumbnails; without it, cards show window titles only.",
+    "ja": "サムネイルの取得には「画面収録」権限が必要です。未許可の場合、カードにはウィンドウタイトルのみ表示されます。"
+  },
+  "自定义命令": {
+    "zh-Hans": "自定义命令",
+    "en": "Custom Command",
+    "ja": "カスタムコマンド"
+  },
+  "在访达右键菜单中显示「自定义命令」": {
+    "zh-Hans": "在访达右键菜单中显示「自定义命令」",
+    "en": "Show \"Custom Command\" in the Finder context menu",
+    "ja": "Finder のコンテキストメニューに「カスタムコマンド」を表示"
+  },
+  "开启后，访达右键菜单新增一条菜单项，点击即执行下方配置的命令。": {
+    "zh-Hans": "开启后，访达右键菜单新增一条菜单项，点击即执行下方配置的命令。",
+    "en": "When enabled, a menu item is added to the Finder context menu that runs the command configured below.",
+    "ja": "有効にすると、Finder のコンテキストメニューに項目が追加され、下で設定したコマンドを実行します。"
+  },
+  "菜单名称": {
+    "zh-Hans": "菜单名称",
+    "en": "Menu Title",
+    "ja": "メニュー名"
+  },
+  "命令": {
+    "zh-Hans": "命令",
+    "en": "Command",
+    "ja": "コマンド"
+  },
+  "命令配置": {
+    "zh-Hans": "命令配置",
+    "en": "Command",
+    "ja": "コマンド設定"
+  },
+  "打开终端": {
+    "zh-Hans": "打开终端",
+    "en": "Open Terminal",
+    "ja": "ターミナルを開く"
+  },
+  "如 /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\"": {
+    "zh-Hans": "如 /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\"",
+    "en": "e.g. /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\"",
+    "ja": "例: /Applications/WezTerm.app/Contents/MacOS/wezterm start --cwd \"{path}\""
+  },
+  "命令中的 {path} 会替换为右键目标的绝对路径：右键文件夹=该文件夹、右键文件=其所在文件夹、右键空白处=当前目录；不含 {path} 则原样执行。路径含空格请给 {path} 加引号。命令由 Zeroflow 主 App 代为执行（登录 Shell，PATH 含 Homebrew），请保持 Zeroflow 常驻运行。": {
+    "zh-Hans": "命令中的 {path} 会替换为右键目标的绝对路径：右键文件夹=该文件夹、右键文件=其所在文件夹、右键空白处=当前目录；不含 {path} 则原样执行。路径含空格请给 {path} 加引号。命令由 Zeroflow 主 App 代为执行（登录 Shell，PATH 含 Homebrew），请保持 Zeroflow 常驻运行。",
+    "en": "In the command, {path} is replaced with the absolute path of the right-click target: a folder uses itself, a file uses its parent folder, empty space uses the current directory; without {path} the command runs as-is. Quote {path} if paths may contain spaces. Commands are executed by the Zeroflow main app via your default login shell (PATH includes Homebrew), so keep Zeroflow running.",
+    "ja": "コマンド内の {path} は右クリック対象の絶対パスに置き換えられます：フォルダーならそのフォルダー、ファイルならその親フォルダー、空白部分なら現在のディレクトリ。{path} がない場合はそのまま実行します。パスに空白が含まれる可能性がある場合は {path} を引用符で囲ってください。コマンドは Zeroflow 本体アプリがログインシェル経由で実行します（PATH に Homebrew を含む）。Zeroflow を常駐させてください。"
+  },
+  "灵动岛": {
+    "zh-Hans": "灵动岛",
+    "en": "Notch",
+    "ja": "ノッチ"
+  },
+  "启用灵动岛": {
+    "zh-Hans": "启用灵动岛",
+    "en": "Enable Notch Panel",
+    "ja": "ノッチパネルを有効にする"
+  },
+  "触发方式": {
+    "zh-Hans": "触发方式",
+    "en": "Trigger",
+    "ja": "トリガー"
+  },
+  "悬停": {
+    "zh-Hans": "悬停",
+    "en": "Hover",
+    "ja": "ホバー"
+  },
+  "点击": {
+    "zh-Hans": "点击",
+    "en": "Click",
+    "ja": "クリック"
+  },
+  "悬停、单击或双击屏幕顶部刘海区域（触发方式见下方选项），刘海扩大并显示内容模块；点击刘海区域或面板外部、按 Esc 均可收起。默认只支持带刘海的屏幕，无刘海屏幕见下方「屏幕」。": {
+    "zh-Hans": "悬停、单击或双击屏幕顶部刘海区域（触发方式见下方选项），刘海扩大并显示内容模块；点击刘海区域或面板外部、按 Esc 均可收起。默认只支持带刘海的屏幕，无刘海屏幕见下方「屏幕」。",
+    "en": "Hover over, click, or double-click the notch at the top of the screen (triggers can be configured below) to expand it and show a content module; click the notch, click outside the panel, or press Esc to dismiss. Only notch screens are supported by default — see \"Screens\" below for displays without a notch.",
+    "ja": "画面上部のノッチにカーソルを合わせるか、クリックまたはダブルクリックすると（トリガーは下のオプションで設定できます）、ノッチが拡大してコンテンツモジュールを表示します。ノッチまたはパネルの外側をクリックするか、Esc で閉じます。既定ではノッチ搭載画面のみ対応で、ノッチのない画面は下の「画面」で設定します。"
+  },
+  "单击刘海区域弹出面板，显示中再单击刘海收起；单击刘海与面板以外的区域也会收起，鼠标移出不会收起。面板尺寸随当前显示内容自动调整。": {
+    "zh-Hans": "单击刘海区域弹出面板，显示中再单击刘海收起；单击刘海与面板以外的区域也会收起，鼠标移出不会收起。面板尺寸随当前显示内容自动调整。",
+    "en": "Click the notch to open the panel, and click the notch again to dismiss; clicking anywhere outside the notch and panel also dismisses, while moving the mouse away does not. Panel size follows the displayed content.",
+    "ja": "ノッチをクリックするとパネルを開き、表示中にもう一度ノッチをクリックすると閉じます。ノッチとパネル以外をクリックしても閉じ、マウスを外しても閉じません。パネルの大きさは表示内容に合わせて自動調整されます。"
+  },
+  "双击刘海也可触发": {
+    "zh-Hans": "双击刘海也可触发",
+    "en": "Double-click notch also triggers",
+    "ja": "ノッチのダブルクリックでもトリガー"
+  },
+  "双击刘海区域同样打开面板；双击打开的面板保持展开：单击外部或鼠标移出不会收起，需双击刘海区域或双击面板外部才能关闭。": {
+    "zh-Hans": "双击刘海区域同样打开面板；双击打开的面板保持展开：单击外部或鼠标移出不会收起，需双击刘海区域或双击面板外部才能关闭。",
+    "en": "Double-clicking the notch also opens the panel; a panel opened by double-click stays expanded — single-clicking outside or moving the mouse away won't dismiss it. Double-click the notch or anywhere outside the panel to dismiss.",
+    "ja": "ノッチをダブルクリックしてもパネルを開けます。ダブルクリックで開いたパネルは展開されたままになり、外側のシングルクリックやカーソルを離しても閉じません。閉じるにはノッチまたはパネルの外側をダブルクリックします。"
+  },
+  "显示内容": {
+    "zh-Hans": "显示内容",
+    "en": "Content",
+    "ja": "表示内容"
+  },
+  "日历": {
+    "zh-Hans": "日历",
+    "en": "Calendar",
+    "ja": "カレンダー"
+  },
+  "需要「辅助功能」权限才能监测刘海悬停": {
+    "zh-Hans": "需要「辅助功能」权限才能监测刘海悬停",
+    "en": "Accessibility permission is required to detect notch hover",
+    "ja": "ノッチのホバー検知には「アクセシビリティ」権限が必要です"
+  },
+  "该权限与 Dock 预览等功能共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 预览等功能共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock preview and other features; if already granted, it shows green here.",
+    "ja": "この権限は Dock プレビューなどと共通です。許可済みならここは緑色で表示されます。"
+  },
+  "今天": {
+    "zh-Hans": "今天",
+    "en": "Today",
+    "ja": "今日"
+  },
+  "全天": {
+    "zh-Hans": "全天",
+    "en": "All-day",
+    "ja": "終日"
+  },
+  "没有日程": {
+    "zh-Hans": "没有日程",
+    "en": "No events",
+    "ja": "予定はありません"
+  },
+  "无标题日程": {
+    "zh-Hans": "无标题日程",
+    "en": "Untitled event",
+    "ja": "タイトルなしの予定"
+  },
+  "未获准访问日历，无法显示日程。": {
+    "zh-Hans": "未获准访问日历，无法显示日程。",
+    "en": "Calendar access is not granted, so events can't be shown.",
+    "ja": "カレンダーへのアクセスが許可されていないため、予定を表示できません。"
+  },
+  "暂无显示内容": {
+    "zh-Hans": "暂无显示内容",
+    "en": "No content yet",
+    "ja": "表示内容がありません"
+  },
+  "添加显示内容": {
+    "zh-Hans": "添加显示内容",
+    "en": "Add Content",
+    "ja": "コンテンツを追加"
+  },
+  "系统资源": {
+    "zh-Hans": "系统资源",
+    "en": "System Resources",
+    "ja": "システムリソース"
+  },
+  "正在播放": {
+    "zh-Hans": "正在播放",
+    "en": "Now Playing",
+    "ja": "再生中"
+  },
+  "资源项": {
+    "zh-Hans": "资源项",
+    "en": "Resource Items",
+    "ja": "リソース項目"
+  },
+  "系统资源模块中显示的项目；CPU 和内存为环形仪表（环心为使用率），GPU 为次要小环，磁盘/网络附最近约 1 分钟的趋势曲线。": {
+    "zh-Hans": "系统资源模块中显示的项目；CPU 和内存为环形仪表（环心为使用率），GPU 为次要小环，磁盘/网络附最近约 1 分钟的趋势曲线。",
+    "en": "Items shown in the System Resources module; CPU and Memory are rings with the usage in the center, GPU is a smaller secondary ring, and Disk/Network include a curve of roughly the last minute.",
+    "ja": "システムリソースモジュールに表示する項目。CPU とメモリはリング（中心に使用率）、GPU は小さめの二次リング、ディスク/ネットワークには直近約 1 分の推移グラフを表示します。"
+  },
+  "上一个": {
+    "zh-Hans": "上一个",
+    "en": "Previous",
+    "ja": "前へ"
+  },
+  "下一个": {
+    "zh-Hans": "下一个",
+    "en": "Next",
+    "ja": "次へ"
+  },
+  "弹出面板中显示的内容模块，一次显示一个，可通过面板顶部的箭头或双指左右滑动循环切换（默认日历）。全部关闭时，面板仍会弹出并提示添加显示内容。": {
+    "zh-Hans": "弹出面板中显示的内容模块，一次显示一个，可通过面板顶部的箭头或双指左右滑动循环切换（默认日历）。全部关闭时，面板仍会弹出并提示添加显示内容。",
+    "en": "Content module shown in the panel, one at a time; switch with the two arrows in the panel's top-left corner or a two-finger horizontal swipe (calendar by default), cycling through the enabled modules. With all modules off, the panel still opens and offers to add content.",
+    "ja": "パネルに表示するコンテンツモジュール（1 つずつ表示）。パネル左上の 2 つの矢印ボタンまたは 2 本指の左右スワイプで循環切り替えします（デフォルトはカレンダー）。すべてオフでもパネルは開き、コンテンツ追加を案内します。"
+  },
+  "没有正在播放的音乐": {
+    "zh-Hans": "没有正在播放的音乐",
+    "en": "Nothing playing",
+    "ja": "再生中の音楽はありません"
+  },
+  "未知应用": {
+    "zh-Hans": "未知应用",
+    "en": "Unknown App",
+    "ja": "不明なアプリ"
+  },
+  "已暂停": {
+    "zh-Hans": "已暂停",
+    "en": "Paused",
+    "ja": "一時停止中"
+  },
+  "暂停": {
+    "zh-Hans": "暂停",
+    "en": "Pause",
+    "ja": "一時停止"
+  },
+  "播放": {
+    "zh-Hans": "播放",
+    "en": "Play",
+    "ja": "再生"
+  },
+  "上一首": {
+    "zh-Hans": "上一首",
+    "en": "Previous Track",
+    "ja": "前の曲"
+  },
+  "下一首": {
+    "zh-Hans": "下一首",
+    "en": "Next Track",
+    "ja": "次の曲"
+  },
+  "读": {
+    "zh-Hans": "读",
+    "en": "Read",
+    "ja": "読"
+  },
+  "写": {
+    "zh-Hans": "写",
+    "en": "Write",
+    "ja": "書"
+  },
+  "内存": {
+    "zh-Hans": "内存",
+    "en": "Memory",
+    "ja": "メモリ"
+  },
+  "磁盘": {
+    "zh-Hans": "磁盘",
+    "en": "Disk",
+    "ja": "ディスク"
+  },
+  "网络": {
+    "zh-Hans": "网络",
+    "en": "Network",
+    "ja": "ネットワーク"
+  },
+  "鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出，显示中再单击刘海收起；移出后同样按此时长延迟收起。面板尺寸随当前显示内容自动调整。": {
+    "zh-Hans": "鼠标停留在刘海区域多久后弹出面板；单击刘海区域可立即弹出，显示中再单击刘海收起；移出后同样按此时长延迟收起。面板尺寸随当前显示内容自动调整。",
+    "en": "How long the pointer must stay on the notch before the panel appears; clicking the notch opens it instantly, clicking the notch again while open dismisses it, and after the pointer leaves the panel collapses after the same delay. The panel size adapts to the content currently shown.",
+    "ja": "ホバーしてからパネルが表示されるまでの時間。ノッチをクリックすると即座に開き、表示中にもう一度ノッチをクリックすると閉じます。ポインターが離れると同じ時間だけ待ってから収縮します。パネルのサイズは表示中の内容に合わせて自動調整されます。"
+  },
+  "核": {
+    "zh-Hans": "核",
+    "en": "cores",
+    "ja": "コア"
+  },
+  "剪贴板": {
+    "zh-Hans": "剪贴板",
+    "en": "Clipboard",
+    "ja": "クリップボード"
+  },
+  "启用剪贴板历史": {
+    "zh-Hans": "启用剪贴板历史",
+    "en": "Enable clipboard history",
+    "ja": "クリップボード履歴を有効にする"
+  },
+  "开启后，Zeroflow 会记录复制过的文本与图片，按快捷键可随时浏览、搜索并粘贴。关闭后停止记录，已有历史保留。": {
+    "zh-Hans": "开启后，Zeroflow 会记录复制过的文本与图片，按快捷键可随时浏览、搜索并粘贴。关闭后停止记录，已有历史保留。",
+    "en": "When enabled, Zeroflow records copied text and images; press the shortcut to browse, search and paste anytime. Turning it off stops recording but keeps existing history.",
+    "ja": "有効にすると、コピーしたテキストや画像を記録し、ショートカットでいつでも閲覧・検索・貼り付けできます。無効にしても既存の履歴は残ります。"
+  },
+  "剪贴板快捷键": {
+    "zh-Hans": "剪贴板快捷键",
+    "en": "Clipboard shortcut",
+    "ja": "クリップボードのショートカット"
+  },
+  "在任意应用中按下该组合键，即在鼠标位置弹出历史面板。": {
+    "zh-Hans": "在任意应用中按下该组合键，即在鼠标位置弹出历史面板。",
+    "en": "Press this shortcut in any app to open the history panel at the mouse pointer.",
+    "ja": "任意のアプリでこのショートカットを押すと、マウス位置に履歴パネルが表示されます。"
+  },
+  "预览延迟": {
+    "zh-Hans": "预览延迟",
+    "en": "Preview delay",
+    "ja": "プレビュー遅延"
+  },
+  "选中某条记录后停留多久，窗口向可用空间一侧展开并显示完整内容。": {
+    "zh-Hans": "选中某条记录后停留多久，窗口向可用空间一侧展开并显示完整内容。",
+    "en": "How long to dwell on an item before the window expands toward the free side and shows the full content.",
+    "ja": "項目を選択してから、空きのある側へウィンドウが広がり全文を表示するまでの待ち時間です。"
+  },
+  "最多保存条数": {
+    "zh-Hans": "最多保存条数",
+    "en": "Maximum items",
+    "ja": "保存件数の上限"
+  },
+  "清空历史记录": {
+    "zh-Hans": "清空历史记录",
+    "en": "Clear history",
+    "ja": "履歴を消去"
+  },
+  "历史": {
+    "zh-Hans": "历史",
+    "en": "History",
+    "ja": "履歴"
+  },
+  "文本与图片共用该上限，超出后自动删除最旧记录；图片保存在 ~/Library/Application Support/zeroflow/clipboard-images。密码管理器等标记为机密的剪贴板内容不会被记录。": {
+    "zh-Hans": "文本与图片共用该上限，超出后自动删除最旧记录；图片保存在 ~/Library/Application Support/zeroflow/clipboard-images。密码管理器等标记为机密的剪贴板内容不会被记录。",
+    "en": "Text and images share this limit; the oldest entries are removed automatically. Images are stored in ~/Library/Application Support/zeroflow/clipboard-images. Content marked as concealed by password managers is never recorded.",
+    "ja": "テキストと画像でこの上限を共有し、超えた分は古い順に削除されます。画像は ~/Library/Application Support/zeroflow/clipboard-images に保存されます。パスワードマネージャーなどが機密としてマークした内容は記録しません。"
+  },
+  "清空剪贴板历史？": {
+    "zh-Hans": "清空剪贴板历史？",
+    "en": "Clear clipboard history?",
+    "ja": "クリップボード履歴を消去しますか？"
+  },
+  "清空": {
+    "zh-Hans": "清空",
+    "en": "Clear",
+    "ja": "消去"
+  },
+  "取消": {
+    "zh-Hans": "取消",
+    "en": "Cancel",
+    "ja": "キャンセル"
+  },
+  "将删除全部文本与图片记录，此操作不可撤销。": {
+    "zh-Hans": "将删除全部文本与图片记录，此操作不可撤销。",
+    "en": "All text and image entries will be deleted. This cannot be undone.",
+    "ja": "すべてのテキストと画像の記録を削除します。この操作は取り消せません。"
+  },
+  "需要「辅助功能」权限才能把选中内容自动粘贴到当前窗口": {
+    "zh-Hans": "需要「辅助功能」权限才能把选中内容自动粘贴到当前窗口",
+    "en": "Accessibility permission is required to paste the selected item into the current window",
+    "ja": "選択した内容を現在のウィンドウに自動で貼り付けるには「アクセシビリティ」権限が必要です"
+  },
+  "未授权时，选中记录只会复制到剪贴板，仍需手动按 ⌘V。": {
+    "zh-Hans": "未授权时，选中记录只会复制到剪贴板，仍需手动按 ⌘V。",
+    "en": "Without permission, selecting an item only copies it to the clipboard; press ⌘V manually.",
+    "ja": "権限がない場合、選択した内容はクリップボードにコピーされるだけで、手動で ⌘V を押す必要があります。"
+  },
+  "搜索剪贴板历史": {
+    "zh-Hans": "搜索剪贴板历史",
+    "en": "Search clipboard history",
+    "ja": "クリップボード履歴を検索"
+  },
+  "↑↓ 选择 · ↵ 粘贴 · ⌫ 删除 · esc 关闭": {
+    "zh-Hans": "↑↓ 选择 · ↵ 粘贴 · ⌫ 删除 · esc 关闭",
+    "en": "↑↓ select · ↵ paste · ⌫ delete · esc close",
+    "ja": "↑↓ 選択 · ↵ 貼り付け · ⌫ 削除 · esc 閉じる"
+  },
+  "删除这条记录": {
+    "zh-Hans": "删除这条记录",
+    "en": "Delete this entry",
+    "ja": "この記録を削除"
+  },
+  "删除全部剪贴板记录": {
+    "zh-Hans": "删除全部剪贴板记录",
+    "en": "Delete all clipboard entries",
+    "ja": "クリップボードの記録をすべて削除"
+  },
+  "确认清空": {
+    "zh-Hans": "确认清空",
+    "en": "Confirm",
+    "ja": "消去する"
+  },
+  "未授予辅助功能权限：选中仅复制到剪贴板": {
+    "zh-Hans": "未授予辅助功能权限：选中仅复制到剪贴板",
+    "en": "No accessibility permission: selecting only copies to the clipboard",
+    "ja": "アクセシビリティ権限がありません：選択してもコピーのみ"
+  },
+  "图片": {
+    "zh-Hans": "图片",
+    "en": "Image",
+    "ja": "画像"
+  },
+  "文本": {
+    "zh-Hans": "文本",
+    "en": "Text",
+    "ja": "テキスト"
+  },
+  "行": {
+    "zh-Hans": "行",
+    "en": "lines",
+    "ja": "行"
+  },
+  "未知来源": {
+    "zh-Hans": "未知来源",
+    "en": "Unknown source",
+    "ja": "不明なアプリ"
+  },
+  "暂无剪贴板历史": {
+    "zh-Hans": "暂无剪贴板历史",
+    "en": "No clipboard history",
+    "ja": "クリップボード履歴はありません"
+  },
+  "复制文本或图片后会出现在这里": {
+    "zh-Hans": "复制文本或图片后会出现在这里",
+    "en": "Copied text and images will appear here",
+    "ja": "コピーしたテキストや画像がここに表示されます"
+  },
+  "图片已不可用": {
+    "zh-Hans": "图片已不可用",
+    "en": "Image is no longer available",
+    "ja": "画像は利用できなくなりました"
+  },
+  "没有匹配的记录": {
+    "zh-Hans": "没有匹配的记录",
+    "en": "No matching entries",
+    "ja": "一致する記録がありません"
+  },
+  "试试其他关键词": {
+    "zh-Hans": "试试其他关键词",
+    "en": "Try another keyword",
+    "ja": "別のキーワードをお試しください"
+  },
+  "外观": {
+    "zh-Hans": "外观",
+    "en": "Appearance",
+    "ja": "外観"
+  },
+  "使用液态玻璃背景": {
+    "zh-Hans": "使用液态玻璃背景",
+    "en": "Use Liquid Glass background",
+    "ja": "リキッドグラス背景を使用"
+  },
+  "面板背景使用 macOS 26 的液态玻璃效果；旧系统自动回退为磨砂。关闭后使用默认背景。": {
+    "zh-Hans": "面板背景使用 macOS 26 的液态玻璃效果；旧系统自动回退为磨砂。关闭后使用默认背景。",
+    "en": "Use the macOS 26 Liquid Glass effect for the panel background; older systems fall back to a frosted background. Turn off to use the default background.",
+    "ja": "パネル背景に macOS 26 のリキッドグラス効果を使用します。古いシステムではすりガラスにフォールバックします。オフにすると既定の背景を使用します。"
+  },
+  "更通透（无背景蒙版）": {
+    "zh-Hans": "更通透（无背景蒙版）",
+    "en": "More transparent (no background mask)",
+    "ja": "より透明（背景マスクなし）"
+  },
+  "「更通透」去掉液态玻璃的自适应背景蒙版，只保留折射与高光，背景内容更透；仅 macOS 26 及以上有效。": {
+    "zh-Hans": "「更通透」去掉液态玻璃的自适应背景蒙版，只保留折射与高光，背景内容更透；仅 macOS 26 及以上有效。",
+    "en": "“More transparent” removes the Liquid Glass adaptive background mask, keeping only refraction and highlights so the content behind shows through more clearly. Only applies on macOS 26 or later.",
+    "ja": "「より透明」はリキッドグラスの適応背景マスクを外し、屈折とハイライトだけを残すため、背後の内容がより透けて見えます。macOS 26 以降でのみ有効です。"
+  },
+  "整块面板（含顶部刘海条）使用液态玻璃背景；macOS 26 以下自动回退为磨砂。关闭后使用默认纯黑背景。": {
+    "zh-Hans": "整块面板（含顶部刘海条）使用液态玻璃背景；macOS 26 以下自动回退为磨砂。关闭后使用默认纯黑背景。",
+    "en": "Use a Liquid Glass background for the entire panel, including the top notch bar; on macOS versions below 26 it falls back to a frosted background. Turn off to use the default solid black background.",
+    "ja": "上部のノッチバーを含むパネル全体にリキッドグラス背景を使用します。macOS 26 未満ではすりガラスにフォールバックします。オフにすると既定の純黒背景を使用します。"
+  },
+  "编辑窗口使用 macOS 26 的液态玻璃效果；旧系统自动回退为磨砂。关闭后使用默认背景。": {
+    "zh-Hans": "编辑窗口使用 macOS 26 的液态玻璃效果；旧系统自动回退为磨砂。关闭后使用默认背景。",
+    "en": "Use the macOS 26 Liquid Glass effect for the editor window; older systems fall back to a frosted background. Turn off to use the default background.",
+    "ja": "編集ウィンドウに macOS 26 のリキッドグラス効果を使用します。古いシステムではすりガラスにフォールバックします。オフにすると既定の背景を使用します。"
+  },
+  "鼠标": {
+    "zh-Hans": "鼠标",
+    "en": "Mouse",
+    "ja": "マウス"
+  },
+  "垂直滚动反向": {
+    "zh-Hans": "垂直滚动反向",
+    "en": "Reverse vertical scrolling",
+    "ja": "垂直スクロールを反転"
+  },
+  "水平滚动反向": {
+    "zh-Hans": "水平滚动反向",
+    "en": "Reverse horizontal scrolling",
+    "ja": "水平スクロールを反転"
+  },
+  "翻转鼠标滚动方向": {
+    "zh-Hans": "翻转鼠标滚动方向",
+    "en": "Reverse mouse scrolling",
+    "ja": "マウスのスクロール方向を反転"
+  },
+  "只对传统滚轮鼠标生效，触控板与妙控鼠标不受影响。垂直对应滚轮上下滚动；水平对应倾斜滚轮或 Shift+滚轮。两个方向可分别开关，关闭后立即恢复系统方向。": {
+    "zh-Hans": "只对传统滚轮鼠标生效，触控板与妙控鼠标不受影响。垂直对应滚轮上下滚动；水平对应倾斜滚轮或 Shift+滚轮。两个方向可分别开关，关闭后立即恢复系统方向。",
+    "en": "Applies only to traditional scroll-wheel mice; trackpads and Magic Mouse are unaffected. Vertical covers scrolling the wheel up/down; horizontal covers tilting the wheel or Shift+scroll. Each direction can be toggled independently, and turning it off restores the system direction immediately.",
+    "ja": "従来のホイールマウスのみに適用され、トラックパッドや Magic Mouse には影響しません。垂直はホイールの上下スクロール、水平はホイールの左右傾斜または Shift+スクロールに対応します。各方向は個別に切り替えられ、オフにするとシステムの方向にすぐ戻ります。"
+  },
+  "需要「辅助功能」权限才能翻转鼠标滚动方向": {
+    "zh-Hans": "需要「辅助功能」权限才能翻转鼠标滚动方向",
+    "en": "Accessibility permission is required to reverse mouse scrolling",
+    "ja": "マウスのスクロール方向を反転するには「アクセシビリティ」権限が必要です"
+  },
+  "该权限与 Dock 单击最小化、窗口切换器等功能共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 单击最小化、窗口切换器等功能共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock click-to-minimize, the window switcher and other features; if it is already granted, this row shows green.",
+    "ja": "この権限は Dock のクリック最小化やウィンドウスイッチャーなどと共通です。すでに許可されている場合はここに緑色で表示されます。"
+  },
+  "一键清理": {
+    "zh-Hans": "一键清理",
+    "en": "Clean Up",
+    "ja": "クリーンアップ"
+  },
+  "正在清理…": {
+    "zh-Hans": "正在清理…",
+    "en": "Cleaning…",
+    "ja": "クリア中…"
+  },
+  "已清理 %@": {
+    "zh-Hans": "已清理 %@",
+    "en": "Freed %@",
+    "ja": "%@ を解放"
+  },
+  "没有可清理的缓存": {
+    "zh-Hans": "没有可清理的缓存",
+    "en": "Nothing to clean",
+    "ja": "クリアする項目はありません"
+  },
+  "清理 ~/Library/Caches 下可丢弃的缓存文件；不会删除任何文档，清理后部分应用首次启动会稍慢": {
+    "zh-Hans": "清理 ~/Library/Caches、各沙盒容器缓存与 ~/Library/Logs；不会删除任何文档，清理后部分应用首次启动会稍慢",
+    "en": "Removes disposable caches under ~/Library/Caches, sandbox container caches and ~/Library/Logs. No documents are deleted; some apps may start slower the first time afterwards.",
+    "ja": "~/Library/Caches、各サンドボックスコンテナのキャッシュ、~/Library/Logs を削除します。書類は削除されません。クリア後、一部のアプリは初回起動が少し遅くなります。"
+  },
+  "检查更新…": {
+    "zh-Hans": "检查更新…",
+    "en": "Check for Updates…",
+    "ja": "アップデートを確認…"
+  },
+  "正在检查…": {
+    "zh-Hans": "正在检查…",
+    "en": "Checking…",
+    "ja": "確認中…"
+  },
+  "正在下载 %d%%": {
+    "zh-Hans": "正在下载 %d%%",
+    "en": "Downloading %d%%",
+    "ja": "ダウンロード中 %d%%"
+  },
+  "已是最新版本": {
+    "zh-Hans": "已是最新版本",
+    "en": "You're up to date",
+    "ja": "最新バージョンです"
+  },
+  "当前版本 %@ 已是最新。": {
+    "zh-Hans": "当前版本 %@ 已是最新。",
+    "en": "Version %@ is the latest.",
+    "ja": "現在のバージョン %@ は最新です。"
+  },
+  "发现新版本 %@": {
+    "zh-Hans": "发现新版本 %@",
+    "en": "Version %@ is available",
+    "ja": "新しいバージョン %@ があります"
+  },
+  "是否立即更新到最新版本？": {
+    "zh-Hans": "是否立即更新到最新版本？",
+    "en": "Update to the latest version now?",
+    "ja": "最新バージョンに今すぐアップデートしますか？"
+  },
+  "立即更新": {
+    "zh-Hans": "立即更新",
+    "en": "Update Now",
+    "ja": "今すぐ更新"
+  },
+  "稍后": {
+    "zh-Hans": "稍后",
+    "en": "Later",
+    "ja": "あとで"
+  },
+  "更新失败": {
+    "zh-Hans": "更新失败",
+    "en": "Update Failed",
+    "ja": "アップデートに失敗しました"
+  },
+  "无法写入应用所在目录，安装包已保留，请手动拖入「应用程序」文件夹。": {
+    "zh-Hans": "无法写入应用所在目录，安装包已保留，请手动拖入「应用程序」文件夹。",
+    "en": "Cannot write to the app's folder. The installer has been kept — please drag it into Applications manually.",
+    "ja": "アプリのフォルダに書き込めません。インストーラを保存しました。「アプリケーション」フォルダに手動でドラッグしてください。"
+  },
+  "打开安装包": {
+    "zh-Hans": "打开安装包",
+    "en": "Open Installer",
+    "ja": "インストーラを開く"
+  },
+  "打开下载页": {
+    "zh-Hans": "打开下载页",
+    "en": "Open Download Page",
+    "ja": "ダウンロードページを開く"
+  },
+  "检查更新失败": {
+    "zh-Hans": "检查更新失败",
+    "en": "Update Check Failed",
+    "ja": "アップデートの確認に失敗しました"
+  },
+  "无法连接更新服务器，请稍后重试。": {
+    "zh-Hans": "无法连接更新服务器，请稍后重试。",
+    "en": "Could not reach the update server. Please try again later.",
+    "ja": "アップデートサーバーに接続できません。しばらくしてから再試行してください。"
+  },
+  "下载安装包失败：%@": {
+    "zh-Hans": "下载安装包失败：%@",
+    "en": "Failed to download the installer: %@",
+    "ja": "インストーラのダウンロードに失敗しました：%@"
+  },
+  "无法写入应用所在目录": {
+    "zh-Hans": "无法写入应用所在目录",
+    "en": "Cannot write to the app's folder",
+    "ja": "アプリのフォルダに書き込めません"
+  },
+  "无法打开下载的安装包": {
+    "zh-Hans": "无法打开下载的安装包",
+    "en": "Could not open the downloaded installer",
+    "ja": "ダウンロードしたインストーラを開けません"
+  },
+  "安装包里没有找到 Zeroflow.app": {
+    "zh-Hans": "安装包里没有找到 Zeroflow.app",
+    "en": "Zeroflow.app was not found in the installer",
+    "ja": "インストーラ内に Zeroflow.app が見つかりません"
+  },
+  "软件更新": {
+    "zh-Hans": "软件更新",
+    "en": "Software Update",
+    "ja": "ソフトウェアアップデート"
+  },
+  "当前版本 %@": {
+    "zh-Hans": "当前版本 %@",
+    "en": "Current version %@",
+    "ja": "現在のバージョン %@"
+  },
+  "暂无更新说明。": {
+    "zh-Hans": "暂无更新说明。",
+    "en": "No release notes.",
+    "ja": "リリースノートはありません。"
+  },
+  "屏幕": {
+    "zh-Hans": "屏幕",
+    "en": "Screens",
+    "ja": "画面"
+  },
+  "在外接显示器上启用": {
+    "zh-Hans": "在外接显示器上启用",
+    "en": "Enable on External Displays",
+    "ja": "外部ディスプレイでも有効にする"
+  },
+  "打开后，没有硬件刘海的屏幕（外接显示器、无刘海内屏）在顶部中央也会出现触发区域，面板从该位置展开；触发区域只是不可见的几何区域，屏幕上不显示任何东西。刘海屏始终使用真实刘海位置。": {
+    "zh-Hans": "打开后，没有硬件刘海的屏幕（外接显示器、无刘海内屏）在顶部中央也会出现触发区域，面板从该位置展开；触发区域只是不可见的几何区域，屏幕上不显示任何东西。刘海屏始终使用真实刘海位置。",
+    "en": "When on, screens without a hardware notch (external displays, notch-less built-in displays) also get a trigger area at the top center, and the panel expands from there. The trigger area is an invisible geometric region — nothing is drawn on screen. Notch screens always use the real notch position.",
+    "ja": "オンにすると、ハードウェアノッチのない画面（外部ディスプレイやノッチ非搭載の内蔵ディスプレイ）の上部中央にもトリガー領域ができ、パネルはそこから展開します。トリガー領域は見えない幾何学的な範囲で、画面には何も描画されません。ノッチ搭載画面は常に実際のノッチ位置を使用します。"
+  },
+  "许可证": {
+    "zh-Hans": "许可证",
+    "en": "License",
+    "ja": "ライセンス"
+  },
+  "状态": {
+    "zh-Hans": "状态",
+    "en": "Status",
+    "ja": "ステータス"
+  },
+  "激活": {
+    "zh-Hans": "激活",
+    "en": "Activate",
+    "ja": "有効化"
+  },
+  "立即激活": {
+    "zh-Hans": "立即激活",
+    "en": "Activate Now",
+    "ja": "今すぐ有効化"
+  },
+  "Zeroflow Pro 已激活": {
+    "zh-Hans": "Zeroflow Pro 已激活",
+    "en": "Zeroflow Pro activated",
+    "ja": "Zeroflow Pro は有効化済み"
+  },
+  "Pro 试用剩余 %d 天": {
+    "zh-Hans": "Pro 试用剩余 %d 天",
+    "en": "Pro trial: %d days left",
+    "ja": "Pro 体験版 残り %d 日"
+  },
+  "Pro 试用已结束": {
+    "zh-Hans": "Pro 试用已结束",
+    "en": "Pro trial ended",
+    "ja": "Pro 体験版は終了しました"
+  },
+  "试用期内全部功能可用，到期后免费功能不受影响。": {
+    "zh-Hans": "试用期内全部功能可用，到期后免费功能不受影响。",
+    "en": "All features are available during the trial; free features keep working afterwards.",
+    "ja": "体験期間中はすべての機能が使えます。終了後も無料機能はそのまま使えます。"
+  },
+  "Pro 试用已结束，付费功能已暂停使用。截图、窗口切换、Dock 悬停预览与访达右键菜单仍可正常使用。": {
+    "zh-Hans": "Pro 试用已结束，付费功能已暂停使用。截图、窗口切换、Dock 悬停预览与访达右键菜单仍可正常使用。",
+    "en": "The Pro trial has ended and paid features are paused. Screenshot, window switcher, Dock hover preview and the Finder context menu still work.",
+    "ja": "Pro 体験版は終了し、有料機能は停止しました。スクリーンショット、ウィンドウスイッチャー、Dock プレビュー、Finder コンテキストメニューは引き続き使えます。"
+  },
+  "选择许可证文件…": {
+    "zh-Hans": "选择许可证文件…",
+    "en": "Choose License File…",
+    "ja": "ライセンスファイルを選択…"
+  },
+  "选择 zeroflow.license 文件": {
+    "zh-Hans": "选择 zeroflow.license 文件",
+    "en": "Choose a zeroflow.license file",
+    "ja": "zeroflow.license ファイルを選択"
+  },
+  "也可以把 .license 文件拖到这里，或直接在访达里双击该文件。许可证只在本机离线校验，不会上传任何信息。": {
+    "zh-Hans": "也可以把 .license 文件拖到这里，或直接在访达里双击该文件。许可证只在本机离线校验，不会上传任何信息。",
+    "en": "You can also drag a .license file here, or double-click it in Finder. The license is verified offline on this Mac; nothing is uploaded.",
+    "ja": ".license ファイルをここにドラッグするか、Finder でダブルクリックしても有効化できます。検証はオフラインで行われ、何も送信されません。"
+  },
+  "邮箱": {
+    "zh-Hans": "邮箱",
+    "en": "Email",
+    "ja": "メールアドレス"
+  },
+  "许可证 ID": {
+    "zh-Hans": "许可证 ID",
+    "en": "License ID",
+    "ja": "ライセンス ID"
+  },
+  "签发日期": {
+    "zh-Hans": "签发日期",
+    "en": "Issued",
+    "ja": "発行日"
+  },
+  "更新策略": {
+    "zh-Hans": "更新策略",
+    "en": "Updates",
+    "ja": "アップデート"
+  },
+  "终身更新": {
+    "zh-Hans": "终身更新",
+    "en": "Lifetime",
+    "ja": "永久"
+  },
+  "移除许可证": {
+    "zh-Hans": "移除许可证",
+    "en": "Remove License",
+    "ja": "ライセンスを削除"
+  },
+  "移除已保存的许可证？": {
+    "zh-Hans": "移除已保存的许可证？",
+    "en": "Remove the saved license?",
+    "ja": "保存されたライセンスを削除しますか？"
+  },
+  "移除": {
+    "zh-Hans": "移除",
+    "en": "Remove",
+    "ja": "削除"
+  },
+  "许可证已移除": {
+    "zh-Hans": "许可证已移除",
+    "en": "License removed",
+    "ja": "ライセンスを削除しました"
+  },
+  "移除后按试用状态判定；已过试用期将暂停付费功能。": {
+    "zh-Hans": "移除后按试用状态判定；已过试用期将暂停付费功能。",
+    "en": "After removal the trial rules apply; paid features are paused if the trial is over.",
+    "ja": "削除後は体験版の判定に戻ります。体験期間が終了している場合、有料機能は停止します。"
+  },
+  "许可证信息": {
+    "zh-Hans": "许可证信息",
+    "en": "License Info",
+    "ja": "ライセンス情報"
+  },
+  "了解 Zeroflow Pro（官网）": {
+    "zh-Hans": "了解 Zeroflow Pro（官网）",
+    "en": "Learn about Zeroflow Pro (website)",
+    "ja": "Zeroflow Pro を見る（公式サイト）"
+  },
+  "了解 Pro": {
+    "zh-Hans": "了解 Pro",
+    "en": "Learn More",
+    "ja": "詳しく見る"
+  },
+  "激活成功": {
+    "zh-Hans": "激活成功",
+    "en": "Activation successful",
+    "ja": "有効化に成功しました"
+  },
+  "激活成功：%@": {
+    "zh-Hans": "激活成功：%@",
+    "en": "Activated: %@",
+    "ja": "有効化しました：%@"
+  },
+  "激活失败": {
+    "zh-Hans": "激活失败",
+    "en": "Activation failed",
+    "ja": "有効化に失敗しました"
+  },
+  "许可证无效": {
+    "zh-Hans": "许可证无效",
+    "en": "Invalid license",
+    "ja": "ライセンスが無効です"
+  },
+  "Zeroflow Pro 已激活：%@": {
+    "zh-Hans": "Zeroflow Pro 已激活：%@",
+    "en": "Zeroflow Pro activated for %@",
+    "ja": "Zeroflow Pro を有効化しました：%@"
+  },
+  "付费功能已暂停使用；截图、窗口切换、Dock 悬停预览与访达右键菜单仍然免费。前往官网了解 Zeroflow Pro 并获取许可证。": {
+    "zh-Hans": "付费功能已暂停使用；截图、窗口切换、Dock 悬停预览与访达右键菜单仍然免费。前往官网了解 Zeroflow Pro 并获取许可证。",
+    "en": "Paid features are paused. Screenshot, window switcher, Dock hover preview and the Finder context menu remain free. Visit the website to learn about Zeroflow Pro and get a license.",
+    "ja": "有料機能は停止しました。スクリーンショット、ウィンドウスイッチャー、Dock プレビュー、Finder コンテキストメニューは無料で使えます。公式サイトで Zeroflow Pro とライセンスをご確認ください。"
+  },
+  "关于": {
+    "zh-Hans": "关于",
+    "en": "About",
+    "ja": "このアプリについて"
+  },
+  "此功能需要 Zeroflow Pro": {
+    "zh-Hans": "此功能需要 Zeroflow Pro",
+    "en": "This feature requires Zeroflow Pro",
+    "ja": "この機能には Zeroflow Pro が必要です"
+  },
+  "%@ 属于 Zeroflow Pro，Pro 试用已结束，该功能已暂停使用。": {
+    "zh-Hans": "%@ 属于 Zeroflow Pro，Pro 试用已结束，该功能已暂停使用。",
+    "en": "%@ is part of Zeroflow Pro. The Pro trial has ended, so this feature is paused.",
+    "ja": "%@ は Zeroflow Pro の機能です。Pro 体験版が終了したため停止しています。"
+  },
+  "激活后会自动恢复你之前开启的设置。": {
+    "zh-Hans": "激活后会自动恢复你之前开启的设置。",
+    "en": "Your previous settings are restored automatically after activation.",
+    "ja": "有効化すると、以前の設定が自動的に復元されます。"
+  },
+  "检测到系统时间早于上次记录，剩余天数仍按首次启动时间计算。": {
+    "zh-Hans": "检测到系统时间早于上次记录，剩余天数仍按首次启动时间计算。",
+    "en": "The system clock is earlier than the last recorded time. Remaining days are still calculated from the first launch.",
+    "ja": "システム時刻が前回の記録より前になっています。残り日数は初回起動日時から計算します。"
+  },
+  "无法写入钥匙串，试用记录只剩本地文件一份，请勿删除 ~/Library/Application Support/zeroflow/trial.json。": {
+    "zh-Hans": "无法写入钥匙串，试用记录只剩本地文件一份，请勿删除 ~/Library/Application Support/zeroflow/trial.json。",
+    "en": "Keychain is unavailable, so the trial record exists only as a local file. Do not delete ~/Library/Application Support/zeroflow/trial.json.",
+    "ja": "キーチェーンに書き込めないため、体験記録はローカルファイルのみです。~/Library/Application Support/zeroflow/trial.json を削除しないでください。"
+  },
+  "内置公钥尚未配置（开发提示）：请运行 Tools/gen-license-key.sh 并把公钥填入 LicenseConfig.swift。": {
+    "zh-Hans": "内置公钥尚未配置（开发提示）：请运行 Tools/gen-license-key.sh 并把公钥填入 LicenseConfig.swift。",
+    "en": "Built-in public key is not configured (developer note): run Tools/gen-license-key.sh and paste the public key into LicenseConfig.swift.",
+    "ja": "組み込み公開鍵が未設定です（開発者向け）：Tools/gen-license-key.sh を実行し、公開鍵を LicenseConfig.swift に貼り付けてください。"
+  },
+  "无法读取许可证文件": {
+    "zh-Hans": "无法读取许可证文件",
+    "en": "Cannot read the license file",
+    "ja": "ライセンスファイルを読み込めません"
+  },
+  "许可证格式不正确（缺少 payload 或 signature）": {
+    "zh-Hans": "许可证格式不正确（缺少 payload 或 signature）",
+    "en": "Malformed license (missing payload or signature)",
+    "ja": "ライセンスの形式が正しくありません（payload または signature がありません）"
+  },
+  "许可证内容损坏（Base64 解码失败）": {
+    "zh-Hans": "许可证内容损坏（Base64 解码失败）",
+    "en": "Corrupted license (Base64 decode failed)",
+    "ja": "ライセンスが壊れています（Base64 デコード失敗）"
+  },
+  "许可证签名无效，可能被篡改或不是本产品的许可证": {
+    "zh-Hans": "许可证签名无效，可能被篡改或不是本产品的许可证",
+    "en": "Invalid license signature — it may be tampered with or issued for another product",
+    "ja": "署名が無効です。改ざんされているか、別製品のライセンスです"
+  },
+  "许可证内容缺少必要字段": {
+    "zh-Hans": "许可证内容缺少必要字段",
+    "en": "License is missing required fields",
+    "ja": "ライセンスに必要な項目がありません"
+  },
+  "许可证产品不匹配：%@": {
+    "zh-Hans": "许可证产品不匹配：%@",
+    "en": "License product mismatch: %@",
+    "ja": "製品が一致しません：%@"
+  },
+  "内置公钥无效，无法验证许可证": {
+    "zh-Hans": "内置公钥无效，无法验证许可证",
+    "en": "Built-in public key is invalid; cannot verify the license",
+    "ja": "組み込み公開鍵が無効なため検証できません"
+  },
+  "Dock 单击最小化": {
+    "zh-Hans": "Dock 单击最小化",
+    "en": "Click Dock icon to minimize",
+    "ja": "Dock アイコンをクリックで最小化"
+  },
+  "自定义 Dock 栏": {
+    "zh-Hans": "自定义 Dock 栏",
+    "en": "Custom Dock",
+    "ja": "カスタム Dock"
+  },
+  "剪贴板历史": {
+    "zh-Hans": "剪贴板历史",
+    "en": "Clipboard History",
+    "ja": "クリップボード履歴"
+  },
+  "访达右键菜单": {
+    "zh-Hans": "访达右键菜单",
+    "en": "Finder context menu",
+    "ja": "Finder コンテキストメニュー"
+  },
+  "Pro 试用已结束 · 激活许可证…": {
+    "zh-Hans": "Pro 试用已结束 · 激活许可证…",
+    "en": "Pro trial ended · Activate License…",
+    "ja": "Pro 体験版終了 · ライセンスを有効化…"
+  },
+  "授权": {
+    "zh-Hans": "授权",
+    "en": "License",
+    "ja": "ライセンス"
+  },
+  "Pro 已激活": {
+    "zh-Hans": "Pro 已激活",
+    "en": "Pro activated",
+    "ja": "Pro 有効化済み"
+  },
+  "清理 ~/Library/Caches、各沙盒容器缓存与 ~/Library/Logs；不会删除任何文档，清理后部分应用首次启动会稍慢": {
+    "zh-Hans": "清理 ~/Library/Caches、各沙盒容器缓存与 ~/Library/Logs；不会删除任何文档，清理后部分应用首次启动会稍慢",
+    "en": "Clears ~/Library/Caches, sandbox container caches and ~/Library/Logs. No documents are deleted; some apps may start a bit slower the first time afterwards.",
+    "ja": "~/Library/Caches、各サンドボックスコンテナのキャッシュ、~/Library/Logs を削除します。書類は削除しません。一部のアプリは次回起動が少し遅くなることがあります。"
+  },
+  "启用自定义 Dock 栏": {
+    "zh-Hans": "启用自定义 Dock 栏",
+    "en": "Enable Custom Dock",
+    "ja": "カスタム Dock を有効にする"
+  },
+  "按下快捷键呼出一个可自定义的 Dock 栏，显示系统 Dock 中的所有 app。点击图标即可激活或启动 app；鼠标悬停图标可预览该 app 的窗口缩略图。按 Esc 或点击面板外关闭。": {
+    "zh-Hans": "按下快捷键呼出一个可自定义的 Dock 栏，显示系统 Dock 中的所有 app。点击图标即可激活或启动 app；鼠标悬停图标可预览该 app 的窗口缩略图。按 Esc 或点击面板外关闭。",
+    "en": "Press the shortcut to bring up a customizable Dock showing every app in your system Dock. Click an icon to activate or launch the app; hover an icon to preview its window thumbnails. Press Esc or click outside the panel to close.",
+    "ja": "ショートカットを押すと、システム Dock のすべてのアプリを表示するカスタム Dock が現れます。アイコンをクリックするとアプリを起動またはアクティブにし、ホバーするとウィンドウのサムネイルをプレビューできます。Esc またはパネル外のクリックで閉じます。"
+  },
+  "呼出快捷键": {
+    "zh-Hans": "呼出快捷键",
+    "en": "Shortcut",
+    "ja": "呼び出しショートカット"
+  },
+  "选择其一呼出自定义 Dock 栏：⌥⇥（Option + Tab）或 ⌘⇥（Command + Tab）。⇧ + 修饰键 + 主键 后退选择。": {
+    "zh-Hans": "选择其一呼出自定义 Dock 栏：⌥⇥（Option + Tab）或 ⌘⇥（Command + Tab）。⇧ + 修饰键 + 主键 后退选择。",
+    "en": "Pick one to open the Custom Dock: ⌥⇥ (Option + Tab) or ⌘⇥ (Command + Tab). Shift + modifier + key moves the selection backwards.",
+    "ja": "カスタム Dock を開くキーを選択：⌥⇥（Option + Tab）または ⌘⇥（Command + Tab）。Shift + 修飾キー + キーで逆方向に移動します。"
+  },
+  "图标大小": {
+    "zh-Hans": "图标大小",
+    "en": "Icon size",
+    "ja": "アイコンサイズ"
+  },
+  "垂直位置": {
+    "zh-Hans": "垂直位置",
+    "en": "Vertical position",
+    "ja": "垂直位置"
+  },
+  "0% = 屏幕底部，50% = 屏幕中间。默认 25% = 屏幕下方 1/4 处。": {
+    "zh-Hans": "0% = 屏幕底部，50% = 屏幕中间。默认 25% = 屏幕下方 1/4 处。",
+    "en": "0% = bottom of the screen, 50% = middle. Default 25% = lower quarter.",
+    "ja": "0% = 画面下端、50% = 画面中央。既定値 25% = 下から 1/4 の位置。"
+  },
+  "背景": {
+    "zh-Hans": "背景",
+    "en": "Background",
+    "ja": "背景"
+  },
+  "需要「辅助功能」权限才能拦截键盘事件": {
+    "zh-Hans": "需要「辅助功能」权限才能拦截键盘事件",
+    "en": "Accessibility permission is required to intercept keyboard events",
+    "ja": "キーボードイベントを横取りするには「アクセシビリティ」権限が必要です"
+  },
+  "该权限与 Dock 单击最小化、窗口切换器共用，若已开启则此处直接显示绿色。": {
+    "zh-Hans": "该权限与 Dock 单击最小化、窗口切换器共用，若已开启则此处直接显示绿色。",
+    "en": "This permission is shared with Dock click-to-minimize and the window switcher; if it is already granted, this row shows green.",
+    "ja": "この権限は Dock クリックで最小化・ウィンドウスイッチャーと共用です。許可済みならここに緑で表示されます。"
+  },
+  "缩略图预览需要「屏幕录制」权限，未授权时卡片只显示窗口标题。": {
+    "zh-Hans": "缩略图预览需要「屏幕录制」权限，未授权时卡片只显示窗口标题。",
+    "en": "Thumbnail previews need Screen Recording permission; without it, cards only show window titles.",
+    "ja": "サムネイルのプレビューには「画面収録」権限が必要です。未許可の場合、カードにはウィンドウタイトルのみ表示されます。"
+  },
+  "系统资源模块中显示的项目；CPU 和内存为环形仪表（环心为使用率，CPU 副信息含核心数与温度），GPU 为次要小环，磁盘/网络为一行文字读数。": {
+    "zh-Hans": "系统资源模块中显示的项目；CPU 和内存为环形仪表（环心为使用率，CPU 副信息含核心数与温度），GPU 为次要小环，磁盘/网络为一行文字读数。",
+    "en": "Items shown in the System Resources module: CPU and memory as ring gauges (usage in the center; CPU also shows core count and temperature), GPU as a smaller secondary ring, disk and network as one line of text.",
+    "ja": "システムリソースモジュールに表示する項目。CPU とメモリはリングゲージ（中央が使用率、CPU はコア数と温度も表示）、GPU は小さな補助リング、ディスク/ネットワークは 1 行のテキストで表示します。"
+  },
+  "免费功能": {
+    "zh-Hans": "免费功能",
+    "en": "Free features",
+    "ja": "無料機能"
+  },
+  "Pro 功能": {
+    "zh-Hans": "Pro 功能",
+    "en": "Pro features",
+    "ja": "Pro 機能"
+  },
+  "⌘⇥ 窗口切换器": {
+    "zh-Hans": "⌘⇥ 窗口切换器",
+    "en": "⌘⇥ Window switcher",
+    "ja": "⌘⇥ ウインドウスイッチャー"
+  },
+  "Dock 悬停预览": {
+    "zh-Hans": "Dock 悬停预览",
+    "en": "Dock hover preview",
+    "ja": "Dock ホバープレビュー"
+  },
+  "、": {
+    "zh-Hans": "、",
+    "en": ", ",
+    "ja": "、"
+  },
+  "：": {
+    "zh-Hans": "：",
+    "en": ": ",
+    "ja": "："
+  },
+  "Pro 功能可免费试用 %d 天；试用结束后自动回到免费功能，已有设置不会丢失。": {
+    "zh-Hans": "Pro 功能可免费试用 %d 天；试用结束后自动回到免费功能，已有设置不会丢失。",
+    "en": "Pro features are free to try for %d days. When the trial ends they switch off automatically and your settings are kept.",
+    "ja": "Pro 機能は %d 日間無料でお試しいただけます。試用期間が終わると自動的に無料機能に戻りますが、既存の設定は保持されます。"
+  }
+}

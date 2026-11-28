@@ -1,0 +1,25 @@
+# Zeroflow Pro 功能白名单
+#
+# 一行一个功能 id；# 开头是注释，空行忽略，行尾也可以写注释。
+# 列在这里的功能 = Pro（试用到期后暂停，需许可证）；
+# 已注册但没列出来的功能 = 免费。
+#
+# 修改后重新构建即可生效（Debug 下可用 ZEROFLOW_PRO_FEATURES=<本文件路径>
+# 免编译直接读这份文件，改完重启 App 就行）。
+#
+# 可用 id（改 id 等于丢用户设置，别乱改）：
+#   customDock          自定义 Dock 栏        customDockEnabled
+#   clipboard           剪贴板历史            clipboardEnabled
+#   notch               灵动岛                notchEnabled
+#   mouseScrollReverse  翻转鼠标滚动方向      reverseMouseScrollVertical / reverseMouseScrollHorizontal
+#   dockClickMinimize   Dock 单击最小化       dockClickMinimize
+#
+# 注意：这里只能控制「已注册功能」算不算 Pro，不能凭空变出新功能。
+# 清单读不到（文件缺失 / 读不出 / 写的 id 一个都不认识）时按「全部功能 = Pro」处理，
+# 即不声明任何免费功能；只有注释和空行才算「明确没有 Pro 功能」。
+
+customDock
+clipboard
+notch
+mouseScrollReverse
+dockClickMinimize
