@@ -66,7 +66,7 @@
   .lang button[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft)}
 
   /* ---------- page head ---------- */
-  .page{padding:44px 0 72px;position:relative}
+  .page{padding:24px 0 68px;position:relative}
   .page::before{
     content:"";position:absolute;inset:-260px 0 auto 0;height:560px;pointer-events:none;
     background:radial-gradient(ellipse 60% 55% at 50% 0%,rgba(76,141,255,.18),transparent 70%);
@@ -77,7 +77,7 @@
     font-size:12.5px;color:var(--muted-dim);transition:color .18s;
   }
   .back:hover{color:var(--text)}
-  .head{text-align:center;margin:22px 0 34px}
+  .head{text-align:center;margin:14px 0 30px}
   /* 与首页 hero 里的 PRO 徽标完全同一套规格 */
   .kicker{
     display:inline-grid;place-items:center;height:22px;padding:0 8px 0 9px;border-radius:6px;
@@ -106,6 +106,14 @@
   .pro-col-head span{font-size:14.5px;font-weight:600}
   .pro-col-head em{font-style:normal;font-size:12px;color:var(--muted-dim)}
   .pro-col.hot .pro-col-head em{color:var(--gold-bright)}
+  /* 价格：划线原价 + 现价 */
+  .pro-col-head em.price{display:inline-flex;align-items:baseline;gap:9px}
+  .price s{
+    font-size:14px;font-weight:500;color:var(--muted);text-decoration:line-through;
+    text-decoration-color:rgba(227,199,155,.72);text-decoration-thickness:1px;
+    font-variant-numeric:tabular-nums;
+  }
+  .price span{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
   .pro-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
   .pro-col li{position:relative;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.5}
   .pro-col li::before{content:"";position:absolute;left:2px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--muted-dim)}
@@ -143,9 +151,9 @@
     border:1px solid var(--line);border-radius:var(--radius);
     background:var(--bg-elev);
   }
-  .buy-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-  .buy-top b{font-size:26px;font-weight:620;letter-spacing:-.02em;color:var(--gold-bright)}
-  .buy-top span{font-size:12.5px;color:var(--muted-dim)}
+  .buy-top{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+  .buy-ico{flex:none;width:16px;height:16px;color:var(--gold-bright)}
+  .buy-top span{font-size:13px;color:var(--muted)}
   .buy-form{display:flex;gap:10px;flex-wrap:wrap}
   .pro-field{
     height:42px;padding:0 13px;flex:1 1 220px;min-width:0;
@@ -153,7 +161,7 @@
     background:var(--bg-code);border:1px solid var(--line);border-radius:9px;outline:none;
     transition:border-color .18s,background-color .18s;
   }
-  .pro-field:focus{border-color:rgba(76,141,255,.55)}
+  .pro-field:focus{border-color:rgba(227,199,155,.55)}
   .pro-field::placeholder{color:var(--muted-dim)}
   /* 浏览器自动填充会强行刷白输入框，用 inset 阴影盖回深色底 */
   .pro-field:-webkit-autofill,
@@ -168,15 +176,20 @@
   }
   .pro-ch{
     height:42px;padding:0 18px;font:inherit;font-size:13.5px;font-weight:520;cursor:pointer;
-    color:var(--text);background:rgba(255,255,255,.05);
-    border:1px solid var(--line-strong);border-radius:9px;
-    transition:background .18s,border-color .18s;
+    color:var(--gold-bright);background:rgba(227,199,155,.04);
+    border:1px solid rgba(227,199,155,.42);border-radius:9px;
+    box-shadow:inset 0 1px 0 rgba(255,246,228,.10);
+    transition:background .18s,border-color .18s,box-shadow .18s;
     white-space:nowrap;
   }
-  .pro-ch:hover{background:rgba(255,255,255,.09)}
+  .pro-ch:hover{background:rgba(227,199,155,.10);border-color:rgba(227,199,155,.64)}
   .pro-ch[disabled]{opacity:.5;cursor:default}
-  .pro-ch.pay{color:#04070D;background:var(--accent);border-color:transparent;box-shadow:0 10px 28px -14px rgba(76,141,255,.9)}
-  .pro-ch.pay:hover{background:#6BA0FF}
+  /* 主支付方式：同样的金边，底色和边框略重一档 */
+  .pro-ch.pay{
+    color:#FBF1DE;background:rgba(227,199,155,.11);border-color:rgba(227,199,155,.60);
+    box-shadow:inset 0 1px 0 rgba(255,246,228,.16),0 10px 28px -16px rgba(214,182,133,.95);
+  }
+  .pro-ch.pay:hover{background:rgba(227,199,155,.18)}
   .pro-err{margin-top:10px;font-size:12.5px;color:#FF7A6E;min-height:0}
   .buy-note{margin-top:12px;font-size:12px;color:var(--muted-dim);line-height:1.6}
 
@@ -188,7 +201,7 @@
   .panel h2{font-size:17px;font-weight:600;letter-spacing:-.015em}
   .panel .lead{margin-top:6px;font-size:12.5px;color:var(--muted-dim)}
   .pro-qr{width:196px;height:196px;border-radius:12px;background:#fff;padding:8px;margin-top:16px}
-  .pro-amount{font-size:26px;font-weight:620;margin-top:14px;letter-spacing:-.02em}
+  .pro-amount{font-size:26px;font-weight:620;margin-top:14px;letter-spacing:-.02em;color:var(--gold-bright)}
   .pro-ord{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;color:var(--muted-dim);margin-top:5px}
   .pro-wait{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--muted)}
   .pro-spin{width:12px;height:12px;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:proSpin .8s linear infinite}
@@ -213,7 +226,7 @@
 
   @media (max-width:640px){
     .wrap{padding:0 18px}
-    .page{padding:30px 0 56px}
+    .page{padding:18px 0 48px}
     .nav-inner{gap:10px}
     .nav-links{gap:12px;font-size:12px}
     .lang{padding:2px}
@@ -280,7 +293,10 @@
         <div class="pro-col hot">
           <div class="pro-col-head">
             <span>Pro</span>
-            <em id="proPriceTag">¥38</em>
+            <em class="price">
+              <s id="proPriceWas">¥48</s>
+              <span id="proPriceTag">¥38</span>
+            </em>
           </div>
           <div class="incl">
             <span class="incl-icon" aria-hidden="true">&#10003;</span>
@@ -296,7 +312,11 @@
 
       <div class="buy">
         <div class="buy-top">
-          <b id="proPrice">¥38</b>
+          <svg class="buy-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Z"/>
+            <path d="M12 12c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/>
+          </svg>
           <span data-i18n="pro.once">一次买断 · 永久授权</span>
         </div>
         <div class="buy-form">
@@ -462,6 +482,12 @@
   var PAY_API = "http://localhost:8787";
   var PAY_APP = "zeroflow";
 
+  /* ---- 价格唯一来源：改这里就够了 ----
+     now = 实际售价（元）
+     was = 划线原价（元），留 null 就自动取 now + 10
+     后端返回 amount_display 时会覆盖 now，was 随之重算 */
+  var PRICE = { now: 38, was: null };
+
   var nodes = document.querySelectorAll("[data-i18n]");
   var langBtns = document.querySelectorAll(".lang button");
   var current = "zh";
@@ -538,17 +564,36 @@
     b.addEventListener("click", function () { apply(b.dataset.lang); });
   });
 
-  // 价格以后台配置为准，读不到就保留页面上的静态值
+  function money(n) {
+    var r = Math.round(n * 100) / 100;
+    return "¥" + (Math.abs(r - Math.round(r)) < 1e-9 ? String(Math.round(r)) : r.toFixed(2));
+  }
+
+  function priceWas() {
+    return PRICE.was == null ? PRICE.now + 10 : PRICE.was;
+  }
+
+  // 页面所有价格都从这里写出去
+  function renderPrice() {
+    var now = money(PRICE.now);
+    var was = money(priceWas());
+    var tag = document.getElementById("proPriceTag");
+    var wasEl = document.getElementById("proPriceWas");
+    if (tag) tag.textContent = now;
+    if (wasEl) wasEl.textContent = was;
+  }
+
+  // 价格以后台配置为准，读不到就用 PRICE 里的默认值
   function syncPrice() {
     if (!window.fetch) return;
     fetch(PAY_API + "/api/apps/" + encodeURIComponent(PAY_APP))
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (!d || !d.amount_display) return;
-        var tag = document.getElementById("proPriceTag");
-        var price = document.getElementById("proPrice");
-        if (tag) tag.textContent = d.amount_display;
-        if (price) price.textContent = d.amount_display;
+        var n = parseFloat(String(d.amount_display).replace(/[^\d.]/g, ""));
+        if (!isFinite(n)) return;
+        PRICE.now = n;
+        renderPrice();
       })
       .catch(function () {});
   }
@@ -685,6 +730,7 @@
 
   document.getElementById("year").textContent = new Date().getFullYear();
   apply(guess());
+  renderPrice();
   syncPrice();
 })();
 </script>
