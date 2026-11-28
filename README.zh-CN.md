@@ -6,16 +6,16 @@
 
 **一款原生、轻量的 macOS 效率工具集 —— 截图标注、窗口切换、Dock 增强、剪贴板历史与灵动岛，全部收进一个菜单栏图标。**
 
-[**官网**](https://hellolio.github.io/zeroflow/) · [下载](https://github.com/hellolio/zeroflow/releases/latest) · [English](README.md) · [日本語](README.ja.md)
+[**官网**](https://hellolio.github.io/zeroflow/) · [下载](https://hellolio.github.io/zeroflow/) · [English](README.md) · [日本語](README.ja.md)
 
 [![Website](https://img.shields.io/badge/website-hellolio.github.io%2Fzeroflow-0969da)](https://hellolio.github.io/zeroflow/)
-[![Latest release](https://img.shields.io/github/v/release/hellolio/zeroflow?color=2ea043)](https://github.com/hellolio/zeroflow/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/hellolio/zeroflow?color=2ea043)](https://hellolio.github.io/zeroflow/)
 [![macOS 14.0+](https://img.shields.io/badge/macOS-14.0%2B-black?logo=apple&logoColor=white)](https://hellolio.github.io/zeroflow/)
 [![Sponsor](https://img.shields.io/github/sponsors/hellolio?color=db61a2&logo=github&logoColor=white)](https://github.com/sponsors/hellolio)
 
 ### [访问官网 →](https://hellolio.github.io/zeroflow/)
 
-下载、完整功能演示与截图都在那里。
+下载、完整功能演示都在那里。
 
 </div>
 
@@ -30,7 +30,7 @@
 | | |
 |---|---|
 | **官网** | [hellolio.github.io/zeroflow](https://hellolio.github.io/zeroflow/) |
-| **下载** | [最新版本](https://github.com/hellolio/zeroflow/releases/latest) |
+| **下载** | [官方网站](https://hellolio.github.io/zeroflow/) |
 | **源码** | [github.com/hellolio/zeroflow](https://github.com/hellolio/zeroflow) |
 | **反馈** | [报告问题](https://github.com/hellolio/zeroflow/issues) |
 | **赞助** | [github.com/sponsors/hellolio](https://github.com/sponsors/hellolio) |

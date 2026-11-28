@@ -6,16 +6,16 @@
 
 **macOS ネイティブの軽量ユーティリティ集 —— スクリーンショット注釈、ウィンドウ切り替え、Dock 拡張、クリップボード履歴、ダイナミックアイランドを、メニューバーの 1 つのアイコンに。**
 
-[**公式サイト**](https://hellolio.github.io/zeroflow/) · [ダウンロード](https://github.com/hellolio/zeroflow/releases/latest) · [English](README.md) · [简体中文](README.zh-CN.md)
+[**公式サイト**](https://hellolio.github.io/zeroflow/) · [ダウンロード](https://hellolio.github.io/zeroflow/) · [English](README.md) · [简体中文](README.zh-CN.md)
 
 [![Website](https://img.shields.io/badge/website-hellolio.github.io%2Fzeroflow-0969da)](https://hellolio.github.io/zeroflow/)
-[![Latest release](https://img.shields.io/github/v/release/hellolio/zeroflow?color=2ea043)](https://github.com/hellolio/zeroflow/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/hellolio/zeroflow?color=2ea043)](https://hellolio.github.io/zeroflow/)
 [![macOS 14.0+](https://img.shields.io/badge/macOS-14.0%2B-black?logo=apple&logoColor=white)](https://hellolio.github.io/zeroflow/)
 [![Sponsor](https://img.shields.io/github/sponsors/hellolio?color=db61a2&logo=github&logoColor=white)](https://github.com/sponsors/hellolio)
 
 ### [公式サイトを見る →](https://hellolio.github.io/zeroflow/)
 
-ダウンロード、機能の紹介、スクリーンショットはこちらから。
+ダウンロード、機能の紹介はこちらから。
 
 </div>
 
@@ -30,9 +30,8 @@
 | | |
 |---|---|
 | **公式サイト** | [hellolio.github.io/zeroflow](https://hellolio.github.io/zeroflow/) |
-| **ダウンロード** | [最新リリース](https://github.com/hellolio/zeroflow/releases/latest) |
-| **ソース** | [github.com/hellolio/zeroflow](https://github.com/hellolio/zeroflow) |
-| **フィードバック** | [問題を報告](https://github.com/hellolio/zeroflow/issues) |
+| **ダウンロード** | [公式サイト](https://hellolio.github.io/zeroflow/) |
+| **ソース** | [github.com/hellolio/zeroflow](https://github.com/hellolio/zeroflow) || **フィードバック** | [問題を報告](https://github.com/hellolio/zeroflow/issues) |
 | **スポンサー** | [github.com/sponsors/hellolio](https://github.com/sponsors/hellolio) |
 
 <div align="center">
