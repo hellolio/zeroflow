@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zeroflow Pro — 免费版与 Pro 的区别</title>
+<meta name="description" content="Zeroflow Pro：一次买断解锁剪贴板历史、灵动岛、Dock 单击最小化与自定义、鼠标滚动方向翻转。">
+<meta name="theme-color" content="#07080A">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Zeroflow Pro">
+<meta property="og:description" content="One-time purchase. Unlock clipboard history, Dynamic Island, Dock enhancements and more.">
+<meta property="og:image" content="assets/icon.png">
+<link rel="icon" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/icon.png">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#07080A;
+    --bg-elev:#0D0F12;
+    --bg-code:#0A0C0F;
+    --line:rgba(255,255,255,.08);
+    --line-strong:rgba(255,255,255,.14);
+    --text:#F3F5F7;
+    --muted:#98A2B0;
+    --muted-dim:#6B7480;
+    --accent:#4C8DFF;
+    /* Pro 列专用香槟金：低饱和偏米，不用正黄 */
+    --gold:#E3C79B;
+    --gold-bright:#F0DCBB;
+    --gold-dot:#CFAC78;
+    --accent-soft:rgba(76,141,255,.14);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",
+      "PingFang SC","Hiragino Sans","Noto Sans CJK SC",sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px}
+  [hidden]{display:none!important}
+
+  /* ---------- nav ---------- */
+  .nav{
+    position:sticky;top:0;z-index:20;
+    background:rgba(7,8,10,.72);
+    backdrop-filter:saturate(180%) blur(18px);
+    -webkit-backdrop-filter:saturate(180%) blur(18px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{display:flex;align-items:center;gap:20px;height:56px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14px;letter-spacing:-.01em}
+  .brand img{width:20px;height:20px;border-radius:5px}
+  .nav-links{display:flex;gap:22px;margin-left:auto;font-size:13.5px;color:var(--muted)}
+  .nav-links a{white-space:nowrap;transition:color .18s}
+  .nav-links a:hover{color:var(--text)}
+  .lang{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02)}
+  .lang button{
+    font:inherit;font-size:11.5px;letter-spacing:.02em;
+    color:var(--muted-dim);background:none;border:0;cursor:pointer;
+    padding:3px 8px;border-radius:5px;transition:all .18s;
+  }
+  .lang button:hover{color:var(--muted)}
+  .lang button[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft)}
+
+  /* ---------- page head ---------- */
+  .page{padding:44px 0 72px;position:relative}
+  .page::before{
+    content:"";position:absolute;inset:-260px 0 auto 0;height:560px;pointer-events:none;
+    background:radial-gradient(ellipse 60% 55% at 50% 0%,rgba(76,141,255,.18),transparent 70%);
+  }
+  .page .wrap{position:relative}
+  .back{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12.5px;color:var(--muted-dim);transition:color .18s;
+  }
+  .back:hover{color:var(--text)}
+  .head{text-align:center;margin:22px 0 34px}
+  .kicker{
+    display:inline-grid;place-items:center;height:24px;padding:0 10px;border-radius:7px;
+    font-size:11px;font-weight:700;letter-spacing:.12em;
+    color:#04070D;background:linear-gradient(135deg,#9CC4FF,#4C8DFF);
+    box-shadow:0 8px 22px -12px rgba(76,141,255,1);
+  }
+  h1{
+    margin-top:16px;font-size:clamp(1.9rem,5vw,2.6rem);
+    font-weight:680;letter-spacing:-.035em;line-height:1.1;
+  }
+  .lead{margin:14px auto 0;max-width:560px;color:var(--muted);font-size:14.5px;line-height:1.75}
+
+  /* ---------- 对比 ---------- */
+  .pro-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pro-col{
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 18px 20px;background:rgba(255,255,255,.015);
+  }
+  .pro-col.hot{
+    border-color:rgba(227,199,155,.34);
+    background:linear-gradient(180deg,rgba(227,199,155,.075),rgba(227,199,155,.015));
+    box-shadow:0 20px 50px -30px rgba(214,182,133,.75);
+  }
+  .pro-col-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:13px}
+  .pro-col-head span{font-size:14.5px;font-weight:600}
+  .pro-col-head em{font-style:normal;font-size:12px;color:var(--muted-dim)}
+  .pro-col.hot .pro-col-head em{color:var(--gold-bright)}
+  .pro-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+  .pro-col li{position:relative;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.5}
+  .pro-col li::before{content:"";position:absolute;left:2px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--muted-dim)}
+  .pro-col.hot li::before{background:var(--gold-dot)}
+  .pro-col li b{display:block;color:var(--text);font-weight:520}
+  .pro-col li i{font-style:normal;font-size:12px;color:var(--muted-dim)}
+  /* 「全部基础功能」：压成一句中性说明，不抢戏，但整块存在感足以表示「全部包含」 */
+  .incl{
+    display:flex;align-items:flex-start;gap:9px;
+    padding:9px 11px;margin:0 0 18px;
+    border:1px solid var(--line);border-radius:9px;
+    background:rgba(255,255,255,.018);
+  }
+  .incl-icon{
+    flex:none;width:15px;height:15px;margin-top:2px;border-radius:50%;
+    display:grid;place-items:center;font-size:9px;font-weight:700;line-height:1;
+    color:#34C77B;border:1px solid rgba(52,199,123,.42);background:rgba(52,199,123,.10);
+  }
+  .incl-body{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .incl-body b{font-size:13px;font-weight:520;color:var(--muted);letter-spacing:-.005em}
+  .incl-body i{font-style:normal;font-size:11.5px;color:var(--muted-dim);line-height:1.45}
+  /* 「额外解锁」：比上面那句亮一档，作为真正的卖点区标题，但不加底色/边框 */
+  .pro-more{
+    display:flex;align-items:center;gap:8px;
+    margin:0 0 13px;font-size:13px;font-weight:650;letter-spacing:.04em;color:#fff;
+  }
+  .pro-more::before{
+    content:"";flex:none;width:16px;height:2px;border-radius:1px;
+    background:var(--gold);box-shadow:0 0 10px rgba(227,199,155,.55);
+  }
+
+  /* ---------- 购买 ---------- */
+  .buy{
+    margin-top:14px;padding:20px 20px 18px;
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:var(--bg-elev);
+  }
+  .buy-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .buy-top b{font-size:26px;font-weight:620;letter-spacing:-.02em;color:var(--gold-bright)}
+  .buy-top span{font-size:12.5px;color:var(--muted-dim)}
+  .buy-form{display:flex;gap:10px;flex-wrap:wrap}
+  .pro-field{
+    height:42px;padding:0 13px;flex:1 1 220px;min-width:0;
+    font:inherit;font-size:13.5px;color:var(--text);
+    background:var(--bg-code);border:1px solid var(--line);border-radius:9px;outline:none;
+    transition:border-color .18s,background-color .18s;
+  }
+  .pro-field:focus{border-color:rgba(76,141,255,.55)}
+  .pro-field::placeholder{color:var(--muted-dim)}
+  /* 浏览器自动填充会强行刷白输入框，用 inset 阴影盖回深色底 */
+  .pro-field:-webkit-autofill,
+  .pro-field:-webkit-autofill:hover,
+  .pro-field:-webkit-autofill:focus,
+  .pro-field:-webkit-autofill:active{
+    -webkit-box-shadow:0 0 0 1000px var(--bg-code) inset;
+    box-shadow:0 0 0 1000px var(--bg-code) inset;
+    -webkit-text-fill-color:var(--text);
+    caret-color:var(--text);
+    transition:background-color 9999s ease-in-out 0s;
+  }
+  .pro-ch{
+    height:42px;padding:0 18px;font:inherit;font-size:13.5px;font-weight:520;cursor:pointer;
+    color:var(--text);background:rgba(255,255,255,.05);
+    border:1px solid var(--line-strong);border-radius:9px;
+    transition:background .18s,border-color .18s;
+    white-space:nowrap;
+  }
+  .pro-ch:hover{background:rgba(255,255,255,.09)}
+  .pro-ch[disabled]{opacity:.5;cursor:default}
+  .pro-ch.pay{color:#04070D;background:var(--accent);border-color:transparent;box-shadow:0 10px 28px -14px rgba(76,141,255,.9)}
+  .pro-ch.pay:hover{background:#6BA0FF}
+  .pro-err{margin-top:10px;font-size:12.5px;color:#FF7A6E;min-height:0}
+  .buy-note{margin-top:12px;font-size:12px;color:var(--muted-dim);line-height:1.6}
+
+  /* ---------- 支付 / 完成 ---------- */
+  .panel{
+    margin-top:14px;padding:26px 20px 22px;text-align:center;
+    border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-elev);
+  }
+  .panel h2{font-size:17px;font-weight:600;letter-spacing:-.015em}
+  .panel .lead{margin-top:6px;font-size:12.5px;color:var(--muted-dim)}
+  .pro-qr{width:196px;height:196px;border-radius:12px;background:#fff;padding:8px;margin-top:16px}
+  .pro-amount{font-size:26px;font-weight:620;margin-top:14px;letter-spacing:-.02em}
+  .pro-ord{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;color:var(--muted-dim);margin-top:5px}
+  .pro-wait{margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--muted)}
+  .pro-spin{width:12px;height:12px;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:proSpin .8s linear infinite}
+  @keyframes proSpin{to{transform:rotate(360deg)}}
+  .pro-actions{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .ok{
+    width:48px;height:48px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(52,199,123,.14);color:#34C77B;font-size:22px;
+  }
+  .panel p.body{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.75}
+  .panel code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;
+    background:rgba(255,255,255,.07);padding:2px 6px;border-radius:5px;color:var(--text)}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:24px 0 40px}
+  .foot{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;font-size:13px;color:var(--muted-dim)}
+  .foot-links{display:flex;flex-wrap:wrap;gap:18px;margin-left:auto}
+  .foot a{transition:color .18s}
+  .foot a:hover{color:var(--text)}
+  .foot .accent{color:var(--accent)}
+  .foot .accent:hover{color:#7FAEFF}
+
+  @media (max-width:640px){
+    .wrap{padding:0 18px}
+    .page{padding:30px 0 56px}
+    .nav-inner{gap:10px}
+    .nav-links{gap:12px;font-size:12px}
+    .lang{padding:2px}
+    .lang button{padding:3px 6px;font-size:11px}
+    .pro-grid{grid-template-columns:1fr}
+    .buy-form{gap:8px}
+    .pro-field{flex:1 1 100%}
+    .pro-ch{flex:1 1 0}
+    .pro-qr{width:176px;height:176px}
+    .foot-links{margin-left:0}
+  }
+  /* 窄屏塞不下全部导航项：功能/安装靠滚动即可到达，优先保住 GitHub 与 Pro 入口 */
+  @media (max-width:560px){
+    .nav-links a[data-i18n]{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="index.html">
+      <img src="assets/icon.png" alt="Zeroflow">
+      <span>Zeroflow</span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html#features" data-i18n="nav.features">功能</a>
+      <a href="index.html#install" data-i18n="nav.install">安装</a>
+      <a href="https://github.com/hellolio/zeroflow" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="zh" aria-pressed="true">中</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-lang="ja" aria-pressed="false">日</button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+    <a class="back" href="index.html">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H6"/><path d="M11 18l-6-6 6-6"/></svg>
+      <span data-i18n="pro.back">返回首页</span>
+    </a>
+
+    <div class="head">
+      <span class="kicker">PRO</span>
+      <h1 data-i18n="pro.title">免费版与 Pro 的区别</h1>
+      <p class="lead" data-i18n="pro.sub">免费版已包含日常最常用的四项功能，Pro 解锁其余进阶能力。</p>
+    </div>
+
+    <div id="proMain">
+      <div class="pro-grid">
+        <div class="pro-col">
+          <div class="pro-col-head">
+            <span data-i18n="pro.free">免费版</span>
+            <em data-i18n="pro.freePrice">永久免费</em>
+          </div>
+          <ul id="proFreeList"></ul>
+        </div>
+        <div class="pro-col hot">
+          <div class="pro-col-head">
+            <span>Pro</span>
+            <em id="proPriceTag">¥9.9</em>
+          </div>
+          <div class="incl">
+            <span class="incl-icon" aria-hidden="true">&#10003;</span>
+            <span class="incl-body">
+              <b data-i18n="pro.allFree">全部基础功能</b>
+              <i data-i18n="pro.allFreeNote">免费版的全部能力已包含在内</i>
+            </span>
+          </div>
+          <p class="pro-more" data-i18n="pro.extras">额外解锁</p>
+          <ul id="proProList"></ul>
+        </div>
+      </div>
+
+      <div class="buy">
+        <div class="buy-top">
+          <b id="proPrice">¥9.9</b>
+          <span data-i18n="pro.once">一次买断 · 永久授权</span>
+        </div>
+        <div class="buy-form">
+          <input class="pro-field" id="proEmail" type="email" inputmode="email"
+                 autocomplete="email" spellcheck="false" placeholder="邮箱（接收许可证）">
+          <button class="pro-ch pay" type="button" data-ch="alipay" data-i18n="pro.alipay">支付宝</button>
+          <button class="pro-ch" type="button" data-ch="wechat" data-i18n="pro.wechat">微信支付</button>
+        </div>
+        <div class="pro-err" id="proErr"></div>
+        <p class="buy-note" data-i18n="pro.buyNote">填好邮箱后选择支付方式，扫码付款，许可证会自动下载到本地。</p>
+      </div>
+    </div>
+
+    <div class="panel" id="proPay" hidden>
+      <h2 data-i18n="pro.payTitle">扫码支付</h2>
+      <p class="lead" data-i18n="pro.paySub">支付完成后许可证会自动下载，无需再操作。</p>
+      <img class="pro-qr" id="proQr" alt="支付二维码">
+      <div class="pro-amount" id="proPayAmount"></div>
+      <div class="pro-ord" id="proPayOrder"></div>
+      <div class="pro-wait"><span class="pro-spin"></span><span data-i18n="pro.waiting">等待支付…</span></div>
+      <div class="pro-actions">
+        <button class="pro-ch" id="proMock" type="button" hidden data-i18n="pro.mock">模拟支付成功（测试）</button>
+        <button class="pro-ch" id="proCancel" type="button" data-i18n="pro.cancel">取消</button>
+      </div>
+    </div>
+
+    <div class="panel" id="proDone" hidden>
+      <div class="ok">&#10003;</div>
+      <h2 data-i18n="pro.doneTitle">许可证已下载</h2>
+      <p class="body" data-i18n="pro.doneBody">双击下载好的 zeroflow.license 文件即可激活 Pro。</p>
+      <div class="pro-actions">
+        <button class="pro-ch" id="proAgain" type="button" data-i18n="pro.again">重新下载</button>
+        <button class="pro-ch pay" id="proFinish" type="button" data-i18n="pro.finish">完成</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© <span id="year">2026</span> Zeroflow</span>
+    <span class="foot-links">
+      <a href="index.html" data-i18n="pro.home">首页</a>
+      <a href="https://github.com/hellolio/zeroflow" target="_blank" rel="noopener">GitHub</a>
+      <a class="accent" href="https://github.com/sponsors/hellolio" target="_blank" rel="noopener" data-i18n="footer.sponsor">赞助</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var I18N = {
+    zh: {
+      "title": "Zeroflow Pro — 免费版与 Pro 的区别",
+      "nav.features": "功能", "nav.install": "安装",
+      "pro.back": "返回首页", "pro.home": "首页",
+      "pro.title": "免费版与 Pro 的区别",
+      "pro.sub": "免费版已包含日常最常用的四项功能，Pro 解锁其余进阶能力。",
+      "pro.free": "免费版", "pro.freePrice": "永久免费",
+      "pro.once": "一次买断 · 永久授权", "pro.extras": "额外解锁",
+      "pro.allFree": "全部基础功能", "pro.allFreeNote": "免费版的全部能力已包含在内",
+      "pro.alipay": "支付宝", "pro.wechat": "微信支付",
+      "pro.buyNote": "填好邮箱后选择支付方式，扫码付款，许可证会自动下载到本地。",
+      "pro.payTitle": "扫码支付", "pro.paySub": "支付完成后许可证会自动下载，无需再操作。",
+      "pro.waiting": "等待支付…", "pro.mock": "模拟支付成功（测试）", "pro.cancel": "取消",
+      "pro.doneTitle": "许可证已下载", "pro.doneBody": "双击下载好的 zeroflow.license 文件即可激活 Pro。",
+      "pro.again": "重新下载", "pro.finish": "完成",
+      "pro.phEmail": "邮箱（接收许可证）", "pro.errEmail": "请填写有效邮箱",
+      "pro.errNet": "无法连接支付服务，请稍后再试", "pro.errExpired": "订单已过期，请重新购买",
+      "footer.sponsor": "赞助"
+    },
+    en: {
+      "title": "Zeroflow Pro — Free vs Pro",
+      "nav.features": "Features", "nav.install": "Install",
+      "pro.back": "Back to home", "pro.home": "Home",
+      "pro.title": "Free vs Pro",
+      "pro.sub": "The free edition covers the four most-used tools. Pro unlocks the rest.",
+      "pro.free": "Free", "pro.freePrice": "Free forever",
+      "pro.once": "One-time purchase · lifetime license", "pro.extras": "Pro adds",
+      "pro.allFree": "All basic features", "pro.allFreeNote": "Everything in the free edition is included",
+      "pro.alipay": "Alipay", "pro.wechat": "WeChat Pay",
+      "pro.buyNote": "Enter your email, pick a payment method and scan the code — the license downloads automatically.",
+      "pro.payTitle": "Scan to pay", "pro.paySub": "The license downloads automatically once payment completes.",
+      "pro.waiting": "Waiting for payment…", "pro.mock": "Simulate payment (test)", "pro.cancel": "Cancel",
+      "pro.doneTitle": "License downloaded", "pro.doneBody": "Double-click the downloaded zeroflow.license file to activate Pro.",
+      "pro.again": "Download again", "pro.finish": "Done",
+      "pro.phEmail": "Email (for your license)", "pro.errEmail": "Please enter a valid email",
+      "pro.errNet": "Cannot reach the payment service, try again later", "pro.errExpired": "Order expired, please buy again",
+      "footer.sponsor": "Sponsor"
+    },
+    ja: {
+      "title": "Zeroflow Pro — 無料版と Pro の違い",
+      "nav.features": "機能", "nav.install": "インストール",
+      "pro.back": "ホームに戻る", "pro.home": "ホーム",
+      "pro.title": "無料版と Pro の違い",
+      "pro.sub": "無料版にはよく使う4つの機能が含まれ、Pro で残りの機能が使えます。",
+      "pro.free": "無料版", "pro.freePrice": "ずっと無料",
+      "pro.once": "買い切り · 永久ライセンス", "pro.extras": "Pro で追加",
+      "pro.allFree": "すべての基本機能", "pro.allFreeNote": "無料版の全機能が含まれます",
+      "pro.alipay": "Alipay", "pro.wechat": "WeChat Pay",
+      "pro.buyNote": "メールアドレスを入力して支払い方法を選び、QR コードを読み取るとライセンスが自動でダウンロードされます。",
+      "pro.payTitle": "QR コードで支払う", "pro.paySub": "支払いが完了するとライセンスが自動でダウンロードされます。",
+      "pro.waiting": "支払いを待っています…", "pro.mock": "支払いをシミュレート（テスト）", "pro.cancel": "キャンセル",
+      "pro.doneTitle": "ライセンスをダウンロードしました", "pro.doneBody": "ダウンロードした zeroflow.license をダブルクリックすると Pro が有効になります。",
+      "pro.again": "再ダウンロード", "pro.finish": "完了",
+      "pro.phEmail": "メール（ライセンス送付先）", "pro.errEmail": "有効なメールアドレスを入力してください",
+      "pro.errNet": "決済サービスに接続できません。後でもう一度お試しください", "pro.errExpired": "注文の有効期限が切れました。もう一度購入してください",
+      "footer.sponsor": "スポンサー"
+    }
+  };
+
+  var HTML_LANG = { zh: "zh-CN", en: "en", ja: "ja" };
+
+  var PRO_ITEMS = {
+    zh: {
+      free: [
+        ["截图标注", "⌘⇧S 截图，可画线、矩形、圆框、文字气泡、马赛克"],
+        ["窗口切换器", "⌘⇥ 缩略图切换，最小化与离屏窗口同样可见"],
+        ["Dock 悬停预览", "鼠标悬停 Dock 图标，预览窗口内容"],
+        ["访达右键菜单", "在设置里添加自定义命令，右键直接调用"]
+      ],
+      pro: [
+        ["剪贴板历史", "⌘⇧C 呼出，可搜索、方向键选择、回车粘贴"],
+        ["灵动岛", "刘海展开显示日历、系统资源与正在播放"],
+        ["Dock 单击最小化", "点一下图标，把当前窗口收进 Dock"],
+        ["自定义 Dock 栏", "自定义 Dock 的显示与行为"],
+        ["翻转鼠标滚动方向", "垂直与水平两个开关，分别翻转鼠标滚动方向，使其和 Windows 一样自然"]
+      ]
+    },
+    en: {
+      free: [
+        ["Screenshot annotation", "⌘⇧S to capture, then draw, box, circle, bubble or mosaic"],
+        ["Window switcher", "⌘⇥ thumbnail switcher, minimized and off-screen windows included"],
+        ["Dock hover preview", "Hover a Dock icon to preview the window"],
+        ["Finder context menu", "Add custom commands in settings, call them from Finder"]
+      ],
+      pro: [
+        ["Clipboard history", "⌘⇧C to open, search, pick with arrows, paste with Return"],
+        ["Dynamic Island", "Expand the notch for calendar, system stats and now playing"],
+        ["Dock click to minimize", "Click the icon to tuck the current window into the Dock"],
+        ["Custom Dock", "Control how the Dock is displayed and behaves"],
+        ["Reverse mouse scrolling", "Separate vertical and horizontal switches to flip scrolling so it feels as natural as Windows"]
+      ]
+    },
+    ja: {
+      free: [
+        ["スクリーンショット注釈", "⌘⇧S で撮影し、線・矩形・円・吹き出し・モザイクで加工"],
+        ["ウィンドウ切り替え", "⌘⇥ のサムネイル切り替え。最小化・画面外も表示"],
+        ["Dock ホバープレビュー", "Dock アイコンにホバーしてウィンドウをプレビュー"],
+        ["Finder 右クリックメニュー", "設定で追加したコマンドを Finder から実行"]
+      ],
+      pro: [
+        ["クリップボード履歴", "⌘⇧C で呼び出し、検索・矢印キー選択・Return で貼り付け"],
+        ["ダイナミックアイランド", "ノッチを展開してカレンダー・システム情報・再生中を表示"],
+        ["Dock クリックで最小化", "アイコンをクリックで現在のウィンドウを Dock へ"],
+        ["Dock のカスタム", "Dock の表示と動作をカスタマイズ"],
+        ["マウスのスクロール方向反転", "垂直・水平それぞれのスイッチでスクロール方向を反転し、Windows と同じ自然な操作感に"]
+      ]
+    }
+  };
+
+  // 后端地址：本地开发指到 8787，部署后改成正式域名即可
+  var PAY_API = "http://localhost:8787";
+  var PAY_APP = "zeroflow";
+
+  var nodes = document.querySelectorAll("[data-i18n]");
+  var langBtns = document.querySelectorAll(".lang button");
+  var current = "zh";
+
+  var proMain = document.getElementById("proMain");
+  var proPay = document.getElementById("proPay");
+  var proDone = document.getElementById("proDone");
+  var proEmail = document.getElementById("proEmail");
+  var proErrEl = document.getElementById("proErr");
+  var proQr = document.getElementById("proQr");
+  var proMockBtn = document.getElementById("proMock");
+  var chBtns = document.querySelectorAll(".pro-ch[data-ch]");
+  var state = { order: null, timer: null, busy: false };
+
+  function dict() { return I18N[current] || I18N.zh; }
+
+  function renderPro(lang) {
+    var items = PRO_ITEMS[lang] || PRO_ITEMS.zh;
+    var d = dict();
+    var freeUl = document.getElementById("proFreeList");
+    var proUl = document.getElementById("proProList");
+
+    function makeItem(pair, cls) {
+      var li = document.createElement("li");
+      if (cls) li.className = cls;
+      var b = document.createElement("b");
+      b.textContent = pair[0];
+      var i = document.createElement("i");
+      i.textContent = pair[1];
+      li.appendChild(b);
+      li.appendChild(i);
+      return li;
+    }
+
+    if (freeUl) {
+      freeUl.textContent = "";
+      items.free.forEach(function (p) { freeUl.appendChild(makeItem(p)); });
+    }
+    if (proUl) {
+      // 基础功能已由上方「全部基础功能」整块表示，这里只列 Pro 额外解锁的
+      proUl.textContent = "";
+      items.pro.forEach(function (p) { proUl.appendChild(makeItem(p)); });
+    }
+    if (proEmail) proEmail.placeholder = d["pro.phEmail"] || "";
+  }
+
+  function apply(lang) {
+    var d = I18N[lang] || I18N.zh;
+    current = I18N[lang] ? lang : "zh";
+    nodes.forEach(function (el) {
+      var val = d[el.getAttribute("data-i18n")];
+      if (val) el.textContent = val;
+    });
+    document.documentElement.lang = HTML_LANG[current];
+    document.title = d["title"];
+    langBtns.forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.lang === current));
+    });
+    renderPro(current);
+    try { localStorage.setItem("zf-lang", current); } catch (e) {}
+  }
+
+  function guess() {
+    var saved = null;
+    try { saved = localStorage.getItem("zf-lang"); } catch (e) {}
+    if (saved && I18N[saved]) return saved;
+    var nav = (navigator.language || "en").toLowerCase();
+    if (nav.indexOf("ja") === 0) return "ja";
+    if (nav.indexOf("zh") === 0) return "zh";
+    return "en";
+  }
+
+  langBtns.forEach(function (b) {
+    b.addEventListener("click", function () { apply(b.dataset.lang); });
+  });
+
+  // 价格以后台配置为准，读不到就保留页面上的静态值
+  function syncPrice() {
+    if (!window.fetch) return;
+    fetch(PAY_API + "/api/apps/" + encodeURIComponent(PAY_APP))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.amount_display) return;
+        var tag = document.getElementById("proPriceTag");
+        var price = document.getElementById("proPrice");
+        if (tag) tag.textContent = d.amount_display;
+        if (price) price.textContent = d.amount_display;
+      })
+      .catch(function () {});
+  }
+
+  function showPanel(which) {
+    proMain.hidden = which !== "main";
+    proPay.hidden = which !== "pay";
+    proDone.hidden = which !== "done";
+  }
+
+  function setErr(msg) { if (proErrEl) proErrEl.textContent = msg || ""; }
+
+  function lockChannels(lock) {
+    state.busy = lock;
+    chBtns.forEach(function (b) { b.disabled = lock; });
+  }
+
+  function stopPoll() {
+    if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+  }
+
+  function downloadLicense(orderNo) {
+    return fetch(PAY_API + "/api/orders/" + encodeURIComponent(orderNo) + "/license")
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.blob();
+      })
+      .then(function (blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = PAY_APP + ".license";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+        showPanel("done");
+      });
+  }
+
+  function pollOrder() {
+    if (!state.order) return;
+    var no = state.order.order_no;
+    fetch(PAY_API + "/api/orders/" + encodeURIComponent(no))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!state.order || state.order.order_no !== no) return;
+        if (d.status === "paid") {
+          stopPoll();
+          downloadLicense(no).catch(function () { setErr(dict()["pro.errNet"]); });
+        } else if (d.status === "expired") {
+          stopPoll();
+          state.order = null;
+          showPanel("main");
+          setErr(dict()["pro.errExpired"]);
+        } else {
+          state.timer = setTimeout(pollOrder, 2000);
+        }
+      })
+      .catch(function () { state.timer = setTimeout(pollOrder, 3000); });
+  }
+
+  function startPay(order) {
+    state.order = order;
+    setErr("");
+    if (proQr) proQr.src = order.qr || "";
+    var amountEl = document.getElementById("proPayAmount");
+    if (amountEl) amountEl.textContent = order.amount_display || "";
+    var ordEl = document.getElementById("proPayOrder");
+    if (ordEl) ordEl.textContent = order.order_no;
+    if (proMockBtn) proMockBtn.hidden = !order.mock;
+    showPanel("pay");
+    stopPoll();
+    state.timer = setTimeout(pollOrder, 2000);
+  }
+
+  function buy(channel) {
+    if (state.busy) return;
+    var email = (proEmail && proEmail.value || "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      setErr(dict()["pro.errEmail"]);
+      if (proEmail) proEmail.focus();
+      return;
+    }
+    setErr("");
+    lockChannels(true);
+    fetch(PAY_API + "/api/orders", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ app: PAY_APP, email: email, channel: channel })
+    })
+      .then(function (r) {
+        return r.json().then(function (d) {
+          if (!r.ok) throw new Error(d && d.error ? d.error : "HTTP " + r.status);
+          return d;
+        });
+      })
+      .then(function (d) { lockChannels(false); startPay(d); })
+      .catch(function (e) {
+        lockChannels(false);
+        setErr(e && e.message && e.message !== "Failed to fetch"
+          ? e.message : dict()["pro.errNet"]);
+      });
+  }
+
+  chBtns.forEach(function (b) {
+    b.addEventListener("click", function () { buy(b.dataset.ch); });
+  });
+
+  var cancelBtn = document.getElementById("proCancel");
+  var finishBtn = document.getElementById("proFinish");
+  var againBtn = document.getElementById("proAgain");
+
+  if (cancelBtn) cancelBtn.addEventListener("click", function () {
+    stopPoll();
+    state.order = null;
+    showPanel("main");
+  });
+  if (finishBtn) finishBtn.addEventListener("click", function () { location.href = "index.html"; });
+  if (againBtn) againBtn.addEventListener("click", function () {
+    if (state.order) {
+      downloadLicense(state.order.order_no).catch(function () { setErr(dict()["pro.errNet"]); });
+    }
+  });
+  if (proMockBtn) proMockBtn.addEventListener("click", function () {
+    if (!state.order) return;
+    proMockBtn.disabled = true;
+    fetch(PAY_API + "/api/orders/" + encodeURIComponent(state.order.order_no) + "/mock-pay", {
+      method: "POST"
+    })
+      .then(function () { proMockBtn.disabled = false; })
+      .catch(function () { proMockBtn.disabled = false; });
+  });
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+  apply(guess());
+  syncPrice();
+})();
+</script>
+</body>
+</html>

@@ -14,6 +14,7 @@
 <link rel="apple-touch-icon" href="assets/icon.png">
 <style>
   :root{
+    color-scheme:dark;
     --bg:#07080A;
     --bg-elev:#0D0F12;
     --bg-code:#0A0C0F;
@@ -52,8 +53,23 @@
   .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14px;letter-spacing:-.01em}
   .brand img{width:20px;height:20px;border-radius:5px}
   .nav-links{display:flex;gap:22px;margin-left:auto;font-size:13.5px;color:var(--muted)}
-  .nav-links a{transition:color .18s}
+  .nav-links a{white-space:nowrap;transition:color .18s}
   .nav-links a:hover{color:var(--text)}
+  .nav-right{display:flex;align-items:center;gap:10px}
+  /* 顶栏「获取 Pro」：和 hero 里的 Pro 胶囊同一套蓝 */
+  .nav-pro{
+    display:inline-flex;align-items:center;height:29px;padding:0 12px;
+    border-radius:8px;white-space:nowrap;
+    font-size:12.5px;font-weight:600;letter-spacing:-.005em;
+    color:#04070D;background:var(--accent);
+    box-shadow:0 6px 18px -9px rgba(76,141,255,.9);
+    transition:background .18s,box-shadow .18s,transform .18s;
+  }
+  .nav-pro:hover{
+    background:#6BA0FF;
+    box-shadow:0 8px 22px -9px rgba(76,141,255,1);
+  }
+  .nav-pro:active{transform:scale(.985)}
   .lang{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02)}
   .lang button{
     font:inherit;font-size:11.5px;letter-spacing:.02em;
@@ -124,12 +140,14 @@
   .dl-tag{font-size:10px;letter-spacing:.02em;opacity:.85;white-space:nowrap}
   .dl-tag::before{content:"· ";opacity:.6}
   .dl-tag[hidden]{display:none}
-  .dl-note{
-    min-height:17px;margin-top:14px;
-    font-size:12px;color:var(--muted-dim);
-    font-variant-numeric:tabular-nums;letter-spacing:.01em;
+  .meta-line{
+    margin-top:16px;display:flex;justify-content:center;flex-wrap:wrap;
+    gap:4px 22px;font-size:12.5px;color:var(--muted-dim);letter-spacing:.01em;
   }
-  .meta-line{margin-top:10px;font-size:12.5px;color:var(--muted-dim);letter-spacing:.01em}
+  .meta-line b{
+    color:var(--muted);font-weight:520;
+    font-variant-numeric:tabular-nums;
+  }
 
 
   /* ---------- sections ---------- */
@@ -302,97 +320,24 @@
   }
   .qq-close:hover{color:var(--text);background:rgba(255,255,255,.06)}
 
-  /* ---------- Pro ---------- */
-  .pro-cta{margin-top:18px;display:flex;justify-content:center}
+  /* ---------- Pro 入口：hero 里，下载按钮下方 ---------- */
+  /* 外观和未 hover 的「下载 Intel 版本」完全一致，只多一个蓝色 PRO 徽标 */
+  .pro-cta{margin:22px auto 0;display:flex;justify-content:center}
   .pro-link{
-    display:inline-flex;align-items:center;gap:9px;height:36px;padding:0 16px;
-    font:inherit;font-size:13px;font-weight:520;color:var(--muted);cursor:pointer;
-    border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.02);
-    transition:all .18s;
+    display:inline-flex;align-items:center;gap:9px;
+    height:44px;padding:0 20px 0 10px;border-radius:10px;
+    font-size:14px;font-weight:560;letter-spacing:-.01em;color:var(--text);
+    border:1px solid var(--line-strong);background:rgba(255,255,255,.02);
+    transition:transform .18s,background .18s,border-color .18s;
   }
-  .pro-link:hover{color:var(--text);border-color:var(--line-strong);background:rgba(255,255,255,.055)}
-
-  .pro-modal{
-    position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:20px;
-    background:rgba(4,5,7,.78);
-    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-  }
-  .pro-modal[hidden]{display:none}
-  .pro-card{
-    position:relative;width:min(720px,100%);max-height:calc(100vh - 40px);overflow:auto;
-    padding:30px 28px 26px;text-align:left;
-    background:var(--bg-elev);border:1px solid var(--line-strong);border-radius:18px;
-    box-shadow:0 24px 70px rgba(0,0,0,.55);
-    animation:qqIn .2s cubic-bezier(.2,.8,.3,1);
-  }
-  .pro-card:focus{outline:none}
-  .pro-card [hidden]{display:none!important}
-  .pro-card h2{font-size:19px;font-weight:600;letter-spacing:-.015em;padding-right:32px}
-  .pro-sub{margin-top:6px;font-size:13px;color:var(--muted-dim);line-height:1.6}
-  .pro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
-  .pro-col{border:1px solid var(--line);border-radius:13px;padding:15px 16px 14px;background:rgba(255,255,255,.015)}
-  .pro-col.hot{border-color:rgba(76,141,255,.42);background:linear-gradient(180deg,rgba(76,141,255,.10),rgba(76,141,255,.02))}
-  .pro-col-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px}
-  .pro-col-head span{font-size:14px;font-weight:600}
-  .pro-col-head em{font-style:normal;font-size:12px;color:var(--muted-dim)}
-  .pro-col.hot .pro-col-head em{color:var(--accent)}
-  .pro-col ul{list-style:none;display:flex;flex-direction:column;gap:9px}
-  .pro-col li{position:relative;padding-left:17px;font-size:13px;color:var(--muted);line-height:1.5}
-  .pro-col li::before{content:"";position:absolute;left:2px;top:7px;width:5px;height:5px;border-radius:50%;background:var(--muted-dim)}
-  .pro-col.hot li::before{background:var(--accent)}
-  .pro-col li b{display:block;color:var(--text);font-weight:520}
-  .pro-col li i{font-style:normal;font-size:12px;color:var(--muted-dim)}
-  .pro-col li.inc{color:var(--muted-dim)}
-  .pro-col li.inc b{color:var(--muted);font-weight:500}
-  .pro-col.hot li.inc::before{
-    content:"✓";width:auto;height:auto;background:none;border-radius:0;
-    left:1px;top:3px;font-size:11px;line-height:1;color:#57A98A;
-  }
-  .pro-col li.sep{padding-left:0;margin-top:3px;font-size:11px;letter-spacing:.06em;
-    text-transform:uppercase;color:var(--accent);font-weight:600}
-  .pro-col li.sep::before{display:none}
-  .pro-buy{margin-top:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
-  .pro-price{display:flex;align-items:baseline;gap:8px;flex:1 1 100%;margin-right:0}
-  .pro-price b{font-size:24px;font-weight:600;letter-spacing:-.02em}
-  .pro-price span{font-size:12px;color:var(--muted-dim)}
-  .pro-field{
-    height:38px;padding:0 12px;flex:1 1 200px;min-width:0;font:inherit;font-size:13px;color:var(--text);
-    background:var(--bg-code);border:1px solid var(--line);border-radius:9px;outline:none;
-  }
-  .pro-field:focus{border-color:rgba(76,141,255,.55)}
-  .pro-field::placeholder{color:var(--muted-dim)}
-  .pro-ch{
-    height:38px;padding:0 16px;font:inherit;font-size:13px;font-weight:520;cursor:pointer;
-    color:var(--text);background:rgba(255,255,255,.05);
-    border:1px solid var(--line-strong);border-radius:9px;transition:background .18s;
-  }
-  .pro-ch:hover{background:rgba(255,255,255,.09)}
-  .pro-ch[disabled]{opacity:.5;cursor:default}
-  .pro-err{margin-top:10px;font-size:12.5px;color:#FF7A6E;min-height:0}
-  .pro-pay{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 0 2px}
-  .pro-qr{width:200px;height:200px;border-radius:12px;background:#fff;padding:8px;margin-top:14px}
-  .pro-pay .pro-amount{font-size:26px;font-weight:600;margin-top:12px;letter-spacing:-.02em}
-  .pro-pay .pro-ord{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;color:var(--muted-dim);margin-top:5px}
-  .pro-wait{margin-top:14px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
-  .pro-spin{width:12px;height:12px;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:proSpin .8s linear infinite}
-  @keyframes proSpin{to{transform:rotate(360deg)}}
-  .pro-actions{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-  .pro-done{text-align:center;padding:14px 0 4px}
-  .pro-done .ok{
-    width:46px;height:46px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;
-    background:rgba(52,199,123,.14);color:#34C77B;font-size:21px;
-  }
-  .pro-done h3{font-size:16px;font-weight:600}
-  .pro-done p{margin-top:8px;font-size:13px;color:var(--muted);line-height:1.75}
-  .pro-done code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;
-    background:rgba(255,255,255,.07);padding:2px 6px;border-radius:5px;color:var(--text)}
-  .pro-done .pro-actions{margin-top:18px}
-  @media (max-width:640px){
-    .pro-card{padding:24px 18px 20px}
-    .pro-grid{grid-template-columns:1fr}
-    .pro-field{width:100%}
-    .pro-price{width:100%}
-    .pro-ch{flex:1}
+  .pro-link:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.24)}
+  .pro-link:active{transform:scale(.985)}
+  .pro-link:focus-visible{outline:2px solid rgba(76,141,255,.55);outline-offset:3px}
+  .pro-badge{
+    display:inline-grid;place-items:center;height:22px;padding:0 8px 0 9px;
+    border-radius:6px;line-height:1;
+    font-size:10px;font-weight:800;letter-spacing:.13em;text-indent:.13em;
+    color:#04070D;background:var(--accent);
   }
 
   /* ---------- footer ---------- */
@@ -403,9 +348,8 @@
   .foot a:hover{color:var(--text)}
   .foot .accent{color:var(--accent)}
   .foot .accent:hover{color:#7FAEFF}
-  .foot button.linklike{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;transition:color .18s}
-  .foot button.linklike:hover{color:var(--text)}
   .foot .foot-pro{color:var(--accent)}
+  .foot .foot-pro:hover{color:#7FAEFF}
   .foot .qq-btn{border-color:transparent;background:none;padding:0 2px;color:var(--muted-dim)}
   .foot .qq-btn:hover{color:var(--text);border-color:transparent;background:none}
 
@@ -415,6 +359,10 @@
     .wrap{padding:0 18px}
     .nav-inner{gap:10px}
     .nav-links{gap:12px;font-size:12px}
+    .nav-right{gap:7px}
+    .nav-pro{height:26px;padding:0 9px;font-size:11.5px}
+    .pro-link{height:40px;padding:0 17px 0 9px;gap:8px;font-size:13.5px}
+    .pro-badge{height:21px;padding:0 7px 0 8px;font-size:9.5px}
     .lang{padding:2px}
     .lang button{padding:3px 6px;font-size:11px}
     /* 两张下载卡等分容器宽度，不再被 188px 的 min-width 顶出屏幕 */
@@ -426,7 +374,8 @@
     .foot-links{margin-left:0}
   }
   /* 超窄机型（≤359px）实在放不下：只留 GitHub，功能/安装靠滚动即可到达 */
-  @media (max-width:359px){
+  /* 窄屏塞不下全部导航项：功能/安装靠滚动即可到达，优先保住 GitHub 与 Pro 入口 */
+  @media (max-width:560px){
     .nav-links a[data-i18n]{display:none}
   }
   @media (prefers-reduced-motion:reduce){
@@ -448,10 +397,13 @@
       <a href="#install" data-i18n="nav.install">安装</a>
       <a href="https://github.com/hellolio/zeroflow" target="_blank" rel="noopener">GitHub</a>
     </nav>
-    <div class="lang" role="group" aria-label="Language">
-      <button type="button" data-lang="zh" aria-pressed="true">中</button>
-      <button type="button" data-lang="en" aria-pressed="false">EN</button>
-      <button type="button" data-lang="ja" aria-pressed="false">日</button>
+    <div class="nav-right">
+      <a class="nav-pro" href="pro.html" data-i18n="pro.get">获取 Pro</a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="zh" aria-pressed="true">中</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        <button type="button" data-lang="ja" aria-pressed="false">日</button>
+      </div>
     </div>
   </div>
 </header>
@@ -486,12 +438,15 @@
         </a>
         </div>
       </div>
-      <p class="dl-note" id="dlNote"></p>
-      <p class="meta-line" data-i18n="hero.meta">macOS 14.0 Sonoma 及以上</p>
+      <p class="meta-line">
+        <span id="metaVer" hidden><span data-i18n="hero.version">版本：</span><b id="dlVer"></b></span>
+        <span><span data-i18n="hero.req">要求：</span><b data-i18n="hero.meta">macOS 14.0 Sonoma 及以上</b></span>
+      </p>
       <div class="pro-cta">
-        <button class="pro-link" id="proOpen" type="button" aria-haspopup="dialog" aria-controls="proModal">
+        <a class="pro-link" href="pro.html">
+          <span class="pro-badge">PRO</span>
           <span data-i18n="pro.cta">了解 Pro</span>
-        </button>
+        </a>
       </div>
     </div>
   </section>
@@ -687,7 +642,7 @@
       </button>
     </span>
     <span class="foot-links">
-      <button class="linklike foot-pro" id="proOpenFoot" type="button" data-i18n="pro.footer">Pro 版</button>
+      <a class="foot-pro" href="pro.html" data-i18n="pro.footer">Pro 版</a>
       <a href="https://github.com/hellolio/zeroflow/blob/main/README.zh-CN.md" target="_blank" rel="noopener">简体中文</a>
       <a href="https://github.com/hellolio/zeroflow/blob/main/README.md" target="_blank" rel="noopener">English</a>
       <a href="https://github.com/hellolio/zeroflow/blob/main/README.ja.md" target="_blank" rel="noopener">日本語</a>
@@ -710,66 +665,6 @@
   </div>
 </div>
 
-<div class="pro-modal" id="proModal" hidden>
-  <div class="pro-card" role="dialog" aria-modal="true" aria-labelledby="proTitle" tabindex="-1">
-    <button class="qq-close" id="proClose" type="button" data-i18n-aria="pro.close" aria-label="关闭">&times;</button>
-
-    <div id="proMain">
-      <h2 id="proTitle" data-i18n="pro.title">免费版与 Pro 的区别</h2>
-      <p class="pro-sub" data-i18n="pro.sub">免费版已包含日常最常用的四项功能，Pro 解锁其余进阶能力。</p>
-      <div class="pro-grid">
-        <div class="pro-col">
-          <div class="pro-col-head">
-            <span data-i18n="pro.free">免费版</span>
-            <em data-i18n="pro.freePrice">永久免费</em>
-          </div>
-          <ul id="proFreeList"></ul>
-        </div>
-        <div class="pro-col hot">
-          <div class="pro-col-head">
-            <span>Pro</span>
-            <em id="proPriceTag">¥9.9</em>
-          </div>
-          <ul id="proProList"></ul>
-        </div>
-      </div>
-      <div class="pro-buy">
-        <div class="pro-price">
-          <b id="proPrice">¥9.9</b>
-          <span data-i18n="pro.once">一次买断 · 永久授权</span>
-        </div>
-        <input class="pro-field" id="proEmail" type="email" autocomplete="email" spellcheck="false" placeholder="邮箱（接收许可证）">
-        <button class="pro-ch" type="button" data-ch="alipay" data-i18n="pro.alipay">支付宝</button>
-        <button class="pro-ch" type="button" data-ch="wechat" data-i18n="pro.wechat">微信支付</button>
-      </div>
-      <div class="pro-err" id="proErr"></div>
-    </div>
-
-    <div class="pro-pay" id="proPay" hidden>
-      <h2 data-i18n="pro.payTitle">扫码支付</h2>
-      <p class="pro-sub" data-i18n="pro.paySub">支付完成后许可证会自动下载，无需再操作。</p>
-      <img class="pro-qr" id="proQr" alt="支付二维码">
-      <div class="pro-amount" id="proPayAmount"></div>
-      <div class="pro-ord" id="proPayOrder"></div>
-      <div class="pro-wait"><span class="pro-spin"></span><span data-i18n="pro.waiting">等待支付…</span></div>
-      <div class="pro-actions">
-        <button class="pro-ch" id="proMock" type="button" hidden data-i18n="pro.mock">模拟支付成功（测试）</button>
-        <button class="pro-ch" id="proCancel" type="button" data-i18n="pro.cancel">取消</button>
-      </div>
-    </div>
-
-    <div class="pro-done" id="proDone" hidden>
-      <div class="ok">&#10003;</div>
-      <h3 data-i18n="pro.doneTitle">许可证已下载</h3>
-      <p data-i18n="pro.doneBody">双击下载好的 zeroflow.license 文件即可激活 Pro。</p>
-      <div class="pro-actions">
-        <button class="pro-ch" id="proAgain" type="button" data-i18n="pro.again">重新下载</button>
-        <button class="pro-ch" id="proFinish" type="button" data-i18n="pro.finish">完成</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 (function () {
   var I18N = {
@@ -782,6 +677,8 @@
       "hero.dlArm": "下载 ARM 版本",
       "hero.dlIntel": "下载 Intel 版本",
       "hero.yourMac": "你的 Mac",
+      "hero.version": "版本：",
+      "hero.req": "要求：",
       "hero.meta": "macOS 14.0 Sonoma 及以上",
       "features.title": "功能",
       "features.lead": "全部功能收在一个菜单栏图标里，快捷键均可自定义。",
@@ -813,6 +710,7 @@
       "qq.open": "打开 QQ 加群",
       "qq.close": "关闭",
       "pro.cta": "了解 Pro",
+      "pro.get": "获取 Pro",
       "pro.ctaTag": "剪贴板历史 · 灵动岛 · 自定义 Dock",
       "pro.footer": "Pro 版", "pro.extras": "额外解锁",
       "pro.title": "免费版与 Pro 的区别",
@@ -835,6 +733,8 @@
       "hero.dlArm": "Download ARM version",
       "hero.dlIntel": "Download Intel version",
       "hero.yourMac": "Your Mac",
+      "hero.version": "Version: ",
+      "hero.req": "Requires: ",
       "hero.meta": "macOS 14.0 Sonoma or later",
       "features.title": "Features",
       "features.lead": "Everything lives behind a single menu bar icon, with configurable shortcuts.",
@@ -866,6 +766,7 @@
       "qq.open": "Open in QQ",
       "qq.close": "Close",
       "pro.cta": "Explore Pro",
+      "pro.get": "Get Pro",
       "pro.ctaTag": "Clipboard history · Dynamic Island · Custom Dock",
       "pro.footer": "Pro", "pro.extras": "Pro adds",
       "pro.title": "Free vs Pro",
@@ -888,6 +789,8 @@
       "hero.dlArm": "arm 版をダウンロード",
       "hero.dlIntel": "Intel 版をダウンロード",
       "hero.yourMac": "この Mac",
+      "hero.version": "バージョン：",
+      "hero.req": "動作環境：",
       "hero.meta": "macOS 14.0 Sonoma 以降",
       "features.title": "機能",
       "features.lead": "すべての機能がメニューバーのアイコン1つに。ショートカットは変更可能です。",
@@ -919,6 +822,7 @@
       "qq.open": "QQ で参加",
       "qq.close": "閉じる",
       "pro.cta": "Pro を見る",
+      "pro.get": "Pro を入手",
       "pro.ctaTag": "クリップボード履歴 · ダイナミックアイランド · Dock カスタム",
       "pro.footer": "Pro 版", "pro.extras": "Pro で追加",
       "pro.title": "無料版と Pro の違い",
@@ -991,7 +895,6 @@
     });
     var qc = document.getElementById("qqCopy");
     if (qc) qc.textContent = dict["qq.copy"];
-    renderPro(current);
     try { localStorage.setItem("zf-lang", current); } catch (e) {}
   }
 
@@ -1099,7 +1002,7 @@
     });
   }
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") { closeQQ(); closePro(); }
+    if (e.key === "Escape") closeQQ();
   });
 
   if (qqCopyBtn && qqNoEl) {
@@ -1122,295 +1025,6 @@
       }
     });
   }
-
-  // ---------- Pro：对比 / 下单 / 支付轮询 / 许可证下载 ----------
-  // 后端地址：本地开发指到 8787，部署后改成正式域名即可
-  var PAY_API = "http://localhost:8787";
-  var PAY_APP = "zeroflow";
-
-  var PRO_ITEMS = {
-    zh: {
-      free: [
-        ["截图标注", "⌘⇧S 截图，可画线、矩形、圆框、文字气泡、马赛克"],
-        ["窗口切换器", "⌘⇥ 缩略图切换，最小化与离屏窗口同样可见"],
-        ["Dock 悬停预览", "鼠标悬停 Dock 图标，预览窗口内容"],
-        ["访达右键菜单", "在设置里添加自定义命令，右键直接调用"]
-      ],
-      pro: [
-        ["剪贴板历史", "⌘⇧C 呼出，可搜索、方向键选择、回车粘贴"],
-        ["灵动岛", "刘海展开显示日历、系统资源与正在播放"],
-        ["Dock 单击最小化", "点一下图标，把当前窗口收进 Dock"],
-        ["自定义 Dock 栏", "自定义 Dock 的显示与行为"],
-        ["翻转鼠标滚动方向", "垂直与水平两个开关，和 Windows 一样"]
-      ]
-    },
-    en: {
-      free: [
-        ["Screenshot annotation", "⌘⇧S to capture, then draw, box, circle, bubble or mosaic"],
-        ["Window switcher", "⌘⇥ thumbnail switcher, minimized and off-screen windows included"],
-        ["Dock hover preview", "Hover a Dock icon to preview the window"],
-        ["Finder context menu", "Add custom commands in settings, call them from Finder"]
-      ],
-      pro: [
-        ["Clipboard history", "⌘⇧C to open, search, pick with arrows, paste with Return"],
-        ["Dynamic Island", "Expand the notch for calendar, system stats and now playing"],
-        ["Dock click to minimize", "Click the icon to tuck the current window into the Dock"],
-        ["Custom Dock", "Control how the Dock is displayed and behaves"],
-        ["Reverse mouse scrolling", "Separate vertical and horizontal switches, Windows-style"]
-      ]
-    },
-    ja: {
-      free: [
-        ["スクリーンショット注釈", "⌘⇧S で撮影し、線・矩形・円・吹き出し・モザイクで加工"],
-        ["ウィンドウ切り替え", "⌘⇥ のサムネイル切り替え。最小化・画面外も表示"],
-        ["Dock ホバープレビュー", "Dock アイコンにホバーしてウィンドウをプレビュー"],
-        ["Finder 右クリックメニュー", "設定で追加したコマンドを Finder から実行"]
-      ],
-      pro: [
-        ["クリップボード履歴", "⌘⇧C で呼び出し、検索・矢印キー選択・Return で貼り付け"],
-        ["ダイナミックアイランド", "ノッチを展開してカレンダー・システム情報・再生中を表示"],
-        ["Dock クリックで最小化", "アイコンをクリックで現在のウィンドウを Dock へ"],
-        ["Dock のカスタム", "Dock の表示と動作をカスタマイズ"],
-        ["マウスのスクロール方向反転", "垂直・水平を個別に切り替え、Windows と同じ操作感"]
-      ]
-    }
-  };
-
-  var proModal = document.getElementById("proModal");
-  var proCard = proModal ? proModal.querySelector(".pro-card") : null;
-  var proMain = document.getElementById("proMain");
-  var proPay = document.getElementById("proPay");
-  var proDone = document.getElementById("proDone");
-  var proEmail = document.getElementById("proEmail");
-  var proErrEl = document.getElementById("proErr");
-  var proQr = document.getElementById("proQr");
-  var proMockBtn = document.getElementById("proMock");
-  var proChBtns = proModal ? proModal.querySelectorAll(".pro-ch[data-ch]") : [];
-  var proState = { order: null, timer: null, busy: false, lastFocus: null };
-
-  function proDict() { return I18N[current] || I18N.zh; }
-
-  function renderPro(lang) {
-    var items = PRO_ITEMS[lang] || PRO_ITEMS.zh;
-    var dict = proDict();
-    var freeUl = document.getElementById("proFreeList");
-    var proUl = document.getElementById("proProList");
-
-    var makeItem = function (pair, cls) {
-      var li = document.createElement("li");
-      if (cls) li.className = cls;
-      var b = document.createElement("b");
-      b.textContent = pair[0];
-      var i = document.createElement("i");
-      i.textContent = pair[1];
-      li.appendChild(b);
-      li.appendChild(i);
-      return li;
-    };
-
-    if (freeUl) {
-      freeUl.textContent = "";
-      items.free.forEach(function (p) { freeUl.appendChild(makeItem(p)); });
-    }
-    if (proUl) {
-      proUl.textContent = "";
-      // Pro 包含免费版全部能力，再叠加独占功能
-      items.free.forEach(function (p) { proUl.appendChild(makeItem(p, "inc")); });
-      var sep = document.createElement("li");
-      sep.className = "sep";
-      sep.textContent = dict["pro.extras"] || "";
-      proUl.appendChild(sep);
-      items.pro.forEach(function (p) { proUl.appendChild(makeItem(p)); });
-    }
-    if (proEmail) proEmail.placeholder = dict["pro.phEmail"] || "";
-  }
-
-  // 价格以后台配置为准，读不到就保留页面上的静态值
-  function syncPrice() {
-    fetch(PAY_API + "/api/apps/" + encodeURIComponent(PAY_APP))
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) {
-        if (!d || !d.amount_display) return;
-        var tag = document.getElementById("proPriceTag");
-        var price = document.getElementById("proPrice");
-        if (tag) tag.textContent = d.amount_display;
-        if (price) price.textContent = d.amount_display;
-      })
-      .catch(function () {});
-  }
-
-  function showProPanel(which) {
-    if (!proMain) return;
-    proMain.hidden = which !== "main";
-    proPay.hidden = which !== "pay";
-    proDone.hidden = which !== "done";
-  }
-
-  function setProErr(msg) {
-    if (proErrEl) proErrEl.textContent = msg || "";
-  }
-
-  function lockChannels(lock) {
-    proState.busy = lock;
-    proChBtns.forEach(function (b) { b.disabled = lock; });
-  }
-
-  function stopPoll() {
-    if (proState.timer) { clearTimeout(proState.timer); proState.timer = null; }
-  }
-
-  function openPro() {
-    if (!proModal) return;
-    proState.lastFocus = document.activeElement;
-    proState.order = null;
-    stopPoll();
-    setProErr("");
-    lockChannels(false);
-    showProPanel("main");
-    proModal.hidden = false;
-    document.body.style.overflow = "hidden";
-    if (proCard) proCard.focus();
-  }
-
-  function closePro() {
-    if (!proModal || proModal.hidden) return;
-    stopPoll();
-    proModal.hidden = true;
-    document.body.style.overflow = "";
-    if (proState.lastFocus && proState.lastFocus.focus) proState.lastFocus.focus();
-  }
-
-  function downloadLicense(orderNo) {
-    return fetch(PAY_API + "/api/orders/" + encodeURIComponent(orderNo) + "/license")
-      .then(function (r) {
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        return r.blob();
-      })
-      .then(function (blob) {
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = PAY_APP + ".license";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
-        showProPanel("done");
-      });
-  }
-
-  function pollOrder() {
-    if (!proState.order) return;
-    var no = proState.order.order_no;
-    fetch(PAY_API + "/api/orders/" + encodeURIComponent(no))
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!proState.order || proState.order.order_no !== no) return;
-        if (d.status === "paid") {
-          stopPoll();
-          downloadLicense(no).catch(function () {
-            setProErr(proDict()["pro.errNet"]);
-          });
-        } else if (d.status === "expired") {
-          stopPoll();
-          proState.order = null;
-          showProPanel("main");
-          setProErr(proDict()["pro.errExpired"]);
-        } else {
-          proState.timer = setTimeout(pollOrder, 2000);
-        }
-      })
-      .catch(function () {
-        proState.timer = setTimeout(pollOrder, 3000);
-      });
-  }
-
-  function startPay(order) {
-    proState.order = order;
-    setProErr("");
-    if (proQr) proQr.src = order.qr || "";
-    var amountEl = document.getElementById("proPayAmount");
-    if (amountEl) amountEl.textContent = order.amount_display || "";
-    var ordEl = document.getElementById("proPayOrder");
-    if (ordEl) ordEl.textContent = order.order_no;
-    if (proMockBtn) proMockBtn.hidden = !order.mock;
-    showProPanel("pay");
-    stopPoll();
-    proState.timer = setTimeout(pollOrder, 2000);
-  }
-
-  function buy(channel) {
-    if (proState.busy) return;
-    var email = (proEmail && proEmail.value || "").trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
-      setProErr(proDict()["pro.errEmail"]);
-      if (proEmail) proEmail.focus();
-      return;
-    }
-    setProErr("");
-    lockChannels(true);
-    fetch(PAY_API + "/api/orders", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ app: PAY_APP, email: email, channel: channel })
-    })
-      .then(function (r) {
-        return r.json().then(function (d) {
-          if (!r.ok) throw new Error(d && d.error ? d.error : "HTTP " + r.status);
-          return d;
-        });
-      })
-      .then(function (d) {
-        lockChannels(false);
-        startPay(d);
-      })
-      .catch(function (e) {
-        lockChannels(false);
-        setProErr(e && e.message && e.message !== "Failed to fetch"
-          ? e.message : proDict()["pro.errNet"]);
-      });
-  }
-
-  if (proModal) {
-    proChBtns.forEach(function (b) {
-      b.addEventListener("click", function () { buy(b.dataset.ch); });
-    });
-    var proCloseBtn = document.getElementById("proClose");
-    var proCancelBtn = document.getElementById("proCancel");
-    var proFinishBtn = document.getElementById("proFinish");
-    var proAgainBtn = document.getElementById("proAgain");
-    if (proCloseBtn) proCloseBtn.addEventListener("click", closePro);
-    if (proCancelBtn) proCancelBtn.addEventListener("click", function () {
-      stopPoll();
-      proState.order = null;
-      showProPanel("main");
-    });
-    if (proFinishBtn) proFinishBtn.addEventListener("click", closePro);
-    if (proAgainBtn) proAgainBtn.addEventListener("click", function () {
-      if (proState.order) {
-        downloadLicense(proState.order.order_no).catch(function () {
-          setProErr(proDict()["pro.errNet"]);
-        });
-      }
-    });
-    if (proMockBtn) proMockBtn.addEventListener("click", function () {
-      if (!proState.order) return;
-      proMockBtn.disabled = true;
-      fetch(PAY_API + "/api/orders/" + encodeURIComponent(proState.order.order_no) + "/mock-pay", {
-        method: "POST"
-      })
-        .then(function () { proMockBtn.disabled = false; })
-        .catch(function () { proMockBtn.disabled = false; });
-    });
-    proModal.addEventListener("click", function (e) {
-      if (e.target === proModal) closePro();
-    });
-  }
-
-  var proOpenBtn = document.getElementById("proOpen");
-  var proOpenFoot = document.getElementById("proOpenFoot");
-  if (proOpenBtn) proOpenBtn.addEventListener("click", openPro);
-  if (proOpenFoot) proOpenFoot.addEventListener("click", openPro);
 
   // ---------- 下载区：两个架构平铺 + 最新 Release 直链 ----------
   var ASSET_RE = { arm: /-arm64\.dmg$/i, x86: /-x86_64\.dmg$/i };
@@ -1486,10 +1100,12 @@
       assets.arm = pick(ASSET_RE.arm);
       assets.x86 = pick(ASSET_RE.x86);
       if (!assets.arm && !assets.x86) throw new Error("no dmg asset");
-      var note = document.getElementById("dlNote");
-      if (note) {
-        var ver = String(rel.tag_name || "").replace(/^v/i, "");
-        note.textContent = ver ? "v" + ver : "";
+      var verEl = document.getElementById("dlVer");
+      var verWrap = document.getElementById("metaVer");
+      var ver = String(rel.tag_name || "").replace(/^v/i, "");
+      if (verEl && ver) {
+        verEl.textContent = "v" + ver;
+        if (verWrap) verWrap.hidden = false;
       }
       renderSizes();
       bindLinks();
@@ -1502,7 +1118,6 @@
 
   document.getElementById("year").textContent = new Date().getFullYear();
   apply(guess());
-  syncPrice();
 })();
 </script>
 </body>
